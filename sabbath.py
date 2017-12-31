@@ -96,7 +96,7 @@ class BibLocation:
         # once the date and year functionality is in place. I think it makes
         # sense to have separate variables for weekly and high Sabbaths, but
         # to also have a central self.sabbath variable.
-        if b_weekday_index == 6:
+        if b_weekday_index == 5:
             self.is_ws = True
             logging.debug('Setting self.is_ws to {}.'.format(self.is_ws))
         else:

@@ -38,6 +38,8 @@ class BibLocation:
     def __init__(self, city_name):
         self.city_name = city_name
         logging.debug('city_name is set to %s' % city_name)
+        self.is_ws = False
+        self.is_hs = False
         a = Astral()
         a.solar_depression = 'civil'
         logging.debug('solar_depression set to %s' % a.solar_depression)
@@ -74,12 +76,13 @@ class BibLocation:
         self.sunset_time = daily_sunset.strftime("%H:%M")
         self.current_time = time_now.strftime("%H:%M")
 
-        b_weekdays = ('1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '1st',
-                      '2nd')
-
-        day_now = datetime.datetime.now(city.tz).weekday()
-        b_weekday_index = day_now + 1
+        # Get the current weekday from datetime. Monday is 0, Sunday is 6.
+        b_weekday_index = datetime.datetime.now(city.tz).weekday()
         logging.debug('b_weekday_index is now set to %s' % b_weekday_index)
+
+        # Tuple containing the biblical weekday names. Simply refered to by
+        # their number.
+        b_weekdays = ('2nd', '3rd', '4th', '5th', '6th', '7th', '1st', '2nd')
 
         if self.sun_has_set is True:
             b_weekday_index += 1
@@ -94,19 +97,13 @@ class BibLocation:
         # sense to have separate variables for weekly and high Sabbaths, but
         # to also have a central self.sabbath variable.
         if b_weekday_index == 6:
-            is_ws = True
-            logging.debug('Setting is_ws to {}.'.format(is_ws))
+            self.is_ws = True
+            logging.debug('Setting self.is_ws to {}.'.format(self.is_ws))
         else:
-            is_ws = False
-            logging.debug('Setting is_ws to {}.'.format(is_ws))
-        self.weekday = 'Not yet set.'
-        logging.debug(
-            'Setting weekday of {} to {}'.format(self.city_name, self.weekday))
-        self.sabbath = False
-        logging.debug('Setting sabbath status of {} to {}'.format(
-            self.city_name, self.sabbath))
+            self.is_ws = False
+            logging.debug('Setting self.is_ws to {}.'.format(self.is_ws))
         self.weekday = b_weekday_today
-        self.sabbath = is_ws
+        self.sabbath = self.is_ws
 
     def weekly_sabbath(self):
         logging.debug('It is a weekly sabbath.')
@@ -144,4 +141,9 @@ if __name__ == '__main__':
             print('The sunset was at {}'.format(location.sunset_time))
         print('Today is the {} day of the week.'.format(location.weekday))
         if location.sabbath is True:
-            print('It is now the weekly Sabbath')
+            if location.is_ws is True:
+                print('It is now the weekly Sabbath')
+            elif location.is_hs is True:
+                print('It is now a high Sabbath')
+            else:
+                print('Error: Unkown Sabbath.')

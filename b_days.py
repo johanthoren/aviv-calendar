@@ -25,6 +25,8 @@
 # to keep track of old dates. This is first of all a tool to calculate
 # the current time and holidays. Might be a future project to expand on
 # this.
+import datetime
+
 jewish_years = tuple(range(5777, 6761))
 biblical_years = tuple(range(6017, 7001))
 

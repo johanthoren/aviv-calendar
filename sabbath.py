@@ -20,7 +20,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # -- END OF INTRO -- #
-from b_days import b_weekday
 import datetime
 from astral import Astral
 import logging
@@ -28,70 +27,115 @@ import logging
 logging.basicConfig(
     level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
 
-# Set to your city.
-city_name = 'Chicago'
-logging.debug('city_name is set to %s' % city_name)
 
-Astral().solar_depression = 'civil'
-logging.debug('solar_depression set to %s' % Astral().solar_depression)
+# Creates the object BiblicalWeekday which takes the argument of a city name
+# as a string. Note that only major capitals and some cities in U.S will work.
+# Example: 'sthlm = BiblicalWeekday('Stockholm)' <- Creates the object.
+# Example usage: 'sthlm.weekday' <- Gives back the day of week as a string.
+# Example usage: 'sthlm.sabbath' <- Gives back if it's a weekly sabbath
+# as boolean.
+class BiblicalWeekday:
+    def __init__(self, city_name):
+        self.city_name = city_name
+        logging.debug('city_name is set to %s' % city_name)
+        a = Astral()
+        a.solar_depression = 'civil'
+        logging.debug('solar_depression set to %s' % a.solar_depression)
+        city = a[self.city_name]
+        logging.debug('city object contains %s' % city)
+        # Defines the time that the sun sets
+        # in the given location.
+        daily_sun = city.sun(date=datetime.datetime.now(city.tz), local=True)
+        daily_sunset = daily_sun['sunset']
+        time_now = datetime.datetime.now(city.tz).replace(
+            tzinfo=daily_sunset.tzinfo, microsecond=0)
+        logging.debug("The 'time_now' variable is now set to %s" % time_now)
+        logging.debug(
+            "The 'daily_sunset()' variable is now set to %s" % daily_sunset)
 
-city = Astral()[city_name]
-logging.debug('city object contains %s' % city)
+        # TODO: Check if it's past midnight but before noon. If TRUE, then
+        #       the time for the sunset should be adjusted and set at the
+        #       time of the previous days' sunset.
 
-# Defines the time that the sun sets
-# in the given location.
-daily_sun = city.sun(date=datetime.datetime.now(city.tz), local=True)
-daily_sunset = daily_sun['sunset']
+        # Check if the sun has set.
+        if time_now > daily_sunset:
+            self.sun_has_set = True
+            logging.debug(
+                'Setting self.sun_has_set to {}.'.format(self.sun_has_set))
+        else:
+            self.sun_has_set = False
+            logging.debug(
+                'Setting self.sun_has_set to {}.'.format(self.sun_has_set))
 
-time_now = datetime.datetime.now(city.tz).replace(
-    tzinfo=daily_sunset.tzinfo, microsecond=0)
+        self.sunset_hour = daily_sunset.hour
+        self.sunset_minute = daily_sunset.minute
+        self.sunset_second = daily_sunset.second
+        self.sunset_timezone = daily_sunset.tzname()
+        self.sunset_time = daily_sunset.strftime("%H:%M")
+        self.current_time = time_now.strftime("%H:%M")
 
-logging.debug("The 'time_now' variable is now set to %s" % time_now)
-logging.debug("The 'daily_sunset()' variable is now set to %s" % daily_sunset)
+        b_weekdays = ('1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '1st',
+                      '2nd')
 
-if time_now > daily_sunset:
-    sun_is_down = True
-    logging.debug('Setting sun_is_down to {}.'.format(sun_is_down))
-else:
-    sun_is_down = False
-    logging.debug('Setting sun_is_down to {}.'.format(sun_is_down))
+        day_now = datetime.datetime.now(city.tz).weekday()
+        b_weekday_index = day_now + 1
+        logging.debug('b_weekday_index is now set to %s' % b_weekday_index)
 
-# Put the different items in variables for later use.
-sunset_hour = daily_sunset.hour
-sunset_minute = daily_sunset.minute
-sunset_second = daily_sunset.second
-sunset_timezone = daily_sunset.tzname()
-sunset_time = daily_sunset.strftime("%H:%M")
-current_time = time_now.strftime("%H:%M")
+        if self.sun_has_set is True:
+            b_weekday_index += 1
+            b_weekday_today = b_weekdays[b_weekday_index]
+        else:
+            b_weekday_today = b_weekdays[b_weekday_index]
 
-day_now = datetime.datetime.now(city.tz).weekday()
-b_weekday_index = day_now + 1
-logging.debug('b_weekday_index is now set to %s' % b_weekday_index)
+        if b_weekday_index == 6:
+            is_ws = True
+            logging.debug('Setting is_ws to {}.'.format(is_ws))
+        else:
+            is_ws = False
+            logging.debug('Setting is_ws to {}.'.format(is_ws))
+        self.weekday = 'Not yet set.'
+        logging.debug(
+            'Setting weekday of {} to {}'.format(self.city_name, self.weekday))
+        self.sabbath = False
+        logging.debug('Setting sabbath status of {} to {}'.format(
+            self.city_name, self.sabbath))
+        self.weekday = b_weekday_today
+        self.sabbath = is_ws
 
-if sun_is_down is True:
-    b_weekday_index += 1
-    b_weekday_today = b_weekday[b_weekday_index]
-else:
-    b_weekday_today = b_weekday[b_weekday_index]
+    def weekly_sabbath(self):
+        logging.debug('It is a weekly sabbath.')
+        self.sabbath = True
 
-if b_weekday_index == 6:
-    is_ws = True
-    logging.debug('Setting is_ws to {}.'.format(is_ws))
-else:
-    is_ws = False
-    logging.debug('Setting is_ws to {}.'.format(is_ws))
+    def high_sabbath(self):
+        logging.debug('It is a high sabbath.')
+        self.sabbath = True
+
+    def regular_day(self):
+        logging.debug('It is a regular day.')
+        self.sabbath = False
+
 
 if __name__ == '__main__':
-    print('The chosen location is {}'.format(city_name))
-    print('The time is now {}'.format(current_time))
-    if sun_is_down is True:
-        print('The sun is down')
-        print('The sunset was at {}'.format(sunset_time))
+    try:
+        print('Please enter the name of the city.')
+        entry = input()
+        if not entry:
+            raise ValueError('Empty string')
+    except ValueError:
+        print('You failed to provide your location.')
+        print(
+            'Try again with the name of your city as a command line argument.')
+        print('Example: sabbath.py Manila')
     else:
-        print('The sun is up')
-        print('The sunset will be at {}'.format(sunset_time))
-    print('Today is the %s day of the week' % b_weekday_today)
-    if is_ws is True:
-        print('It is now the Weekly Sabbath')
-    else:
-        print('It is not the Weekly Sabbath')
+        logging.debug('entry is %s' % entry)
+        location = BiblicalWeekday(entry)
+        logging.debug('Creating object %s' % location)
+        print('The chosen location is {}'.format(location.city_name))
+        print('The time in {} is now {}'.format(location.city_name,
+                                                location.current_time))
+        if location.sun_has_set is True:
+            print('The sun is down')
+            print('The sunset was at {}'.format(location.sunset_time))
+        print('Today is the {} day of the week.'.format(location.weekday))
+        if location.sabbath is True:
+            print('It is now the weekly Sabbath')

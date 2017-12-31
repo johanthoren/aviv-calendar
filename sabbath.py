@@ -28,13 +28,13 @@ logging.basicConfig(
     level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
 
 
-# Creates the object BiblicalWeekday which takes the argument of a city name
+# Creates the object BibLocation which takes the argument of a city name
 # as a string. Note that only major capitals and some cities in U.S will work.
-# Example: 'sthlm = BiblicalWeekday('Stockholm)' <- Creates the object.
+# Example: 'sthlm = BibLocation('Stockholm)' <- Creates the object.
 # Example usage: 'sthlm.weekday' <- Gives back the day of week as a string.
 # Example usage: 'sthlm.sabbath' <- Gives back if it's a weekly sabbath
 # as boolean.
-class BiblicalWeekday:
+class BibLocation:
     def __init__(self, city_name):
         self.city_name = city_name
         logging.debug('city_name is set to %s' % city_name)
@@ -87,6 +87,12 @@ class BiblicalWeekday:
         else:
             b_weekday_today = b_weekdays[b_weekday_index]
 
+        # Check if it's the weekly Sabbath, expressed in the variable is_ws.
+        # The rationale for having a separate variable instead of setting
+        # self.sabbath directly is that I need to add support for high sabbaths
+        # once the date and year functionality is in place. I think it makes
+        # sense to have separate variables for weekly and high Sabbaths, but
+        # to also have a central self.sabbath variable.
         if b_weekday_index == 6:
             is_ws = True
             logging.debug('Setting is_ws to {}.'.format(is_ws))
@@ -128,7 +134,7 @@ if __name__ == '__main__':
         print('Example: sabbath.py Manila')
     else:
         logging.debug('entry is %s' % entry)
-        location = BiblicalWeekday(entry)
+        location = BibLocation(entry)
         logging.debug('Creating object %s' % location)
         print('The chosen location is {}'.format(location.city_name))
         print('The time in {} is now {}'.format(location.city_name,

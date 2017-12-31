@@ -37,48 +37,37 @@ logging.basicConfig(
 class BibLocation:
     def __init__(self, city_name):
         self.city_name = city_name
-        logging.debug('city_name is set to %s' % city_name)
-        self.is_ws = False
-        self.is_hs = False
-        a = Astral()
-        a.solar_depression = 'civil'
-        logging.debug('solar_depression set to %s' % a.solar_depression)
-        city = a[self.city_name]
-        logging.debug('city object contains %s' % city)
-        # Defines the time that the sun sets
-        # in the given location.
-        daily_sun = city.sun(date=datetime.datetime.now(city.tz), local=True)
-        daily_sunset = daily_sun['sunset']
-        time_now = datetime.datetime.now(city.tz).replace(
-            tzinfo=daily_sunset.tzinfo, microsecond=0)
-        logging.debug("The 'time_now' variable is now set to %s" % time_now)
-        logging.debug(
-            "The 'daily_sunset()' variable is now set to %s" % daily_sunset)
+        self.astral_city = Astral()[city_name]
+        self.solar_depression = 'civil'
 
+    def sun(self):
+        daily_sun = self.astral_city.sun(
+            date=datetime.datetime.now(self.astral_city.tz), local=True)
+        daily_sunset = daily_sun['sunset']
+        time_now = datetime.datetime.now(self.astral_city.tz).replace(
+            tzinfo=daily_sunset.tzinfo, microsecond=0)
         # TODO: Check if it's past midnight but before noon. If TRUE, then
         #       the time for the sunset should be adjusted and set at the
         #       time of the previous days' sunset.
-
         # Check if the sun has set.
         if time_now > daily_sunset:
             self.sun_has_set = True
-            logging.debug(
-                'Setting self.sun_has_set to {}.'.format(self.sun_has_set))
         else:
             self.sun_has_set = False
-            logging.debug(
-                'Setting self.sun_has_set to {}.'.format(self.sun_has_set))
-
+        # Misc. attributes.
         self.sunset_hour = daily_sunset.hour
         self.sunset_minute = daily_sunset.minute
         self.sunset_second = daily_sunset.second
         self.sunset_timezone = daily_sunset.tzname()
         self.sunset_time = daily_sunset.strftime("%H:%M")
         self.current_time = time_now.strftime("%H:%M")
+        self.is_ws = False  # ws stands for weekly sabbath
+        self.is_hs = False  # hs stands for high sabbath
 
+    def weekday(self):
         # Get the current weekday from datetime. Monday is 0, Sunday is 6.
-        b_weekday_index = datetime.datetime.now(city.tz).weekday()
-        logging.debug('b_weekday_index is now set to %s' % b_weekday_index)
+        self.sun()
+        b_weekday_index = datetime.datetime.now(self.astral_city.tz).weekday()
 
         # Tuple containing the biblical weekday names. Simply refered to by
         # their number.
@@ -90,30 +79,28 @@ class BibLocation:
         else:
             b_weekday_today = b_weekdays[b_weekday_index]
 
-        # Check if it's the weekly Sabbath, expressed in the variable is_ws.
-        # The rationale for having a separate variable instead of setting
-        # self.sabbath directly is that I need to add support for high sabbaths
-        # once the date and year functionality is in place. I think it makes
-        # sense to have separate variables for weekly and high Sabbaths, but
-        # to also have a central self.sabbath variable.
-        if b_weekday_index == 5:
-            self.is_ws = True
-            logging.debug('Setting self.is_ws to {}.'.format(self.is_ws))
-        else:
-            self.is_ws = False
-            logging.debug('Setting self.is_ws to {}.'.format(self.is_ws))
+        # Return the weekday string.
         self.weekday = b_weekday_today
-        self.sabbath = self.is_ws
 
     def weekly_sabbath(self):
-        logging.debug('It is a weekly sabbath.')
-        self.sabbath = True
+        self.weekday()
+        if self.weekday == '7th':
+            self.is_ws = True  # ws stands for weekly Sabbath.
+        else:
+            self.is_ws = False
+        # Check for high Sabbath and override to True if that's the case.
+        if self.is_hs is True:
+            self.sabbath = self.is_hs
+        else:
+            self.sabbath = self.is_ws
 
     def high_sabbath(self):
+        self.weekday()
         logging.debug('It is a high sabbath.')
         self.sabbath = True
 
     def regular_day(self):
+        self.weekday()
         logging.debug('It is a regular day.')
         self.sabbath = False
 
@@ -126,13 +113,13 @@ if __name__ == '__main__':
             raise ValueError('Empty string')
     except ValueError:
         print('You failed to provide your location.')
-        print(
-            'Try again with the name of your city as a command line argument.')
-        print('Example: sabbath.py Manila')
+        print('Try again.')
+        print('Example: Manila')
     else:
         logging.debug('entry is %s' % entry)
         location = BibLocation(entry)
         logging.debug('Creating object %s' % location)
+        location.weekly_sabbath()
         print('The chosen location is {}'.format(location.city_name))
         print('The time in {} is now {}'.format(location.city_name,
                                                 location.current_time))

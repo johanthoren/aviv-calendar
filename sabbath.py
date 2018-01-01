@@ -21,8 +21,8 @@
 
 # -- END OF INTRO -- #
 import datetime
-from astral import Astral  # Using the builtin geocoder. Se Astral
-                           # documentation for alternatives.
+# Using the builtin geocoder. Se Astral documentation for alternatives.
+from astral import Astral
 import logging
 
 logging.basicConfig(
@@ -51,49 +51,97 @@ class BibLocation:
         # Uses the timezone of the given location to fetch the solar data.
         # This solution could probably be prettier. By default astral uses
         # UTC (I think...) as timezone.
-        daily_sun = self.astral_city.sun(
+        self.daily_sun = self.astral_city.sun(
             date=datetime.datetime.now(self.astral_city.tz), local=True)
         # Get the relevant data.
-        daily_sunset = daily_sun['sunset']
-        daily_sunrise = daily_sun['sunrise']
+        self.daily_sunset = self.daily_sun['sunset']
+        self.daily_sunrise = self.daily_sun['sunrise']
         # Before I set microsecond=0 I had trouble comparing the time_now
         # with daily_sunset below.
-        time_now = datetime.datetime.now(self.astral_city.tz).replace(
+        self.time_now = datetime.datetime.now(self.astral_city.tz).replace(
             tzinfo=self.astral_city.tzinfo, microsecond=0)
 
         # TODO: Check if it's past midnight but before noon. If TRUE, then
         #       the time for the sunset should be adjusted and set at the
         #       time of the previous days' sunset.
 
-        # Check if the sun has set.
-        if time_now > daily_sunset:
-            self.sun_has_set = True
+        self.sun_has_set = None
+        self.sun_has_risen = None
+        # Check if it's past noon.
+        if self.time_now.hour >= 12:
+            self.after_noon = True
+        elif self.time_now.hour < 12:
+            self.after_noon = False
         else:
-            self.sun_has_set = False
+            raise Exception('Neither before or after 12.')
+
+        # If after noon, Check if the sun has set.
+        if self.after_noon is True:
+            if self.time_now >= self.daily_sunset:
+                self.sun_has_set = True
+            elif self.time_now < self.daily_sunset:
+                self.sun_has_set = False
+            else:
+                raise Exception('Unable to tell if the sun has set.')
+
+        # If NOT in the afternoon, check if the sun has risen.
+        elif self.after_noon is False:
+            if self.time_now >= self.daily_sunrise:
+                self.sun_has_risen = True
+            elif self.time_now < self.daily_sunrise:
+                self.sun_has_risen = False
+            else:
+                raise Exception('Unable to tell if the sun has risen.')
+
+        else:
+            raise Exception('Unable to tell if it is after noon or not.')
+
+        # Now create a value to give to the weekday function.
+        if self.sun_has_set is not None:
+            if self.sun_has_set is True:
+                self.daylight = False
+            elif self.sun_has_set is False:
+                self.daylight = True
+
+        if self.sun_has_risen is not None:
+            if self.sun_has_risen is True:
+                self.daylight = True
+            elif self.sun_has_risen is False:
+                self.daylight = False
+
         # Misc. attributes.
-        self.sunset_hour = daily_sunset.hour
-        self.sunset_minute = daily_sunset.minute
-        self.sunset_second = daily_sunset.second
-        self.sunset_timezone = daily_sunset.tzname()
-        self.sunset_time = daily_sunset.strftime("%H:%M")
-        self.current_time = time_now.strftime("%H:%M")
-        self.is_ws = False  # ws stands for weekly sabbath
-        self.is_hs = False  # hs stands for high sabbath
+        self.sunset_hour = self.daily_sunset.hour
+        self.sunset_minute = self.daily_sunset.minute
+        self.sunset_second = self.daily_sunset.second
+        self.sunset_timezone = self.daily_sunset.tzname()
+        self.sunset_time = self.daily_sunset.strftime("%H:%M")
+        self.current_time = self.time_now.strftime("%H:%M")
 
     def weekday(self):
         # Get the current weekday from datetime. Monday is 0, Sunday is 6.
         self.sun()
+
+        self.is_ws = False  # ws stands for weekly sabbath
+        self.is_hfd = False  # hs stands for High Feast day
+
         b_weekday_index = datetime.datetime.now(self.astral_city.tz).weekday()
 
         # Tuple containing the biblical weekday names. Simply refered to by
         # their number.
         b_weekdays = ('2nd', '3rd', '4th', '5th', '6th', '7th', '1st', '2nd')
 
-        if self.sun_has_set is True:
-            b_weekday_index += 1
+        # Check if the sun has set and add 1 to get the correct day.
+        if self.sun_has_set is not None:
+            if self.sun_has_set is True:
+                b_weekday_index += 1
+                b_weekday_today = b_weekdays[b_weekday_index]
+            else:
+                b_weekday_today = b_weekdays[b_weekday_index]
+        elif self.sun_has_set is None:
             b_weekday_today = b_weekdays[b_weekday_index]
         else:
-            b_weekday_today = b_weekdays[b_weekday_index]
+            raise Exception('''Unable to tell what day of week it is.
+                Unclear if the sun has set.''')
 
         # Return the weekday string.
         self.weekday = b_weekday_today
@@ -104,17 +152,20 @@ class BibLocation:
             self.is_ws = True  # ws stands for weekly Sabbath.
         else:
             self.is_ws = False
-        # Check for high Sabbath and override to True if that's the case.
-        if self.is_hs is True:
-            self.sabbath = self.is_hs
+        # Check for a High Feast day and override to True if that's the case.
+        if self.is_hfd is True:
+            self.sabbath = self.is_hfd
         else:
             self.sabbath = self.is_ws
 
-    def high_sabbath(self):
+    # The following function is basically just a placeholder for later code.
+    def high_feast_day(self):
         self.weekday()
-        logging.debug('It is a high sabbath.')
+        self.is_hfd = True
+        logging.debug('It is a High Feast day.')
         self.sabbath = True
 
+    # The following function is basically just a placeholder for later code.
     def regular_day(self):
         self.weekday()
         logging.debug('It is a regular day.')
@@ -147,6 +198,6 @@ if __name__ == '__main__':
             if location.is_ws is True:
                 print('It is now the weekly Sabbath')
             elif location.is_hs is True:
-                print('It is now a high Sabbath')
+                print('It is now a High Feast day, and therefor a Sabbath')
             else:
                 print('Error: Unkown Sabbath.')

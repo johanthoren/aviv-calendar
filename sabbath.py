@@ -21,7 +21,8 @@
 
 # -- END OF INTRO -- #
 import datetime
-from astral import Astral
+from astral import Astral  # Using the builtin geocoder. Se Astral
+                           # documentation for alternatives.
 import logging
 
 logging.basicConfig(
@@ -30,25 +31,40 @@ logging.basicConfig(
 
 # Creates the object BibLocation which takes the argument of a city name
 # as a string. Note that only major capitals and some cities in U.S will work.
-# Example: 'sthlm = BibLocation('Stockholm)' <- Creates the object.
+# Example: 'sthlm = BibLocation('Stockholm)' <- Creates an object with the name
+# 'sthlm'.
 # Example usage: 'sthlm.weekday' <- Gives back the day of week as a string.
-# Example usage: 'sthlm.sabbath' <- Gives back if it's a weekly sabbath
-# as boolean.
+# Example usage: 'sthlm.sabbath' <- Gives back if it's a sabbath as boolean.
 class BibLocation:
     def __init__(self, city_name):
         self.city_name = city_name
         self.astral_city = Astral()[city_name]
+        #  The number of degrees the sun must be below the horizon for the
+        #  dawn/dusk calculation. Can either be set as a number of degrees
+        #  below the horizon or as one of the following strings:
+        #  'civil', 'nautical' or 'astronomical'. Can also be set to a
+        #  floating number, representing the degrees of depression below
+        #  the horizon.
         self.solar_depression = 'civil'
 
     def sun(self):
+        # Uses the timezone of the given location to fetch the solar data.
+        # This solution could probably be prettier. By default astral uses
+        # UTC (I think...) as timezone.
         daily_sun = self.astral_city.sun(
             date=datetime.datetime.now(self.astral_city.tz), local=True)
+        # Get the relevant data.
         daily_sunset = daily_sun['sunset']
+        daily_sunrise = daily_sun['sunrise']
+        # Before I set microsecond=0 I had trouble comparing the time_now
+        # with daily_sunset below.
         time_now = datetime.datetime.now(self.astral_city.tz).replace(
-            tzinfo=daily_sunset.tzinfo, microsecond=0)
+            tzinfo=self.astral_city.tzinfo, microsecond=0)
+
         # TODO: Check if it's past midnight but before noon. If TRUE, then
         #       the time for the sunset should be adjusted and set at the
         #       time of the previous days' sunset.
+
         # Check if the sun has set.
         if time_now > daily_sunset:
             self.sun_has_set = True

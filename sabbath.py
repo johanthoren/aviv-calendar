@@ -205,12 +205,12 @@ if __name__ == '__main__':
         if location.sun_has_risen is False:
             print('The sun has not yet risen')
             print('The sunrise will be at {}'.format(location.sunrise_time))
-        # If sun_has_set is None, it should be in the morning. Therefor, check
+        # If sun_has_set is None, it should be in the morning. Therefore, check
         # if the sun has risen.
         if location.sun_has_set is None and location.sun_has_risen is True:
             print('The sun is still up')
             print('The sunset will be at {}'.format(location.sunset_time))
-        # If sun_has_risen is None it should be in the afternoon. Therefor,
+        # If sun_has_risen is None it should be in the afternoon. Therefore,
         # check if the sun has set.
         if location.sun_has_risen is None and location.sun_has_set is False:
             print('The sun is still up')
@@ -220,6 +220,6 @@ if __name__ == '__main__':
             if location.is_ws is True:
                 print('It is now the weekly Sabbath')
             elif location.is_hfd is True:
-                print('It is now a High Feast day, and therefor a Sabbath')
+                print('It is now a High Feast day, and therefore a Sabbath')
             else:
                 print('Error: Unkown Sabbath')

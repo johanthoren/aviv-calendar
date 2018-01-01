@@ -197,7 +197,7 @@ if __name__ == '__main__':
         if location.sabbath is True:
             if location.is_ws is True:
                 print('It is now the weekly Sabbath')
-            elif location.is_hs is True:
+            elif location.is_hfd is True:
                 print('It is now a High Feast day, and therefor a Sabbath')
             else:
                 print('Error: Unkown Sabbath.')

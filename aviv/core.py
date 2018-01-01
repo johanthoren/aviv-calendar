@@ -2,7 +2,7 @@
 
 # -- BEGINNING OF INTRO: -- #
 
-# SHORT DESCRIPTION:
+# A SHORT DESCRIPTION:
 # Aviv Calendar, a small program to find out what day it is according
 # to the Biblical calendar. Also attempts to let you know about
 # the Feasts of the Lord as well as the Sabbath.

@@ -67,6 +67,7 @@ class BibLocation:
 
         self.sun_has_set = None
         self.sun_has_risen = None
+
         # Check if it's past noon.
         if self.time_now.hour >= 12:
             self.after_noon = True
@@ -110,20 +111,26 @@ class BibLocation:
                 self.daylight = False
 
         # Misc. attributes.
+        self.sunrise_hour = self.daily_sunrise.hour
+        self.sunrise_minute = self.daily_sunrise.minute
+        self.sunrise_second = self.daily_sunrise.second
+        self.sunrise_timezone = self.daily_sunrise.tzname()
+        self.sunrise_time = self.daily_sunrise.strftime("%H:%M")
         self.sunset_hour = self.daily_sunset.hour
         self.sunset_minute = self.daily_sunset.minute
         self.sunset_second = self.daily_sunset.second
         self.sunset_timezone = self.daily_sunset.tzname()
         self.sunset_time = self.daily_sunset.strftime("%H:%M")
         self.current_time = self.time_now.strftime("%H:%M")
+        self.current_date = self.time_now.strftime("%Y-%m-%d")
 
     def weekday(self):
-        # Get the current weekday from datetime. Monday is 0, Sunday is 6.
         self.sun()
 
         self.is_ws = False  # ws stands for weekly sabbath
         self.is_hfd = False  # hs stands for High Feast day
 
+        # Get the current weekday from datetime. Monday is 0, Sunday is 6.
         b_weekday_index = datetime.datetime.now(self.astral_city.tz).weekday()
 
         # Tuple containing the biblical weekday names. Simply refered to by
@@ -190,9 +197,14 @@ if __name__ == '__main__':
         print('The chosen location is {}'.format(location.city_name))
         print('The time in {} is now {}'.format(location.city_name,
                                                 location.current_time))
+        print('The gregorian date in {} is now {}'.format(
+            location.city_name, location.current_date))
         if location.sun_has_set is True:
             print('The sun is down')
             print('The sunset was at {}'.format(location.sunset_time))
+        if location.sun_has_risen is False:
+            print('The sun has not yet risen')
+            print('The sunrise will be at {}'.format(location.sunrise_time))
         print('Today is the {} day of the week.'.format(location.weekday))
         if location.sabbath is True:
             if location.is_ws is True:

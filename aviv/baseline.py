@@ -117,6 +117,8 @@ class BaselineMonth:
         # Define the traditional name of the month.
         self.name = bib_months[self.month - 1]
         self.trad_name = trad_month_names[self.month - 1]
+        self.first_name = bib_day_of_month[0]
+        self.last_name = bib_day_of_month[self.length - 1]
         # Make a datetime.date object from the gregorian integers.
         # start_g_date is defined as the gregorian date in which the sunset
         # started the new month.
@@ -127,16 +129,29 @@ class BaselineMonth:
         self.start_g_year = self.start_g_date.year
         self.start_g_month = self.start_g_date.month
         self.start_g_day = self.start_g_date.day
+
+        # The first day of the biblical month equals to the gregorian day when
+        # the sunset signaled the start of the biblical day. To keep
+        # consistancy the last day of the month should therefore equal to the
+        # gregorian day when the last day started. This way, there is no
+        # overlap.
+        # Example: The 9th month of 6016 ended Nov 30 of 2016. The last
+        # day then continued until the sunset of Dec 1. But since the biblical
+        # day starts with sunset, the gregorian date to be marked as the last
+        # end date will be Nov 30.
         self.end_g_date = self.start_g_date + datetime.timedelta(
-            days=self.length)
+            days=self.length - 1)
 
 
 if __name__ == '__main__':
     # Run a simple example for testing purposes.
     bm_6017_10 = BaselineMonth(6016, 9, 2016, 11, 30, 30)
     month = bm_6017_10
-    print('The {} month of the year {} started on {}.'.format(
-        month.name, month.year, month.start_g_date))
-    print('It ended on {}'.format(month.end_g_date))
+    print('The {} month of the year {} started at sunset '
+          'on the gregorian date {}'.format(month.name, month.year,
+                                             month.start_g_date))
+    print('The {}, and last day of the month, '
+          'started on the gregorian date {}'.format(month.last_name,
+                                                    month.end_g_date))
     print('The traditional name of the {} month is {}'.format(
         month.name, month.trad_name))

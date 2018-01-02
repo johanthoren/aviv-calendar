@@ -37,88 +37,29 @@
 # this.
 import datetime
 
-jewish_years = tuple(range(5777, 6761))
-biblical_years = tuple(range(6017, 7001))
+trad_years = tuple(range(5777, 6761))
+bib_years = tuple(range(6017, 7001))
 
 # Define the traditional names of the biblical months of the year.
-jewish_months = {
-    1: 'Nisan',
-    2: 'Iyyar',
-    3: 'Sivan',
-    4: 'Tammuz',
-    5: 'Av',
-    6: 'Elul',
-    7: 'Tishri',
-    8: 'Marẖeshvan',
-    9: 'Kislev',
-    10: 'Tevet',
-    11: 'Shvat',
-    12: 'Adar',
-    13: 'Adar (2)'
-}
+trad_months = ('Nisan', 'Iyyar', 'Sivan', 'Tammuz', 'Av', 'Elul', 'Tishri',
+               'Marẖeshvan', 'Kislev', 'Tevet', 'Shvat', 'Adar', 'Adar (2)')
 
 # Define the biblical months.
-biblical_months = {
-    1: '1st',
-    2: '2nd',
-    3: '3rd',
-    4: '4th',
-    5: '5th',
-    6: '6th',
-    7: '7th',
-    8: '8th',
-    9: '9th',
-    10: '10th',
-    11: '11th',
-    12: '12th',
-    13: '13th'
-}
+bib_months = ('1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th',
+              '10th', '11th', '12th', '13th')
 
 # Define the gregorian weekdays.
-gregorian_weekday = {
-    1: 'Sunday',
-    2: 'Monday',
-    3: 'Tuesday',
-    4: 'Wednesday',
-    5: 'Thursday',
-    6: 'Friday',
-    7: 'Saturday'
-}
+greg_weekday = ('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday',
+                'Friday', 'Saturday')
 
-# Define the biblical weekdays. Wraps around inside
-# the tuple to allow for gregorian day + 2 in calculation.
-b_weekday = ('1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '1st', '2nd')
+# Tuple containing the biblical weekday names. Simply refered to by
+# their number.
+bib_weekdays = ('2nd', '3rd', '4th', '5th', '6th', '7th', '1st', '2nd')
+
 
 # Define the biblical days of the months.
-day_of_month = {
-    1: '1st',
-    2: '2nd',
-    3: '3rd',
-    4: '4th',
-    5: '5th',
-    6: '6th',
-    7: '7th',
-    8: '8th',
-    9: '9th',
-    10: '10th',
-    11: '11th',
-    12: '12th',
-    13: '13th',
-    14: '14th',
-    15: '15th',
-    16: '16th',
-    17: '17th',
-    18: '18th',
-    19: '19th',
-    20: '20th',
-    21: '21st',
-    22: '22nd',
-    23: '23rd',
-    24: '24th',
-    25: '25th',
-    26: '26th',
-    27: '27th',
-    28: '28th',
-    29: '29th',
-    30: '30th'
-}
+bib_day_of_month = ('1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th',
+                    '9th', '10th', '11th', '12th', '13th', '14th', '15th',
+                    '16th', '17th', '18th', '19th', '20th', '21st', '22nd',
+                    '23rd', '24th', '25th', '26th', '27th', '28th', '29th',
+                    '30th')

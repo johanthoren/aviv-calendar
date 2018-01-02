@@ -34,6 +34,7 @@ import datetime
 # Using the builtin geocoder. Se Astral documentation for alternatives.
 from astral import Astral
 import logging
+import b_days
 
 logging.basicConfig(
     level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
@@ -143,19 +144,15 @@ class BibLocation:
         # Get the current weekday from datetime. Monday is 0, Sunday is 6.
         b_weekday_index = datetime.datetime.now(self.astral_city.tz).weekday()
 
-        # Tuple containing the biblical weekday names. Simply refered to by
-        # their number.
-        b_weekdays = ('2nd', '3rd', '4th', '5th', '6th', '7th', '1st', '2nd')
-
         # Check if the sun has set and add 1 to get the correct day.
         if self.sun_has_set is not None:
             if self.sun_has_set is True:
                 b_weekday_index += 1
-                b_weekday_today = b_weekdays[b_weekday_index]
+                b_weekday_today = b_days.bib_weekdays[b_weekday_index]
             else:
-                b_weekday_today = b_weekdays[b_weekday_index]
+                b_weekday_today = b_days.bib_weekdays[b_weekday_index]
         elif self.sun_has_set is None:
-            b_weekday_today = b_weekdays[b_weekday_index]
+            b_weekday_today = b_days.bib_weekdays[b_weekday_index]
         else:
             raise Exception('''Unable to tell what day of week it is.
                 Unclear if the sun has set.''')

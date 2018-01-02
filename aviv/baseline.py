@@ -33,6 +33,7 @@
 
 # This file contains some baseline months where gregorian time and
 # biblical time can be defined for sure based on real observations.
+import datetime
 
 trad_years = tuple(range(5777, 6761))
 bib_years = tuple(range(6017, 7001))
@@ -53,7 +54,6 @@ greg_weekday = ('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday',
 # their number.
 bib_weekdays = ('2nd', '3rd', '4th', '5th', '6th', '7th', '1st', '2nd')
 
-
 # Define the biblical days of the months.
 bib_day_of_month = ('1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th',
                     '9th', '10th', '11th', '12th', '13th', '14th', '15th',
@@ -66,12 +66,17 @@ bib_day_of_month = ('1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th',
 # and the month as integer.
 # Example: bm_6017_10 = BaselineMonth(6017, 10, 2017, 12, 20, 29)
 class BaselineMonth:
-    def __init__(self, year, month, start_g_year,
-                 start_g_month, start_g_day, length):
+    def __init__(self, year, month, start_g_year, start_g_month, start_g_day,
+                 length):
+        # Make integers from the input.
         self.year = int(year)
         self.month = int(month)
-        self.start_g_year = int(start_g_year)
-        self.start_g_month = int(start_g_month)
-        self.start_g_day = int(start_g_day)
         self.length = int(length)
+        # Define the traditional name of the month.
         self.trad_month = trad_months[self.month - 1]
+        # Make a datetime.date object from the gregorian integers.
+        self.start_g_date = datetime.date(start_g_year, start_g_month,
+                                          start_g_day)
+        self.start_g_year = self.start_g_date.year
+        self.start_g_month = self.start_g_date.month
+        self.start_g_day = self.start_g_date.day

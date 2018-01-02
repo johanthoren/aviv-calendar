@@ -12,6 +12,6 @@ The aviv-calendar project is based on the following ideas:
 * The month starts when the first sliver of the new moon is sighted in the land of Israel.
 * The year starts on the first new moon AFTER the barley is reported to be aviv in the land of Israel.
 * The year does NOT start on Rosh Hashana. See above.
-* The year count is 240 years ahead of the rabbinical count. i.e 5777 is 6017, but it does not end on Tishri 1, instead it ends when the barley is sighted, see above.
+* The year count is 240 years ahead of the rabbinical count. i.e 5777 is 6017, but it does not end with the sighting of the new moon on Tishri 1, instead it ends when the barley is aviv. See above.
 ### Comment on the definitions:
 Since this calendar is not a purely mathematical calendar, such as the Gregorian calendar or the traditional Rabbinic calendar, it cannot rely on math alone. It needs to be tied to different services on the web to get updates on the new moon sighting as well as the status of the barley in Israel.

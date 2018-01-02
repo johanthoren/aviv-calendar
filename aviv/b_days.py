@@ -1,11 +1,21 @@
 #!/usr/bin/env python3
 
+# -- BEGINNING OF INTRO: -- #
+
+# A SHORT DESCRIPTION:
 # Aviv Calendar, a small program to find out what day it is according
 # to the Biblical calendar. Also attempts to let you know about
 # the Feasts of the Lord as well as the Sabbath.
 
+# CURRENT STATUS:
+# Currently, it only decides what day of week it is according to
+# biblical timekeeping. It will also tell you some details about
+# sunset and sunrise and wether or not is is a weekly sabbath.
+
+# COPYRIGHT:
 # Copyright (C) 2017 - 2018 Johan Thorén <johan@thoren.xyz>
 
+# LICENSE:
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or

@@ -62,8 +62,10 @@ bib_day_of_month = ('1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th',
                     '30th')
 
 
-# Define a new BaselineMonth, needs the biblical year as integer
-# and the month as integer.
+# Define a new BaselineMonth, needs the biblical year as integer,
+# the biblical month number (starting on 1) as integer, gregorian year as
+# integer, gregorian month as integer (starting on 1), gregorian day of month,
+# as integer (starting on 1) as well as the length in number of days.
 # Example: bm_6017_10 = BaselineMonth(6017, 10, 2017, 12, 20, 29)
 class BaselineMonth:
     def __init__(self, year, month, start_g_year, start_g_month, start_g_day,

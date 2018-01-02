@@ -31,12 +31,8 @@
 
 # -- END OF INTRO -- #
 
-# This file contains some baseline months where gregorian time and
-# biblical time can be defined for sure based on real observations.
 import datetime
-
-trad_years = tuple(range(5777, 6761))
-bib_years = tuple(range(6017, 7001))
+from hist_data import known_months
 
 # Define the traditional names of the biblical months of the year.
 trad_month_names = ('Nisan', 'Iyyar', 'Sivan', 'Tammuz', 'Av', 'Elul',
@@ -62,18 +58,6 @@ bib_day_of_month = ('1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th',
                     '23rd', '24th', '25th', '26th', '27th', '28th', '29th',
                     '30th')
 
-# Here follows a dictionary with some known months.
-# The format for the key is YYYYMM where Y and M represents the Year
-# and Month of the BIBLICAL month in question.
-
-# The format for the value is a tuple of the following:
-# BIBLICAL year, BIBLICAL month, GREGORIAN year of the first day of the
-# BIBLICAL month (the GREGORIAN day on which the sunset signaled the new
-# day), GREGORIAN month of that same day, GREGORIAN day of said day, the
-# length of the BIBLICAL month in days.
-known_months = {
-    601609: (6016, 9, 2016, 11, 30, 30)
-}
 
 # Define a new BaselineMonth, needs the biblical year as integer,
 # the biblical month number (starting on 1) as integer, gregorian year as
@@ -155,14 +139,9 @@ class BaselineMonth:
             days=self.length - 1)
 
 
-
-bm = BaselineMonth(*known_months[601609])
-print(bm)
-
 if __name__ == '__main__':
     # Run a simple example for testing purposes.
-    bm_6016_09 = BaselineMonth(6016, 9, 2016, 11, 30, 30)
-    month = bm_6016_09
+    month = BaselineMonth(*known_months[601609])
     print('The {} month of the year {} started at sunset '
           'on the gregorian date {}'.format(month.name, month.year,
                                             month.start_g_date))

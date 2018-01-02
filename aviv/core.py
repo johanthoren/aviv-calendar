@@ -34,7 +34,7 @@ import datetime
 # Using the builtin geocoder. Se Astral documentation for alternatives.
 from astral import Astral
 import logging
-import b_days
+import baseline
 
 logging.basicConfig(
     level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
@@ -148,11 +148,11 @@ class BibLocation:
         if self.sun_has_set is not None:
             if self.sun_has_set is True:
                 b_weekday_index += 1
-                b_weekday_today = b_days.bib_weekdays[b_weekday_index]
+                b_weekday_today = baseline.bib_weekdays[b_weekday_index]
             else:
-                b_weekday_today = b_days.bib_weekdays[b_weekday_index]
+                b_weekday_today = baseline.bib_weekdays[b_weekday_index]
         elif self.sun_has_set is None:
-            b_weekday_today = b_days.bib_weekdays[b_weekday_index]
+            b_weekday_today = baseline.bib_weekdays[b_weekday_index]
         else:
             raise Exception('''Unable to tell what day of week it is.
                 Unclear if the sun has set.''')

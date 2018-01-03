@@ -66,9 +66,9 @@ bib_day_of_month = ('1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th',
 
 # Define a new BibMonth, needs the biblical year as integer,
 # the biblical month number (starting on 1) as integer, gregorian year as
-# integer, gregorian month as integer (starting on 1), gregorian day of month,
-# as integer (starting on 1) as well as the length in number of days.
-# Example: bm_6017_10 = BibMonth(6017, 10, 2017, 12, 20, 29)
+# integer, gregorian month as integer (starting on 1) and gregorian day of
+# month, as integer (starting on 1).
+# Example: bm_6017_10 = BibMonth(6017, 10, 2017, 12, 20)
 class BibMonth:
     def __init__(self, year, month, start_g_year, start_g_month, start_g_day):
         # Make integers from the input.
@@ -161,7 +161,10 @@ class BibMonth:
         self.dict_key = int(str(self.year) + '{0:0=2d}'.format(self.month))
         logging.debug('The dictionary key is %s' % self.dict_key)
 
-        # Check if the month is known.
+        # Check if the month is in the database of known_months.
+        # Primary reason for doing this is because we want to get the data
+        # on the next month so that we can calculate the end date, and thus
+        # the length.
         try:
             if known_months[self.dict_key]:
                 logging.debug('%s exists in known_months' % self.dict_key)
@@ -241,9 +244,10 @@ class BibLocation:
         self.time_now = datetime.datetime.now(self.astral_city.tz).replace(
             tzinfo=self.astral_city.tzinfo, microsecond=0)
 
-        # TODO: Check if it's past midnight but before noon. If TRUE, then
+        # DONE: Check if it's past midnight but before noon. If TRUE, then
         #       the time for the sunset should be adjusted and set at the
         #       time of the previous days' sunset.
+        # TODO: Needs more testing.
 
         self.sun_has_set = None
         self.sun_has_risen = None

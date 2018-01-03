@@ -40,6 +40,19 @@
 # day), GREGORIAN month of that same day, GREGORIAN day of said day.
 
 known_months = {
+    600701: (6007, 1, 2007, 3, 20),    # karaite korner newsletter #292
+    600702: (6007, 2, 2007, 4, 18),    # karaite korner newsletter #297
+    600703: (6007, 3, 2007, 5, 17),    # karaite korner newsletter #298
+    600704: (6007, 4, 2007, 6, 16),    # karaite korner newsletter #300
+    600705: (6007, 5, 2007, 7, 15),    # karaite korner newsletter #301
+    600706: (6007, 6, 2007, 8, 14),    # karaite korner newsletter #304
+    600707: (6007, 7, 2007, 9, 13),    # karaite korner newsletter #308
+    600708: (6007, 8, 2007, 10, 13),   # karaite korner newsletter #309
+    600709: (6007, 9, 2007, 11, 12),   # karaite korner newsletter #311
+    600710: (6007, 10, 2007, 12, 11),  # karaite korner newsletter #313
+    600711: (6007, 11, 2008, 1, 10),   # karaite korner newsletter #315
+    600712: (6007, 12, 2008, 2, 8),    # karaite korner newsletter #317
+    600713: (6007, 13, 2008, 3, 9),    # karaite korner newsletter #324
     600801: (6008, 1, 2008, 4, 7),     # karaite korner newsletter #327
     600802: (6008, 2, 2008, 5, 6),     # karaite korner newsletter #330
     600803: (6008, 3, 2008, 6, 4),     # karaite korner newsletter #331
@@ -137,3 +150,22 @@ known_months = {
     601611: (6016, 11, 2017, 1, 29),   # renewedmoon.com
     601612: (6016, 12, 2017, 2, 27)    # renewedmoon.com
 }
+
+if __name__ == '__main__':
+    # Run a simple example for testing purposes.
+    from core import BibMonth
+    month = BibMonth(*known_months[600801])
+    print('The {} month of the year {} started at sunset '
+          'on the gregorian date {}'.format(month.name, month.year,
+                                            month.start_g_date))
+    try:
+        if month.last_name:
+            print('The {}, and last day of the month, '
+                  'started on the gregorian date {}'.format(
+                      month.last_name, month.end_g_date))
+    except AttributeError:
+        print('Unable to say anything about the end of the month right now')
+        print(
+            'This might be because the following month is not in the database')
+    print('The traditional name of the {} month is {}'.format(
+        month.name, month.trad_name))

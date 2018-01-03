@@ -15,3 +15,5 @@ The aviv-calendar project is based on the following ideas:
 * The year count is 240 years ahead of the rabbinical count. i.e 5777 is 6017, but it does not end with the sighting of the new moon on Tishri 1, instead it ends when the barley is aviv. See above.
 ### Comment on the definitions:
 Since this calendar is not a purely mathematical calendar, such as the Gregorian calendar or the traditional Rabbinic calendar, it cannot rely on math alone. It needs to be tied to different services on the web to get updates on the new moon sighting as well as the status of the barley in Israel.
+
+It also needs a trusted database of reported sightings from Israel. See aviv/hist_data.py for this.

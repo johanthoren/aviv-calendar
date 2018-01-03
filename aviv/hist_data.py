@@ -40,17 +40,23 @@
 # day), GREGORIAN month of that same day, GREGORIAN day of said day.
 
 known_months = {
+    601101: (6011, 1, 2011, 4, 4),     # karaite korner newsletter #506
+    601102: (6011, 2, 2011, 5, 4),     # karaite korner newsletter #512
+    601103: (6011, 3, 2011, 6, 3),     # karaite korner newsletter #516
+    601104: (6011, 4, 2011, 7, 2),     # karaite korner newsletter #521
     601105: (6011, 5, 2011, 8, 1),     # renewedmoon.com
     601106: (6011, 6, 2011, 8, 31),    # renewedmoon.com
     601107: (6011, 7, 2011, 9, 29),    # renewedmoon.com
     601108: (6011, 8, 2011, 10, 28),   # renewedmoon.com
     601109: (6011, 9, 2011, 11, 26),   # renewedmoon.com
-    # Missing months.
+    601110: (6011, 10, 2011, 12, 26),  # karaite korner newsletter #540
+    601111: (6011, 11, 2012, 1, 25),   # karaite korner newsletter #543
+    601112: (6011, 12, 2012, 2, 23),   # karaite korner newsletter #545
     601201: (6012, 1, 2012, 3, 23),    # renewedmoon.com
     601202: (6012, 2, 2012, 4, 22),    # renewedmoon.com
     601203: (6012, 3, 2012, 5, 22),    # renewedmoon.com
     601204: (6012, 4, 2012, 6, 21),    # renewedmoon.com
-    # Missing month.
+    601205: (6012, 5, 2012, 7, 21),    # karaite korner newsletter #559
     601206: (6012, 6, 2012, 8, 19),    # renewedmoon.com
     601207: (6012, 7, 2012, 9, 17),    # renewedmoon.com
     601208: (6012, 8, 2012, 10, 17),   # renewedmoon.com

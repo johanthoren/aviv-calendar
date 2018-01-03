@@ -41,7 +41,7 @@ logging.basicConfig(
 
 # Define the traditional names of the biblical months of the year.
 trad_month_names = ('Nisan', 'Iyyar', 'Sivan', 'Tammuz', 'Av', 'Elul',
-                    'Tishri', 'Marhesvan', 'Kislev', 'Tevet', 'Shvat', 'Adar',
+                    'Tishri', 'Marheshvan', 'Kislev', 'Tevet', 'Shvat', 'Adar',
                     'Adar (2)')
 
 # Define the biblical months.

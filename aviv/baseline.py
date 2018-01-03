@@ -208,7 +208,7 @@ class BaselineMonth:
 
 if __name__ == '__main__':
     # Run a simple example for testing purposes.
-    month = BaselineMonth(*known_months[601106])
+    month = BaselineMonth(*known_months[601412])
     print('The {} month of the year {} started at sunset '
           'on the gregorian date {}'.format(month.name, month.year,
                                             month.start_g_date))

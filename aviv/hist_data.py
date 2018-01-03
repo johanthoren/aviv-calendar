@@ -40,6 +40,18 @@
 # day), GREGORIAN month of that same day, GREGORIAN day of said day.
 
 known_months = {
+    600901: (6009, 1, 2009, 3, 27),    # karaite korner newsletter #376
+    600902: (6009, 2, 2009, 4, 26),    # karaite korner newsletter #380
+    600903: (6009, 3, 2009, 5, 25),    # karaite korner newsletter #383
+    600904: (6009, 4, 2009, 6, 23),    # karaite korner newsletter #392
+    600905: (6009, 5, 2009, 7, 23),    # karaite korner newsletter #398
+    600906: (6009, 6, 2009, 8, 22),    # karaite korner newsletter #409
+    600907: (6009, 7, 2009, 9, 20),    # karaite korner newsletter #416
+    600908: (6009, 8, 2009, 10, 20),   # karaite korner newsletter #418
+    600909: (6009, 9, 2009, 11, 18),   # karaite korner newsletter #425
+    600910: (6009, 10, 2009, 12, 18),  # karaite korner newsletter #435
+    600911: (6009, 11, 2010, 1, 16),   # karaite korner newsletter #440
+    600912: (6009, 12, 2010, 2, 15),   # karaite korner newsletter #447
     601001: (6010, 1, 2010, 3, 17),    # karaite korner newsletter #454
     601002: (6010, 2, 2010, 4, 15),    # karaite korner newsletter #461
     601003: (6010, 3, 2010, 5, 15),    # karaite korner newsletter #466

@@ -37,9 +37,10 @@
 # The format for the value is a tuple of the following:
 # BIBLICAL year, BIBLICAL month, GREGORIAN year of the first day of the
 # BIBLICAL month (the GREGORIAN day on which the sunset signaled the new
-# day), GREGORIAN month of that same day, GREGORIAN day of said day, the
-# length of the BIBLICAL month in days.
+# day), GREGORIAN month of that same day, GREGORIAN day of said day.
 
 known_months = {
-    601609: (6016, 9, 2016, 11, 30, 30)
+    601105: (6011, 5, 2011, 8, 1),
+    601106: (6011, 6, 2011, 8, 31),
+    601609: (6016, 9, 2016, 11, 30)
 }

@@ -31,8 +31,12 @@
 
 # -- END OF INTRO -- #
 
+import logging
 import datetime
 from hist_data import known_months
+
+logging.basicConfig(
+    level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
 
 # Define the traditional names of the biblical months of the year.
 trad_month_names = ('Nisan', 'Iyyar', 'Sivan', 'Tammuz', 'Av', 'Elul',
@@ -65,8 +69,7 @@ bib_day_of_month = ('1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th',
 # as integer (starting on 1) as well as the length in number of days.
 # Example: bm_6017_10 = BaselineMonth(6017, 10, 2017, 12, 20, 29)
 class BaselineMonth:
-    def __init__(self, year, month, start_g_year, start_g_month, start_g_day,
-                 length):
+    def __init__(self, year, month, start_g_year, start_g_month, start_g_day):
         # Make integers from the input.
         try:
             self.year = int(year)
@@ -74,7 +77,6 @@ class BaselineMonth:
             self.start_g_year = int(start_g_year)
             self.start_g_month = int(start_g_month)
             self.start_g_day = int(start_g_day)
-            self.length = int(length)
             # There has got to be a better way to do this without
             # repeating the 'raise IndexError' for every if statement.
             if self.year <= 6000:
@@ -100,12 +102,6 @@ class BaselineMonth:
             elif self.start_g_day > 31:
                 print('Error: Starting Day value higher than 31.')
                 raise IndexError
-            if self.length <= 27:
-                print('Error: Length of month value lower than 28.')
-                raise IndexError
-            elif self.length > 30:
-                print('Error: Length of month value higher than 30.')
-                raise IndexError
         except ValueError:
             print('Error: Could not convert the value to an integer.')
         except IndexError:
@@ -114,7 +110,6 @@ class BaselineMonth:
         self.name = bib_months[self.month - 1]
         self.trad_name = trad_month_names[self.month - 1]
         self.first_name = bib_day_of_month[0]
-        self.last_name = bib_day_of_month[self.length - 1]
         # Make a datetime.date object from the gregorian integers.
         # start_g_date is defined as the gregorian date in which the sunset
         # started the new month.
@@ -126,6 +121,44 @@ class BaselineMonth:
         self.start_g_month = self.start_g_date.month
         self.start_g_day = self.start_g_date.day
 
+        # Join the year and the month to create an integer key for the
+        # dictionary in hist_data.known_months.
+        self.dict_key = int(str(self.year) + '{0:0=2d}'.format(self.month))
+        logging.debug('The dictionary key is %s' % self.dict_key)
+
+        def next_month(next_dict_key):
+            logging.debug('entering get_next_month function')
+            year = known_months[next_dict_key][2]
+            logging.debug('year is set to %s' % year)
+            month = known_months[next_dict_key][3]
+            logging.debug('month is set to %s' % month)
+            day = known_months[next_dict_key][4]
+            logging.debug('day is set to %s' % day)
+            next_month_g_start_date = datetime.date(year, month, day)
+            logging.debug('next_month_g_start_date is set to %s' %
+                          next_month_g_start_date)
+            return next_month_g_start_date
+
+        if known_months[self.dict_key]:
+            logging.debug('%s exists in known_months' % self.dict_key)
+
+            if 0 < self.month <= 11:
+                logging.debug(
+                    '%s i greater than 0 and lesser than or equal to 11' %
+                    self.month)
+                logging.debug('Will try to add 1 to the index')
+                logging.debug('to get the value of the next month')
+                next_dict_key = self.dict_key + 1
+                next_month_g_start_date = next_month(next_dict_key)
+
+            elif self.month == 12:
+                logging.debug('%s i equal to 12' % self.month)
+            elif self.month == 13:
+                logging.debug('%s i equal to 13' % self.month)
+        else:
+            logging.debug('%s does NOT exist in known_months' % self.dict_key)
+        # self.last_name = bib_day_of_month[self.length - 1]
+
         # The first day of the biblical month equals to the gregorian day when
         # the sunset signaled the start of the biblical day. To keep
         # consistancy the last day of the month should therefore equal to the
@@ -135,18 +168,19 @@ class BaselineMonth:
         # day then continued until the sunset of Dec 1. But since the biblical
         # day starts with sunset, the gregorian date to be marked as the last
         # end date will be Nov 30.
-        self.end_g_date = self.start_g_date + datetime.timedelta(
-            days=self.length - 1)
+
+        # self.end_g_date = self.start_g_date + datetime.timedelta(
+        #    days=self.length - 1)
 
 
 if __name__ == '__main__':
     # Run a simple example for testing purposes.
-    month = BaselineMonth(*known_months[601609])
+    month = BaselineMonth(*known_months[601105])
     print('The {} month of the year {} started at sunset '
           'on the gregorian date {}'.format(month.name, month.year,
                                             month.start_g_date))
-    print('The {}, and last day of the month, '
-          'started on the gregorian date {}'.format(month.last_name,
-                                                    month.end_g_date))
-    print('The traditional name of the {} month is {}'.format(
-        month.name, month.trad_name))
+    # print('The {}, and last day of the month, '
+    #       'started on the gregorian date {}'.format(month.last_name,
+    #                                                 month.end_g_date))
+    # print('The traditional name of the {} month is {}'.format(
+    #     month.name, month.trad_name))

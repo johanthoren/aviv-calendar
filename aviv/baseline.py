@@ -121,11 +121,6 @@ class BaselineMonth:
         self.start_g_month = self.start_g_date.month
         self.start_g_day = self.start_g_date.day
 
-        # Join the year and the month to create an integer key for the
-        # dictionary in hist_data.known_months.
-        self.dict_key = int(str(self.year) + '{0:0=2d}'.format(self.month))
-        logging.debug('The dictionary key is %s' % self.dict_key)
-
         def next_month(next_dict_key):
             logging.debug('entering get_next_month function')
             year = known_months[next_dict_key][2]
@@ -139,25 +134,10 @@ class BaselineMonth:
                           next_month_g_start_date)
             return next_month_g_start_date
 
-        if known_months[self.dict_key]:
-            logging.debug('%s exists in known_months' % self.dict_key)
-
-            if 0 < self.month <= 11:
-                logging.debug(
-                    '%s i greater than 0 and lesser than or equal to 11' %
-                    self.month)
-                logging.debug('Will try to add 1 to the index')
-                logging.debug('to get the value of the next month')
-                next_dict_key = self.dict_key + 1
-                next_month_g_start_date = next_month(next_dict_key)
-
-            elif self.month == 12:
-                logging.debug('%s i equal to 12' % self.month)
-            elif self.month == 13:
-                logging.debug('%s i equal to 13' % self.month)
-        else:
-            logging.debug('%s does NOT exist in known_months' % self.dict_key)
-        # self.last_name = bib_day_of_month[self.length - 1]
+        def get_end_g_date(d):
+            self.end_g_date = d - datetime.timedelta(days=1)
+            logging.debug('self.end_g_date is set to %s' % self.end_g_date)
+            return self.end_g_date
 
         # The first day of the biblical month equals to the gregorian day when
         # the sunset signaled the start of the biblical day. To keep
@@ -169,18 +149,78 @@ class BaselineMonth:
         # day starts with sunset, the gregorian date to be marked as the last
         # end date will be Nov 30.
 
-        # self.end_g_date = self.start_g_date + datetime.timedelta(
-        #    days=self.length - 1)
+        def get_length(start_d, end_d):
+            logging.debug('entering get_length function')
+            self.length = (end_d - start_d).days + 1
+            logging.debug('Returning self.length as %s' % self.length)
+            return self.length
+
+        # Join the year and the month to create an integer key for the
+        # dictionary in hist_data.known_months.
+        self.dict_key = int(str(self.year) + '{0:0=2d}'.format(self.month))
+        logging.debug('The dictionary key is %s' % self.dict_key)
+
+        # Check if the month is known.
+        try:
+            if known_months[self.dict_key]:
+                logging.debug('%s exists in known_months' % self.dict_key)
+
+                if 0 < self.month <= 11:
+                    logging.debug(
+                        '%s i greater than 0 and lesser than or equal to 11' %
+                        self.month)
+                    logging.debug('Will try to add 1 to the index')
+                    logging.debug('to get the value of the next month')
+                    next_dict_key = self.dict_key + 1
+                elif self.month == 12:
+                    logging.debug('%s i equal to 12' % self.month)
+                    logging.debug('Will check if there is a 13th month.')
+                    try:
+                        if known_months[self.dict_key + 1]:
+                            logging.debug('The 13th month exists.')
+                            next_dict_key = self.dict_key + 1
+                            logging.debug(
+                                'The next month key is %s' % next_dict_key)
+                    except KeyError:
+                        logging.debug('The 13th month does NOT exist.')
+                        next_dict_key = int(str(self.year + 1) + '01')
+                        logging.debug(
+                            'The next month key is %s' % next_dict_key)
+                elif self.month == 13:
+                    logging.debug('%s i equal to 13' % self.month)
+                    next_dict_key = int(str(self.year + 1) + '01')
+                    logging.debug('The next month key is %s' % next_dict_key)
+        except KeyError:
+            logging.debug('%s does NOT exist in known_months' % self.dict_key)
+            logging.debug(
+                'Unable to say anything about the next month right now.')
+        try:
+            if known_months[next_dict_key]:
+                next_month_g_start_date = next_month(next_dict_key)
+                self.end_g_date = get_end_g_date(next_month_g_start_date)
+                self.length = get_length(self.start_g_date, self.end_g_date)
+                self.last_name = bib_day_of_month[self.length - 1]
+        except KeyError:
+            logging.debug('%s does NOT exist in known_months' % next_dict_key)
+            logging.debug(
+                'Unable to say anything about the next month right now.')
 
 
 if __name__ == '__main__':
     # Run a simple example for testing purposes.
-    month = BaselineMonth(*known_months[601105])
+    month = BaselineMonth(*known_months[601106])
     print('The {} month of the year {} started at sunset '
           'on the gregorian date {}'.format(month.name, month.year,
                                             month.start_g_date))
-    # print('The {}, and last day of the month, '
-    #       'started on the gregorian date {}'.format(month.last_name,
-    #                                                 month.end_g_date))
-    # print('The traditional name of the {} month is {}'.format(
-    #     month.name, month.trad_name))
+    try:
+        if month.last_name:
+            print('The {}, and last day of the month, '
+                  'started on the gregorian date {}'.format(
+                      month.last_name, month.end_g_date))
+    except AttributeError:
+        print('Unable to say anything about the end of the month right now')
+        print(
+            'This might be because the following month is not in the database'
+        )
+    print('The traditional name of the {} month is {}'.format(
+        month.name, month.trad_name))

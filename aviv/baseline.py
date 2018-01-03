@@ -187,7 +187,9 @@ class BaselineMonth:
                         logging.debug(
                             'The next month key is %s' % next_dict_key)
                 elif self.month == 13:
-                    logging.debug('%s i equal to 13' % self.month)
+                    logging.debug('%s is equal to 13' % self.month)
+                    logging.debug(
+                        '+1 on the year part of the id and reset month to 01')
                     next_dict_key = int(str(self.year + 1) + '01')
                     logging.debug('The next month key is %s' % next_dict_key)
         except KeyError:
@@ -208,7 +210,7 @@ class BaselineMonth:
 
 if __name__ == '__main__':
     # Run a simple example for testing purposes.
-    month = BaselineMonth(*known_months[601412])
+    month = BaselineMonth(*known_months[601313])
     print('The {} month of the year {} started at sunset '
           'on the gregorian date {}'.format(month.name, month.year,
                                             month.start_g_date))
@@ -220,7 +222,6 @@ if __name__ == '__main__':
     except AttributeError:
         print('Unable to say anything about the end of the month right now')
         print(
-            'This might be because the following month is not in the database'
-        )
+            'This might be because the following month is not in the database')
     print('The traditional name of the {} month is {}'.format(
         month.name, month.trad_name))

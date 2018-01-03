@@ -40,18 +40,34 @@
 # day), GREGORIAN month of that same day, GREGORIAN day of said day.
 
 known_months = {
-    600601: (6006, 1, 2006, 3, 30),    # kkn #261
-    600602: (6006, 2, 2006, 4, 29),    # kkn #266
-    600603: (6006, 3, 2006, 5, 28),    # kkn #267
-    600604: (6006, 4, 2006, 6, 26),    # kkn #268
-    600605: (6006, 5, 2006, 7, 26),    # kkn #271
-    600606: (6006, 6, 2006, 8, 25),    # kkn #275
-    600607: (6006, 7, 2006, 9, 24),    # kkn #278
-    600608: (6006, 8, 2006, 10, 24),   # kkn #282
-    600609: (6006, 9, 2006, 11, 22),   # kkn #283
-    600610: (6006, 10, 2006, 12, 22),  # kkn #284
-    600611: (6006, 11, 2007, 1, 21),   # kkn #285
-    600612: (6006, 12, 2007, 2, 19),   # kkn #288
+    # 6005
+    600501: (6005, 1, 2005, 3, 11),    # karaite korner newsletter #197
+    600502: (6005, 2, 2005, 4, 10),    # karaite korner newsletter #210
+    600503: (6005, 3, 2005, 5, 9),     # karaite korner newsletter #215
+    600504: (6005, 4, 2005, 6, 8),     # karaite korner newsletter #219
+    600505: (6005, 5, 2005, 7, 7),     # karaite korner newsletter #223
+    600506: (6005, 6, 2005, 8, 6),     # karaite korner newsletter #228
+    600507: (6005, 7, 2005, 9, 5),     # karaite korner newsletter #235
+    600508: (6005, 8, 2005, 10, 5),    # karaite korner newsletter #245
+    600509: (6005, 9, 2005, 11, 3),    # karaite korner newsletter #246
+    600510: (6005, 10, 2005, 12, 3),   # karaite korner newsletter #248
+    600511: (6005, 11, 2006, 1, 2),    # karaite korner newsletter #249
+    600512: (6005, 12, 2006, 1, 30),   # karaite korner newsletter #251
+    600513: (6005, 13, 2006, 3, 1),    # karaite korner newsletter #256
+    # 6006
+    600601: (6006, 1, 2006, 3, 30),    # karaite korner newsletter #261
+    600602: (6006, 2, 2006, 4, 29),    # karaite korner newsletter #266
+    600603: (6006, 3, 2006, 5, 28),    # karaite korner newsletter #267
+    600604: (6006, 4, 2006, 6, 26),    # karaite korner newsletter #268
+    600605: (6006, 5, 2006, 7, 26),    # karaite korner newsletter #271
+    600606: (6006, 6, 2006, 8, 25),    # karaite korner newsletter #275
+    600607: (6006, 7, 2006, 9, 24),    # karaite korner newsletter #278
+    600608: (6006, 8, 2006, 10, 24),   # karaite korner newsletter #282
+    600609: (6006, 9, 2006, 11, 22),   # karaite korner newsletter #283
+    600610: (6006, 10, 2006, 12, 22),  # karaite korner newsletter #284
+    600611: (6006, 11, 2007, 1, 21),   # karaite korner newsletter #285
+    600612: (6006, 12, 2007, 2, 19),   # karaite korner newsletter #288
+    # 6007
     600701: (6007, 1, 2007, 3, 20),    # karaite korner newsletter #292
     600702: (6007, 2, 2007, 4, 18),    # karaite korner newsletter #297
     600703: (6007, 3, 2007, 5, 17),    # karaite korner newsletter #298
@@ -65,6 +81,7 @@ known_months = {
     600711: (6007, 11, 2008, 1, 10),   # karaite korner newsletter #315
     600712: (6007, 12, 2008, 2, 8),    # karaite korner newsletter #317
     600713: (6007, 13, 2008, 3, 9),    # karaite korner newsletter #324
+    # 6008
     600801: (6008, 1, 2008, 4, 7),     # karaite korner newsletter #327
     600802: (6008, 2, 2008, 5, 6),     # karaite korner newsletter #330
     600803: (6008, 3, 2008, 6, 4),     # karaite korner newsletter #331
@@ -77,6 +94,7 @@ known_months = {
     600810: (6008, 10, 2008, 12, 29),  # karaite korner newsletter #361
     600811: (6008, 11, 2009, 1, 27),   # karaite korner newsletter #363
     600812: (6008, 12, 2009, 2, 26),   # karaite korner newsletter #366
+    # 6009
     600901: (6009, 1, 2009, 3, 27),    # karaite korner newsletter #376
     600902: (6009, 2, 2009, 4, 26),    # karaite korner newsletter #380
     600903: (6009, 3, 2009, 5, 25),    # karaite korner newsletter #383
@@ -89,6 +107,7 @@ known_months = {
     600910: (6009, 10, 2009, 12, 18),  # karaite korner newsletter #435
     600911: (6009, 11, 2010, 1, 16),   # karaite korner newsletter #440
     600912: (6009, 12, 2010, 2, 15),   # karaite korner newsletter #447
+    # 6010
     601001: (6010, 1, 2010, 3, 17),    # karaite korner newsletter #454
     601002: (6010, 2, 2010, 4, 15),    # karaite korner newsletter #461
     601003: (6010, 3, 2010, 5, 15),    # karaite korner newsletter #466
@@ -102,6 +121,7 @@ known_months = {
     601011: (6010, 11, 2011, 1, 5),    # karaite korner newsletter #492
     601012: (6010, 12, 2011, 2, 4),    # karaite korner newsletter #494
     601013: (6010, 13, 2011, 3, 6),    # karaite korner newsletter #500
+    # 6011
     601101: (6011, 1, 2011, 4, 4),     # karaite korner newsletter #506
     601102: (6011, 2, 2011, 5, 4),     # karaite korner newsletter #512
     601103: (6011, 3, 2011, 6, 3),     # karaite korner newsletter #516
@@ -114,6 +134,7 @@ known_months = {
     601110: (6011, 10, 2011, 12, 26),  # karaite korner newsletter #540
     601111: (6011, 11, 2012, 1, 25),   # karaite korner newsletter #543
     601112: (6011, 12, 2012, 2, 23),   # karaite korner newsletter #545
+    # 6012
     601201: (6012, 1, 2012, 3, 23),    # renewedmoon.com
     601202: (6012, 2, 2012, 4, 22),    # renewedmoon.com
     601203: (6012, 3, 2012, 5, 22),    # renewedmoon.com
@@ -126,6 +147,7 @@ known_months = {
     601210: (6012, 10, 2012, 12, 14),  # renewedmoon.com
     601211: (6012, 11, 2013, 1, 13),   # renewedmoon.com
     601212: (6012, 12, 2013, 2, 11),   # renewedmoon.com
+    # 6013
     601301: (6013, 1, 2013, 3, 13),    # renewedmoon.com
     601302: (6013, 2, 2013, 4, 11),    # renewedmoon.com
     601303: (6013, 3, 2013, 5, 11),    # renewedmoon.com
@@ -139,6 +161,7 @@ known_months = {
     601311: (6013, 11, 2014, 1, 2),    # renewedmoon.com
     601312: (6013, 12, 2014, 2, 1),    # renewedmoon.com
     601313: (6013, 13, 2014, 3, 3),    # renewedmoon.com
+    # 6014
     601401: (6014, 1, 2014, 3, 31),    # renewedmoon.com
     601402: (6014, 2, 2014, 4, 30),    # renewedmoon.com
     601403: (6014, 3, 2014, 5, 30),    # renewedmoon.com
@@ -151,12 +174,14 @@ known_months = {
     601411: (6014, 11, 2015, 1, 21),   # renewedmoon.com
     601412: (6014, 12, 2015, 2, 20),   # renewedmoon.com
     # Missing months.
+    # 6015
     601509: (6015, 9, 2015, 11, 13),   # renewedmoon.com
     601510: (6015, 10, 2015, 12, 13),  # renewedmoon.com
     601511: (6015, 11, 2016, 1, 11),   # renewedmoon.com
     601512: (6015, 12, 2016, 2, 9),    # renewedmoon.com
     601513: (6015, 13, 2016, 3, 10),   # renewedmoon.com
     # Missing months.
+    # 6016
     601609: (6016, 9, 2016, 11, 30),   # renewedmoon.com
     601610: (6016, 10, 2016, 12, 30),  # renewedmoon.com
     601611: (6016, 11, 2017, 1, 29),   # renewedmoon.com
@@ -166,7 +191,7 @@ known_months = {
 if __name__ == '__main__':
     # Run a simple example for testing purposes.
     from core import BibMonth
-    month = BibMonth(*known_months[600801])
+    month = BibMonth(*known_months[600502])
     print('The {} month of the year {} started at sunset '
           'on the gregorian date {}'.format(month.name, month.year,
                                             month.start_g_date))

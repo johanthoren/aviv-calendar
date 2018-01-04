@@ -37,7 +37,8 @@ import logging
 from hist_data import known_months
 
 logging.basicConfig(
-    level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
+    level=logging.CRITICAL,
+    format=' %(asctime)s - %(levelname)s - %(message)s')
 
 # Define the traditional names of the biblical months of the year.
 trad_month_names = ('Nisan', 'Iyyar', 'Sivan', 'Tammuz', 'Av', 'Elul',
@@ -171,7 +172,7 @@ class BibMonth:
 
                 if 0 < self.month <= 11:
                     logging.debug(
-                        '%s i greater than 0 and lesser than or equal to 11' %
+                        '%s is greater than 0 and lesser than or equal to 11' %
                         self.month)
                     logging.debug('Will try to add 1 to the index')
                     logging.debug('to get the value of the next month')
@@ -210,6 +211,14 @@ class BibMonth:
             logging.debug('%s does NOT exist in known_months' % next_dict_key)
             logging.debug(
                 'Unable to say anything about the next month right now.')
+            self.length = None
+
+
+def month_from_key(k):
+    k = k
+    if known_months[k]:
+        m = BibMonth(*known_months[k])
+        return m
 
 
 # Creates the object BibLocation which takes the argument of a city name

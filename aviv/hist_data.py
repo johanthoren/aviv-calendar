@@ -187,22 +187,3 @@ known_months = {
     601611: (6016, 11, 2017, 1, 29),   # renewedmoon.com
     601612: (6016, 12, 2017, 2, 27)    # renewedmoon.com
 }
-
-if __name__ == '__main__':
-    # Run a simple example for testing purposes.
-    from core import BibMonth
-    month = BibMonth(*known_months[600502])
-    print('The {} month of the year {} started at sunset '
-          'on the gregorian date {}'.format(month.name, month.year,
-                                            month.start_g_date))
-    try:
-        if month.last_name:
-            print('The {}, and last day of the month, '
-                  'started on the gregorian date {}'.format(
-                      month.last_name, month.end_g_date))
-    except AttributeError:
-        print('Unable to say anything about the end of the month right now')
-        print(
-            'This might be because the following month is not in the database')
-    print('The traditional name of the {} month is {}'.format(
-        month.name, month.trad_name))

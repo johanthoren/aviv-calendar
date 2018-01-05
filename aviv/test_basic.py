@@ -6,7 +6,7 @@ import hist_data
 
 def test_days_of_month():
     '''BibMonth should give months with 28-30 days'''
-    for key, value in hist_data.known_months.items():
+    for key, value in hist_data.known_moons.items():
         month = core.month_from_key(key)
         result = month.length
         if result is not None:

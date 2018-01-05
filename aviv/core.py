@@ -34,7 +34,7 @@ import datetime
 # Using the builtin geocoder. Se Astral documentation for alternatives.
 from astral import Astral
 import logging
-from hist_data import known_months
+from hist_data import known_moons
 
 logging.basicConfig(
     level=logging.CRITICAL,
@@ -125,11 +125,11 @@ class BibMonth:
 
         def next_month(next_dict_key):
             logging.debug('entering get_next_month function')
-            year = known_months[next_dict_key][2]
+            year = known_moons[next_dict_key][2]
             logging.debug('year is set to %s' % year)
-            month = known_months[next_dict_key][3]
+            month = known_moons[next_dict_key][3]
             logging.debug('month is set to %s' % month)
-            day = known_months[next_dict_key][4]
+            day = known_moons[next_dict_key][4]
             logging.debug('day is set to %s' % day)
             next_month_g_start_date = datetime.date(year, month, day)
             logging.debug('next_month_g_start_date is set to %s' %
@@ -158,17 +158,17 @@ class BibMonth:
             return self.length
 
         # Join the year and the month to create an integer key for the
-        # dictionary in hist_data.known_months.
+        # dictionary in hist_data.known_moons.
         self.dict_key = int(str(self.year) + '{0:0=2d}'.format(self.month))
         logging.debug('The dictionary key is %s' % self.dict_key)
 
-        # Check if the month is in the database of known_months.
+        # Check if the month is in the database of known_moons.
         # Primary reason for doing this is because we want to get the data
         # on the next month so that we can calculate the end date, and thus
         # the length.
         try:
-            if known_months[self.dict_key]:
-                logging.debug('%s exists in known_months' % self.dict_key)
+            if known_moons[self.dict_key]:
+                logging.debug('%s exists in known_moons' % self.dict_key)
 
                 if 0 < self.month <= 11:
                     logging.debug(
@@ -181,7 +181,7 @@ class BibMonth:
                     logging.debug('%s i equal to 12' % self.month)
                     logging.debug('Will check if there is a 13th month.')
                     try:
-                        if known_months[self.dict_key + 1]:
+                        if known_moons[self.dict_key + 1]:
                             logging.debug('The 13th month exists.')
                             next_dict_key = self.dict_key + 1
                             logging.debug(
@@ -198,17 +198,17 @@ class BibMonth:
                     next_dict_key = int(str(self.year + 1) + '01')
                     logging.debug('The next month key is %s' % next_dict_key)
         except KeyError:
-            logging.debug('%s does NOT exist in known_months' % self.dict_key)
+            logging.debug('%s does NOT exist in known_moons' % self.dict_key)
             logging.debug(
                 'Unable to say anything about the next month right now.')
         try:
-            if known_months[next_dict_key]:
+            if known_moons[next_dict_key]:
                 next_month_g_start_date = next_month(next_dict_key)
                 self.end_g_date = get_end_g_date(next_month_g_start_date)
                 self.length = get_length(self.start_g_date, self.end_g_date)
                 self.last_name = bib_day_of_month[self.length - 1]
         except KeyError:
-            logging.debug('%s does NOT exist in known_months' % next_dict_key)
+            logging.debug('%s does NOT exist in known_moons' % next_dict_key)
             logging.debug(
                 'Unable to say anything about the next month right now.')
             self.length = None
@@ -216,8 +216,8 @@ class BibMonth:
 
 def month_from_key(k):
     k = k
-    if known_months[k]:
-        m = BibMonth(*known_months[k])
+    if known_moons[k]:
+        m = BibMonth(*known_moons[k])
         return m
 
 

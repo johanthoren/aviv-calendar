@@ -39,7 +39,9 @@
 # BIBLICAL month (the GREGORIAN day on which the sunset signaled the new
 # day), GREGORIAN month of that same day, GREGORIAN day of said day.
 
-known_months = {
+estimated_moons = {}
+
+known_moons = {
     # 6003
     600301: (6003, 1, 2003, 4, 3),     # karaite korner newsletter #127
     600302: (6003, 2, 2003, 5, 2),     # karaite korner newsletter #130

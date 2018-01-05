@@ -316,6 +316,19 @@ class BibDay(BibCalItem):
         # Return the weekday string.
         self.weekday = b_weekday_today
 
+    def weekly_sabbath(self):
+        self.weekday()
+        if self.weekday == '7th':
+            self.is_ws = True  # ws stands for weekly Sabbath.
+        else:
+            self.is_ws = False
+            # Check for a High Feast day and override to True if that's
+            # the case.
+            if self.is_hfd is True:
+                self.sabbath = self.is_hfd
+            else:
+                self.sabbath = self.is_ws
+
 
 class BibHour(BibCalItem):
     def __init__(self, year, month, day, hour):

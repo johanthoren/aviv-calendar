@@ -24,6 +24,17 @@ def test_known_days_of_month():
             assert 28 <= result <= 30
 
 
+def test_est_is_known():
+    '''Any BibCalItem should have a value for being known or estimated'''
+    for key, value in hist_data.estimated_moons.items():
+        y = core.bibitem_from_key(key)
+        y.date()
+        result1 = y.is_known
+        result2 = y.is_estimated
+        assert result1 is not None
+        assert result2 is not None
+
+
 def test_is_known():
     '''Any BibCalItem should have a value for being known or estimated'''
     for key, value in hist_data.known_moons.items():
@@ -32,4 +43,5 @@ def test_is_known():
         result1 = y.is_known
         result2 = y.is_estimated
         assert result1 is not None
+        assert result2 is not True
         assert result2 is not None

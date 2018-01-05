@@ -64,6 +64,35 @@ bib_day_of_month = ('1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th',
                     '23rd', '24th', '25th', '26th', '27th', '28th', '29th',
                     '30th')
 
+# List of feast days that are not biblically commanded to keep.
+fixed_feast_days = {
+    '9, 25', ('1st day of Hanukkah', False),
+    '12, 14', ('Purim', False)
+}
+
+# List of high feast days. True if they are considered
+# "High days of convocation" where no work shall be done.
+fixed_high_feast_days = {
+    '1, 14': ('Passover', False),
+    '1, 15': ('1st day of "Feast of Unleavened Bread"', True),
+    '1, 16': ('2nd day of "Feast of Unleavened Bread"', False),
+    '1, 17': ('3rd day of "Feast of Unleavened Bread"', False),
+    '1, 18': ('4th day of "Feast of Unleavened Bread"', False),
+    '1, 19': ('5th day of "Feast of Unleavened Bread"', False),
+    '1, 20': ('6th day of "Feast of Unleavened Bread"', False),
+    '1, 21': ('Last day of "Feast of Unleavened Bread"', True),
+    '7, 1': ('Yom Teruah / "Feast of Trumpets or Feast of Shouting"', True),
+    '7, 10': ('Yom Kippur / "Day of Atonement"', True),
+    '7, 15': ('1st day of Sukkot / "Feast of Tabernacles"', True),
+    '7, 16': ('2nd day of Sukkot / "Feast of Tabernacles"', False),
+    '7, 17': ('3rd day of Sukkot / "Feast of Tabernacles"', False),
+    '7, 18': ('4th day of Sukkot / "Feast of Tabernacles"', False),
+    '7, 19': ('5th day of Sukkot / "Feast of Tabernacles"', False),
+    '7, 20': ('6th day of Sukkot / "Feast of Tabernacles"', False),
+    '7, 21': ('Last day of Sukkot / "Feast of Tabernacles"', False),
+    '7, 22': ('Last Great Day', True)
+}
+
 
 # Creates a datetime object from key (k). First tries to find the month in the
 # hist_data.known_moons and tries hist_data.estimated_moons as backup. Also

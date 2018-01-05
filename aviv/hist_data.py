@@ -216,6 +216,8 @@ known_moons = {
     601513: (6015, 13, 2016, 3, 10),   # renewedmoon.com
     # Missing months.
     # 6016
+    601607: (6016, 7, 2016, 10, 2),    # karaite korner newsletter
+    # Missing month.
     601609: (6016, 9, 2016, 11, 30),   # renewedmoon.com
     601610: (6016, 10, 2016, 12, 30),  # renewedmoon.com
     601611: (6016, 11, 2017, 1, 29),   # renewedmoon.com

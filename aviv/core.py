@@ -273,7 +273,48 @@ class BibMonth(BibCalItem):
 
 class BibDay(BibCalItem):
     def __init__(self, year, month, day):
-        pass
+        # Make integers from the input.
+        m = BibMonth(year, month)
+        m.date()
+        self.year = m.year
+        self.month = m.month
+        self.length = m.length
+        try:
+            self.day = int(day)
+            if self.day <= 0:
+                print('Error: Day value lower than 1.')
+                raise IndexError
+            elif self.day > 30:
+                print('Error: Day value higher than 30.')
+                raise IndexError
+            elif self.day > self.length:
+                print('Error: The month did not contain that many days.')
+                raise IndexError
+        except ValueError:
+            print('Error: Could not convert the value to an integer.')
+        except IndexError:
+            print('Error: The specified value is out of the allowed range.')
+        self.is_known = m.is_known
+        self.is_estimated = m.is_estimated
+        self.is_certain = None
+        self.start_g_date = m.start_g_date + datetime.timedelta(
+            days=self.day - 1)
+
+    def weekday(self):
+
+        self.is_ws = False  # ws stands for weekly sabbath
+        self.is_hfd = False  # hs stands for High Feast day
+
+        # Get the current weekday from datetime. Monday is 0, Sunday is 6.
+        y = self.start_g_date.year
+        m = self.start_g_date.month
+        d = self.start_g_date.day
+        weekday_index = datetime.datetime(y, m, d).weekday()
+        # +1 Since the day starts in the evening.
+        b_weekday_today = bib_weekdays[weekday_index + 1]
+
+        # Return the weekday string.
+        self.weekday = b_weekday_today
 
 
 class BibHour(BibCalItem):

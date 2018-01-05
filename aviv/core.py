@@ -80,8 +80,9 @@ def datetime_from_key(k):
             d = known_moons[k][4]
             date = datetime.date(y, m, d)
             is_known = True
+            is_estimated = False
             # Returns as a tuple.
-            return (is_known, date)
+            return (is_known, is_estimated, date)
     except KeyError:
         try:
             if estimated_moons[k]:
@@ -90,12 +91,14 @@ def datetime_from_key(k):
                 d = estimated_moons[k][4]
                 date = datetime.date(y, m, d)
                 is_known = False
+                is_estimated = True
                 # Returns as a tuple.
-                return (is_known, date)
+                return (is_known, is_estimated, date)
         except KeyError:
             is_known = False
+            is_estimated = False
             # Returns as a tuple.
-            return (is_known, None)
+            return (is_known, is_estimated, None)
 
 
 # This function tries to create a BibMonth object given a key (k).
@@ -111,7 +114,7 @@ def bibitem_from_key(k):
                 m = BibCalItem(*estimated_moons[k][0:1])
                 return m
         except KeyError:
-            return None
+            return False
 
 
 # This function tries to create a BibMonth object given a key (k).
@@ -136,11 +139,9 @@ def bibmonth_from_key(k):
 # millenia.
 class BibCalItem:
     def __init__(self, year):
-        # I first had this restriction, I don't think it will be needed
-        # as I add estimated dates to fill up the historical years.
-        # if year <= 6000:
-        #     print('Error: Year value lower than 6000.')
-        #     raise IndexError
+        if year <= 4000:
+            print('Error: Year value lower than 4000.')
+            raise IndexError
         self.year = int(year)
 
     def date(self):
@@ -148,18 +149,24 @@ class BibCalItem:
         # searchable key to get the first month.
         self.dict_k = int(str(self.year) + '01')
 
-        d = datetime_from_key(self.dict_k)
-        self.start_g_year = d[1].year
-        self.start_g_month = d[1].month
-        self.start_g_day = d[1].day
-        self.start_g_date = d[1]
-        self.is_known = d[0]
+        try:
+            d = datetime_from_key(self.dict_k)
+            self.start_g_year = d[2].year
+            self.start_g_month = d[2].month
+            self.start_g_day = d[2].day
+            self.start_g_date = d[2]
+            self.is_known = d[0]
+            self.is_estimated = d[1]
+        except AttributeError:
+            self.is_known = False
+            self.is_estimated = False
 
 
 class BibMonth(BibCalItem):
     def __init__(self, year, month):
         # Make integers from the input.
         y = BibCalItem(year)
+        y.date()
         self.year = y.year
         try:
             self.month = int(month)
@@ -181,10 +188,11 @@ class BibMonth(BibCalItem):
         d = datetime_from_key(self.dict_k)
 
         self.is_known = d[0]
-        self.start_g_date = d[1]
-        self.start_g_day = d[1].day
-        self.start_g_month = d[1].month
-        self.start_g_year = d[1].year
+        self.is_estimated = d[1]
+        self.start_g_date = d[2]
+        self.start_g_day = d[2].day
+        self.start_g_month = d[2].month
+        self.start_g_year = d[2].year
         # Define the traditional name of the month.
         self.name = bib_months[self.month - 1]
         self.trad_name = trad_month_names[self.month - 1]
@@ -236,13 +244,11 @@ class BibMonth(BibCalItem):
                         if known_moons[self.dict_k + 1]:
                             logging.debug('The 13th month exists.')
                             nk = self.dict_k + 1
-                            logging.debug(
-                                'The next month key is %s' % nk)
+                            logging.debug('The next month key is %s' % nk)
                     except KeyError:
                         logging.debug('The 13th month does NOT exist.')
                         nk = int(str(self.year + 1) + '01')
-                        logging.debug(
-                            'The next month key is %s' % nk)
+                        logging.debug('The next month key is %s' % nk)
                 elif self.month == 13:
                     logging.debug('%s is equal to 13' % self.month)
                     logging.debug(

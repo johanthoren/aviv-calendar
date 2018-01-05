@@ -34,12 +34,18 @@
 # This file contains some baseline months where gregorian time and
 # biblical time can be defined for sure based on real observations.
 
+# It also contains months where the moon has been estimated because no
+# actual observation is available. Known moons should always take
+# priority and any months added to known_moons should be removed from
+# the list of estimated_moons.
+
 # The format for the value is a tuple of the following:
 # BIBLICAL year, BIBLICAL month, GREGORIAN year of the first day of the
 # BIBLICAL month (the GREGORIAN day on which the sunset signaled the new
 # day), GREGORIAN month of that same day, GREGORIAN day of said day.
 
-estimated_moons = {}
+estimated_moons = {
+}
 
 known_moons = {
     # 6003

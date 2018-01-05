@@ -35,10 +35,10 @@ import datetime
 from astral import Astral
 import logging
 from hist_data import known_moons
+from hist_data import estimated_moons
 
 logging.basicConfig(
-    level=logging.CRITICAL,
-    format=' %(asctime)s - %(levelname)s - %(message)s')
+    level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
 
 # Define the traditional names of the biblical months of the year.
 trad_month_names = ('Nisan', 'Iyyar', 'Sivan', 'Tammuz', 'Av', 'Elul',
@@ -65,80 +65,137 @@ bib_day_of_month = ('1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th',
                     '30th')
 
 
-# Define a new BibMonth, needs the biblical year as integer,
-# the biblical month number (starting on 1) as integer, gregorian year as
-# integer, gregorian month as integer (starting on 1) and gregorian day of
-# month, as integer (starting on 1).
-# Example: bm_6017_10 = BibMonth(6017, 10, 2017, 12, 20)
-class BibMonth:
-    def __init__(self, year, month, start_g_year, start_g_month, start_g_day):
-        # Make integers from the input.
+# Creates a datetime object from key (k). First tries to find the month in the
+# hist_data.known_moons and tries hist_data.estimated_moons as backup. Also
+# sets the value of the attribute is_known to reflect wether or not it was
+# found among the known (and therefore confirmed) moons or if it's an
+# estimated guess.
+# Note that most historical moons will always be estimated.
+# Keys need to be in the form of YYYYMM (example: 600101).
+def datetime_from_key(k):
+    try:
+        if known_moons[k]:
+            y = known_moons[k][2]
+            m = known_moons[k][3]
+            d = known_moons[k][4]
+            date = datetime.date(y, m, d)
+            is_known = True
+            # Returns as a tuple.
+            return (is_known, date)
+    except KeyError:
         try:
-            self.year = int(year)
+            if estimated_moons[k]:
+                y = estimated_moons[k][2]
+                m = estimated_moons[k][3]
+                d = estimated_moons[k][4]
+                date = datetime.date(y, m, d)
+                is_known = False
+                # Returns as a tuple.
+                return (is_known, date)
+        except KeyError:
+            is_known = False
+            # Returns as a tuple.
+            return (is_known, None)
+
+
+# This function tries to create a BibMonth object given a key (k).
+# Keys need to be in the form of YYYYMM (example: 600101).
+def bibitem_from_key(k):
+    try:
+        if known_moons[k]:
+            m = BibCalItem(*known_moons[k][0:1])
+            return m
+    except KeyError:
+        try:
+            if estimated_moons[k]:
+                m = BibCalItem(*estimated_moons[k][0:1])
+                return m
+        except KeyError:
+            return None
+
+
+# This function tries to create a BibMonth object given a key (k).
+# Keys need to be in the form of YYYYMM (example: 600101).
+def bibmonth_from_key(k):
+    try:
+        if known_moons[k]:
+            m = BibMonth(*known_moons[k][0:2])
+            return m
+    except KeyError:
+        try:
+            if estimated_moons[k]:
+                m = BibMonth(*estimated_moons[k][0:2])
+                return m
+        except KeyError:
+            return None
+
+
+# Base class for other classes.
+# Every point in time needs to at least have a year defined.
+# I can't imagine using anything larger like decade, century or
+# millenia.
+class BibCalItem:
+    def __init__(self, year):
+        # I first had this restriction, I don't think it will be needed
+        # as I add estimated dates to fill up the historical years.
+        # if year <= 6000:
+        #     print('Error: Year value lower than 6000.')
+        #     raise IndexError
+        self.year = int(year)
+
+    def date(self):
+        # Generate a yk (year_key) combining the year with 01 to get a
+        # searchable key to get the first month.
+        self.dict_k = int(str(self.year) + '01')
+
+        d = datetime_from_key(self.dict_k)
+        self.start_g_year = d[1].year
+        self.start_g_month = d[1].month
+        self.start_g_day = d[1].day
+        self.start_g_date = d[1]
+        self.is_known = d[0]
+
+
+class BibMonth(BibCalItem):
+    def __init__(self, year, month):
+        # Make integers from the input.
+        y = BibCalItem(year)
+        self.year = y.year
+        try:
             self.month = int(month)
-            self.start_g_year = int(start_g_year)
-            self.start_g_month = int(start_g_month)
-            self.start_g_day = int(start_g_day)
-            # There has got to be a better way to do this without
-            # repeating the 'raise IndexError' for every if statement.
-            if self.year <= 6000:
-                print('Error: Year value lower than 6000.')
-                raise IndexError
             if self.month <= 0:
                 print('Error: Month value lower than 1.')
                 raise IndexError
             elif self.month > 13:
                 print('Error: Month value higher than 13.')
                 raise IndexError
-            if self.start_g_year <= 2000:
-                print('Error: Gregorian Year value lower than 6000.')
-                raise IndexError
-            if self.start_g_month <= 0:
-                print('Error: Starting Month value lower than 1.')
-                raise IndexError
-            elif self.start_g_month > 12:
-                print('Error: Starting Month value higher than 12.')
-            if self.start_g_day <= 0:
-                print('Error: Starting Day value lower than 1.')
-                raise IndexError
-            elif self.start_g_day > 31:
-                print('Error: Starting Day value higher than 31.')
-                raise IndexError
         except ValueError:
             print('Error: Could not convert the value to an integer.')
         except IndexError:
             print('Error: The specified value is out of the allowed range.')
+
+    def date(self):
+        # searchable key to get the month.
+        self.dict_k = int(str(self.year) + '{0:0=2d}'.format(self.month))
+
+        d = datetime_from_key(self.dict_k)
+
+        self.is_known = d[0]
+        self.start_g_date = d[1]
+        self.start_g_day = d[1].day
+        self.start_g_month = d[1].month
+        self.start_g_year = d[1].year
         # Define the traditional name of the month.
         self.name = bib_months[self.month - 1]
         self.trad_name = trad_month_names[self.month - 1]
         self.first_name = bib_day_of_month[0]
-        # Make a datetime.date object from the gregorian integers.
-        # start_g_date is defined as the gregorian date in which the sunset
-        # started the new month.
-        # Example: If the 10th month of the years starts on the evening of
-        # December 20, 2017 the entry would be as defined in the example above.
-        self.start_g_date = datetime.date(start_g_year, start_g_month,
-                                          start_g_day)
-        self.start_g_year = self.start_g_date.year
-        self.start_g_month = self.start_g_date.month
-        self.start_g_day = self.start_g_date.day
 
-        def next_month(next_dict_key):
-            logging.debug('entering get_next_month function')
-            year = known_moons[next_dict_key][2]
-            logging.debug('year is set to %s' % year)
-            month = known_moons[next_dict_key][3]
-            logging.debug('month is set to %s' % month)
-            day = known_moons[next_dict_key][4]
-            logging.debug('day is set to %s' % day)
-            next_month_g_start_date = datetime.date(year, month, day)
-            logging.debug('next_month_g_start_date is set to %s' %
-                          next_month_g_start_date)
-            return next_month_g_start_date
-
-        def get_end_g_date(d):
-            self.end_g_date = d - datetime.timedelta(days=1)
-            logging.debug('self.end_g_date is set to %s' % self.end_g_date)
+        def get_end_g_date(nk):
+            y = known_moons[nk][2]
+            m = known_moons[nk][3]
+            d = known_moons[nk][4]
+            n = datetime.date(y, m, d)
+            self.end_g_date = n - datetime.timedelta(days=1)
             return self.end_g_date
 
         # The first day of the biblical month equals to the gregorian day when
@@ -157,18 +214,13 @@ class BibMonth:
             logging.debug('Returning self.length as %s' % self.length)
             return self.length
 
-        # Join the year and the month to create an integer key for the
-        # dictionary in hist_data.known_moons.
-        self.dict_key = int(str(self.year) + '{0:0=2d}'.format(self.month))
-        logging.debug('The dictionary key is %s' % self.dict_key)
-
         # Check if the month is in the database of known_moons.
         # Primary reason for doing this is because we want to get the data
         # on the next month so that we can calculate the end date, and thus
         # the length.
         try:
-            if known_moons[self.dict_key]:
-                logging.debug('%s exists in known_moons' % self.dict_key)
+            if known_moons[self.dict_k]:
+                logging.debug('%s exists in known_moons' % self.dict_k)
 
                 if 0 < self.month <= 11:
                     logging.debug(
@@ -176,49 +228,51 @@ class BibMonth:
                         self.month)
                     logging.debug('Will try to add 1 to the index')
                     logging.debug('to get the value of the next month')
-                    next_dict_key = self.dict_key + 1
+                    nk = self.dict_k + 1
                 elif self.month == 12:
                     logging.debug('%s i equal to 12' % self.month)
                     logging.debug('Will check if there is a 13th month.')
                     try:
-                        if known_moons[self.dict_key + 1]:
+                        if known_moons[self.dict_k + 1]:
                             logging.debug('The 13th month exists.')
-                            next_dict_key = self.dict_key + 1
+                            nk = self.dict_k + 1
                             logging.debug(
-                                'The next month key is %s' % next_dict_key)
+                                'The next month key is %s' % nk)
                     except KeyError:
                         logging.debug('The 13th month does NOT exist.')
-                        next_dict_key = int(str(self.year + 1) + '01')
+                        nk = int(str(self.year + 1) + '01')
                         logging.debug(
-                            'The next month key is %s' % next_dict_key)
+                            'The next month key is %s' % nk)
                 elif self.month == 13:
                     logging.debug('%s is equal to 13' % self.month)
                     logging.debug(
                         '+1 on the year part of the id and reset month to 01')
-                    next_dict_key = int(str(self.year + 1) + '01')
-                    logging.debug('The next month key is %s' % next_dict_key)
+                    nk = int(str(self.year + 1) + '01')
+                    logging.debug('The next month key is %s' % nk)
         except KeyError:
-            logging.debug('%s does NOT exist in known_moons' % self.dict_key)
+            logging.debug('%s does NOT exist in known_moons' % self.dict_k)
             logging.debug(
                 'Unable to say anything about the next month right now.')
         try:
-            if known_moons[next_dict_key]:
-                next_month_g_start_date = next_month(next_dict_key)
-                self.end_g_date = get_end_g_date(next_month_g_start_date)
+            if known_moons[nk]:
+                get_end_g_date(nk)
                 self.length = get_length(self.start_g_date, self.end_g_date)
                 self.last_name = bib_day_of_month[self.length - 1]
         except KeyError:
-            logging.debug('%s does NOT exist in known_moons' % next_dict_key)
+            logging.debug('%s does NOT exist in known_moons' % nk)
             logging.debug(
                 'Unable to say anything about the next month right now.')
             self.length = None
 
 
-def month_from_key(k):
-    k = k
-    if known_moons[k]:
-        m = BibMonth(*known_moons[k])
-        return m
+class BibDay(BibCalItem):
+    def __init__(self, year, month, day):
+        pass
+
+
+class BibHour(BibCalItem):
+    def __init__(self, year, month, day, hour):
+        pass
 
 
 # Creates the object BibLocation which takes the argument of a city name

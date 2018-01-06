@@ -258,10 +258,10 @@ class BibCalItem:
 
         # Generate a yk (year_key) combining the year with 01 to get a
         # searchable key to get the first month.
-        self.dict_k = int(str(self.year) + '01')
+        yk = int(str(self.year) + '01')
 
         try:
-            d = datetime_from_key(self.dict_k)
+            d = datetime_from_key(yk)
             self.start_g_year = d[2].year
             self.start_g_month = d[2].month
             self.start_g_day = d[2].day
@@ -280,10 +280,11 @@ class BibMonth(BibCalItem):
         self.year = y.year
         self.month = test_month(month)
 
+        # ck = current (month) key
         # searchable key to get the month.
-        self.dict_k = int(str(self.year) + '{0:0=2d}'.format(self.month))
+        ck = int(str(self.year) + '{0:0=2d}'.format(self.month))
 
-        d = datetime_from_key(self.dict_k)
+        d = datetime_from_key(ck)
 
         self.is_known = d[0]
         self.is_estimated = d[1]
@@ -296,6 +297,7 @@ class BibMonth(BibCalItem):
         self.trad_name = trad_month_names[self.month - 1]
         self.first_name = bib_day_of_month[0]
 
+        # nk = next (month) key
         def get_end_g_date(nk):
             try:
                 if known_moons[nk]:
@@ -325,9 +327,7 @@ class BibMonth(BibCalItem):
         # end date will be Nov 30.
 
         def get_length(start_d, end_d):
-            logging.debug('entering get_length function')
             self.length = (end_d - start_d).days + 1
-            logging.debug('Returning self.length as %s' % self.length)
             return self.length
 
         # Check if the month is in the database of known_moons or
@@ -337,15 +337,15 @@ class BibMonth(BibCalItem):
         # the length.
         if self.is_known is True:
             if 0 < self.month <= 11:
-                nk = self.dict_k + 1
+                nk = ck + 1
             elif self.month == 12:
                 try:
-                    if known_moons[self.dict_k + 1]:
-                        nk = self.dict_k + 1
+                    if known_moons[ck + 1]:
+                        nk = ck + 1
                 except KeyError:
                     try:
-                        if estimated_moons[self.dict_k + 1]:
-                            nk = self.dict_k + 1
+                        if estimated_moons[ck + 1]:
+                            nk = ck + 1
                     except KeyError:
                         nk = int(str(self.year + 1) + '01')
             if self.month == 13:

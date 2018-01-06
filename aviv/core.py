@@ -222,6 +222,32 @@ def test_day(day, length):
     except IndexError:
         print('Error: The value is out of the allowed range.')
 
+
+def test_is_feast(month, day):
+    f = (month, day)
+    try:
+        if fixed_high_feast_days[f]:
+            is_hfd = True
+            is_hfs = fixed_high_feast_days[f][1]
+            feast_name = fixed_high_feast_days[f][0]
+    except KeyError:
+        is_hfd = False
+        is_hfs = False
+        feast_name = None
+    return (is_hfd, is_hfs, feast_name)
+
+
+def test_is_sabbath(weekday):
+    try:
+        if weekday == '7th':
+            is_ws = True  # ws stands for weekly Sabbath.
+        else:
+            is_ws = False
+        return is_ws
+    except ValueError:
+        print('Error: Wrong kind of input.')
+
+
 # Base class for other classes.
 # Every point in time needs to at least have a year defined.
 # I can't imagine using anything larger like decade, century or
@@ -384,21 +410,13 @@ class BibDay(BibCalItem):
         self.weekday = b_weekday_today
         self.g_weekday = g_weekday_today
 
-        # Related to high feast days below.
-        f = (self.month, self.day)
-        try:
-            if fixed_high_feast_days[f]:
-                self.is_hfd = True
-                self.is_hfs = fixed_high_feast_days[f][1]
-                self.feast_name = fixed_high_feast_days[f][0]
-        except KeyError:
-            self.is_hfd = False
-            self.is_hfs = False
+        f = test_is_feast(self.month, self.day)
 
-        if self.weekday == '7th':
-            self.is_ws = True  # ws stands for weekly Sabbath.
-        else:
-            self.is_ws = False
+        self.is_hfd = f[0]
+        self.is_hfs = f[1]
+        self.feast_name = f[2]
+
+        self.is_ws = test_is_sabbath(self.weekday)
 
         if self.is_hfs is True:  # hfs stands for high feast sabbath
             self.sabbath = self.is_hfs

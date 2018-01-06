@@ -50,8 +50,8 @@ bib_months = ('1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th',
               '10th', '11th', '12th', '13th')
 
 # Define the gregorian weekdays.
-greg_weekday = ('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday',
-                'Friday', 'Saturday')
+greg_weekday = ('Monday', 'Tuesday', 'Wednesday', 'Thursday',
+                'Friday', 'Saturday', 'Sunday', 'Monday')
 
 # Tuple containing the biblical weekday names. Simply refered to by
 # their number.
@@ -68,7 +68,8 @@ bib_day_of_month = ('1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th',
 fixed_feast_days = {
     '9, 25', ('1st day of Hanukkah', False), '12, 14', ('Purim', False)
 }
-
+# TODO: Feast days that are relative to weekday, or that span over
+# months (like Hanukkah).
 # List of high feast days. True if they are considered
 # "High days of convocation" where no work shall be done.
 fixed_high_feast_days = {
@@ -171,6 +172,7 @@ class BibCalItem:
             print('Error: Year value lower than 4000.')
             raise IndexError
         self.year = int(year)
+        self.date()
 
     def date(self):
         # Generate a yk (year_key) combining the year with 01 to get a
@@ -194,7 +196,6 @@ class BibMonth(BibCalItem):
     def __init__(self, year, month):
         # Make integers from the input.
         y = BibCalItem(year)
-        y.date()
         self.year = y.year
         try:
             self.month = int(month)
@@ -208,6 +209,7 @@ class BibMonth(BibCalItem):
             print('Error: Could not convert the value to an integer.')
         except IndexError:
             print('Error: The specified value is out of the allowed range.')
+        self.date()
 
     def date(self):
         # searchable key to get the month.
@@ -313,7 +315,6 @@ class BibDay(BibCalItem):
     def __init__(self, year, month, day):
         # Make integers from the input.
         m = BibMonth(year, month)
-        m.date()
         self.year = m.year
         self.month = m.month
         self.length = m.length
@@ -337,25 +338,28 @@ class BibDay(BibCalItem):
         self.is_certain = None
         self.start_g_date = m.start_g_date + datetime.timedelta(
             days=self.day - 1)
+        self.weekday()
+        self.weekly_sabbath()
 
     def weekday(self):
 
         self.is_ws = False  # ws stands for weekly sabbath
         self.is_hfd = False  # hs stands for High Feast day
 
-        # Get the current weekday from datetime. Monday is 0, Sunday is 6.
+        # Get the gregorian weekday from datetime. Monday is 0, Sunday is 6.
         y = self.start_g_date.year
         m = self.start_g_date.month
         d = self.start_g_date.day
         weekday_index = datetime.datetime(y, m, d).weekday()
         # +1 Since the day starts in the evening.
         b_weekday_today = bib_weekdays[weekday_index + 1]
+        g_weekday_today = greg_weekday[weekday_index]
 
         # Return the weekday string.
         self.weekday = b_weekday_today
+        self.g_weekday = g_weekday_today
 
     def weekly_sabbath(self):
-        self.weekday()
         if self.weekday == '7th':
             self.is_ws = True  # ws stands for weekly Sabbath.
         else:

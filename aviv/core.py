@@ -163,16 +163,72 @@ def bibmonth_from_key(k):
             return None
 
 
+# This function attempts to create a BibDay object given a gregorian
+# date. Example d = 2017, 1, 1
+def bibday_from_g_date(year, month, day):
+    if year <= 4000:
+        print('Error: Year value lower than 4000. Not searchable.')
+        raise IndexError
+
+
+def test_year(year):
+    y = int(year)
+    try:
+        if y <= 4000:
+            print('Error: Year value lower than 4001. Not searchable.')
+            raise IndexError
+        elif y >= 8001:
+            print('Error: Year value higher than 8000. Not searchable.')
+        else:
+            return y
+    except ValueError or TypeError:
+        print('Error: Incorrect Type or Value')
+
+
+def test_month(month):
+    m = int(month)
+    try:
+        if m <= 0:
+            print('Error: Month value lower than 1.')
+            raise IndexError
+        elif m > 13:
+            print('Error: Month value higher than 13.')
+            raise IndexError
+        else:
+            return m
+    except ValueError:
+        print('Error: Not an integer.')
+    except IndexError:
+        print('Error: The specified value is out of the allowed range.')
+
+
+def test_day(day, length):
+    d = int(day)
+    l = int(length)
+    try:
+        if d <= 0:
+            print('Error: Day value lower than 1.')
+            raise IndexError
+        elif d > 30:
+            print('Error: Day value higher than 30.')
+            raise IndexError
+        elif d > l:
+            print('Error: The month did not contain that many days.')
+            raise IndexError
+        else:
+            return d
+    except ValueError:
+        print('Error: Could not convert the value to an integer.')
+    except IndexError:
+        print('Error: The value is out of the allowed range.')
+
 # Base class for other classes.
 # Every point in time needs to at least have a year defined.
 # I can't imagine using anything larger like decade, century or
 # millenia.
 class BibCalItem:
     def __init__(self, year):
-        if year <= 4000:
-            print('Error: Year value lower than 4000.')
-            raise IndexError
-        self.year = int(year)
+        self.year = test_year(year)
 
         # Generate a yk (year_key) combining the year with 01 to get a
         # searchable key to get the first month.
@@ -196,18 +252,7 @@ class BibMonth(BibCalItem):
         # Make integers from the input.
         y = BibCalItem(year)
         self.year = y.year
-        try:
-            self.month = int(month)
-            if self.month <= 0:
-                print('Error: Month value lower than 1.')
-                raise IndexError
-            elif self.month > 13:
-                print('Error: Month value higher than 13.')
-                raise IndexError
-        except ValueError:
-            print('Error: Could not convert the value to an integer.')
-        except IndexError:
-            print('Error: The specified value is out of the allowed range.')
+        self.month = test_month(month)
 
         # searchable key to get the month.
         self.dict_k = int(str(self.year) + '{0:0=2d}'.format(self.month))
@@ -314,22 +359,7 @@ class BibDay(BibCalItem):
         m = BibMonth(year, month)
         self.year = m.year
         self.month = m.month
-        self.length = m.length
-        try:
-            self.day = int(day)
-            if self.day <= 0:
-                print('Error: Day value lower than 1.')
-                raise IndexError
-            elif self.day > 30:
-                print('Error: Day value higher than 30.')
-                raise IndexError
-            elif self.day > self.length:
-                print('Error: The month did not contain that many days.')
-                raise IndexError
-        except ValueError:
-            print('Error: Could not convert the value to an integer.')
-        except IndexError:
-            print('Error: The specified value is out of the allowed range.')
+        self.day = test_day(day, m.length)
         self.is_known = m.is_known
         self.is_estimated = m.is_estimated
         self.is_certain = None
@@ -354,11 +384,13 @@ class BibDay(BibCalItem):
         self.weekday = b_weekday_today
         self.g_weekday = g_weekday_today
 
+        # Related to high feast days below.
         f = (self.month, self.day)
         try:
             if fixed_high_feast_days[f]:
                 self.is_hfd = True
                 self.is_hfs = fixed_high_feast_days[f][1]
+                self.feast_name = fixed_high_feast_days[f][0]
         except KeyError:
             self.is_hfd = False
             self.is_hfs = False
@@ -368,7 +400,7 @@ class BibDay(BibCalItem):
         else:
             self.is_ws = False
 
-        if self.is_hfs is True: # hfs stands for high feast sabbath
+        if self.is_hfs is True:  # hfs stands for high feast sabbath
             self.sabbath = self.is_hfs
         else:
             self.sabbath = self.is_ws
@@ -397,7 +429,7 @@ class BibLocation:
         #  the horizon.
         self.solar_depression = 'civil'
 
-    def sun(self):
+        #    def sun(self):
         # Uses the timezone of the given location to fetch the solar data.
         # This solution could probably be prettier. By default astral uses
         # UTC (I think...) as timezone.

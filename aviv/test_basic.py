@@ -75,3 +75,8 @@ def test_known_reference_days():
         assert result_g_weekday == ref_g_weekday
         assert result_sabbath == ref_sabbath
         assert result_feast_day == ref_feast_day
+
+
+def test_stockholm_today():
+    s = core.BibLocation('Stockholm')
+    time = datetime.datetime.now(s.astral_city.tz).replace(microsecond=0)

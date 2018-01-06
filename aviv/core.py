@@ -240,10 +240,10 @@ def test_is_feast(month, day):
 def test_is_sabbath(weekday):
     try:
         if weekday == '7th':
-            is_ws = True  # ws stands for weekly Sabbath.
+            ws = True  # ws stands for weekly Sabbath.
         else:
-            is_ws = False
-        return is_ws
+            ws = False
+        return ws
     except ValueError:
         print('Error: Wrong kind of input.')
 

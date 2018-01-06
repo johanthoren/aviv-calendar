@@ -2,6 +2,7 @@
 
 import core
 import hist_data
+import datetime
 
 
 def test_estimated_days_of_month():
@@ -41,3 +42,34 @@ def test_is_known():
         assert result1 is not None
         assert result2 is not True
         assert result2 is not None
+
+
+def test_known_reference_days():
+    '''Testing against a few known days.'''
+    known_reference_days = {
+        # date id, g_year, g_month, g_day, 'Weekday', 'G Weekday',
+        # Sabbath, Feast day.
+        (6013, 1, 1): ((2013, 3, 13), '5th', 'Wednesday', False, True),
+        (6016, 11, 20): ((2017, 2, 17), '7th', 'Friday', True, False)
+    }
+
+    for key, value in known_reference_days.items():
+        d = core.BibDay(*key)
+
+        result_g_date = d.start_g_date
+        result_weekday = d.weekday
+        result_g_weekday = d.g_weekday
+        result_sabbath = d.sabbath
+        result_feast_day = d.is_hfd
+
+        ref_g_date = datetime.date(*value[0])
+        ref_weekday = value[1]
+        ref_g_weekday = value[2]
+        ref_sabbath = value[3]
+        ref_feast_day = value[4]
+
+        assert result_g_date == ref_g_date
+        assert result_weekday == ref_weekday
+        assert result_g_weekday == ref_g_weekday
+        assert result_sabbath == ref_sabbath
+        assert result_feast_day == ref_feast_day

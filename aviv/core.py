@@ -73,6 +73,7 @@ fixed_feast_days = {
 # List of high feast days. True if they are considered
 # "High days of convocation" where no work shall be done.
 fixed_high_feast_days = {
+    '1, 1': ('1st day of the Aviv Year.', False),
     '1, 14': ('Passover', False),
     '1, 15': ('1st day of "Feast of Unleavened Bread"', True),
     '1, 16': ('2nd day of "Feast of Unleavened Bread"', False),
@@ -477,7 +478,8 @@ class BibLocation:
         self.sun()
 
         self.is_ws = False  # ws stands for weekly sabbath
-        self.is_hfd = False  # hs stands for High Feast day
+        self.is_hfd = False  # hfd stands for High Feast day
+        self.if_hfs = False # hfs stands for High Feast Sabbath
 
         # Get the current weekday from datetime. Monday is 0, Sunday is 6.
         b_weekday_index = datetime.datetime.now(self.astral_city.tz).weekday()
@@ -505,8 +507,8 @@ class BibLocation:
         else:
             self.is_ws = False
         # Check for a High Feast day and override to True if that's the case.
-        if self.is_hfd is True:
-            self.sabbath = self.is_hfd
+        if self.is_hfs is True:
+            self.sabbath = self.is_hfs
         else:
             self.sabbath = self.is_ws
 

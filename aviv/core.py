@@ -66,8 +66,7 @@ bib_day_of_month = ('1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th',
 
 # List of feast days that are not biblically commanded to keep.
 fixed_feast_days = {
-    '9, 25', ('1st day of Hanukkah', False),
-    '12, 14', ('Purim', False)
+    '9, 25', ('1st day of Hanukkah', False), '12, 14', ('Purim', False)
 }
 
 # List of high feast days. True if they are considered
@@ -228,12 +227,22 @@ class BibMonth(BibCalItem):
         self.first_name = bib_day_of_month[0]
 
         def get_end_g_date(nk):
-            y = known_moons[nk][2]
-            m = known_moons[nk][3]
-            d = known_moons[nk][4]
-            n = datetime.date(y, m, d)
-            self.end_g_date = n - datetime.timedelta(days=1)
-            return self.end_g_date
+            try:
+                if known_moons[nk]:
+                    y = known_moons[nk][2]
+                    m = known_moons[nk][3]
+                    d = known_moons[nk][4]
+                    n = datetime.date(y, m, d)
+                    self.end_g_date = n - datetime.timedelta(days=1)
+                    return self.end_g_date
+            except KeyError:
+                if estimated_moons[nk]:
+                    y = estimated_moons[nk][2]
+                    m = estimated_moons[nk][3]
+                    d = estimated_moons[nk][4]
+                    n = datetime.date(y, m, d)
+                    self.end_g_date = n - datetime.timedelta(days=1)
+                    return self.end_g_date
 
         # The first day of the biblical month equals to the gregorian day when
         # the sunset signaled the start of the biblical day. To keep
@@ -251,52 +260,52 @@ class BibMonth(BibCalItem):
             logging.debug('Returning self.length as %s' % self.length)
             return self.length
 
-        # Check if the month is in the database of known_moons.
+        # Check if the month is in the database of known_moons or
+        # estimated_moons
         # Primary reason for doing this is because we want to get the data
         # on the next month so that we can calculate the end date, and thus
         # the length.
         try:
             if known_moons[self.dict_k]:
-                logging.debug('%s exists in known_moons' % self.dict_k)
-
-                if 0 < self.month <= 11:
-                    logging.debug(
-                        '%s is greater than 0 and lesser than or equal to 11' %
-                        self.month)
-                    logging.debug('Will try to add 1 to the index')
-                    logging.debug('to get the value of the next month')
-                    nk = self.dict_k + 1
-                elif self.month == 12:
-                    logging.debug('%s i equal to 12' % self.month)
-                    logging.debug('Will check if there is a 13th month.')
+                next_exists = True
+        except KeyError:
+            try:
+                if estimated_moons[self.dict_k]:
+                    next_exists = True
+            except KeyError:
+                next_exists = False
+        if next_exists is True:
+            if 0 < self.month <= 11:
+                nk = self.dict_k + 1
+            elif self.month == 12:
+                try:
+                    if known_moons[self.dict_k + 1]:
+                        nk = self.dict_k + 1
+                except KeyError:
                     try:
-                        if known_moons[self.dict_k + 1]:
-                            logging.debug('The 13th month exists.')
+                        if estimated_moons[self.dict_k + 1]:
                             nk = self.dict_k + 1
-                            logging.debug('The next month key is %s' % nk)
                     except KeyError:
-                        logging.debug('The 13th month does NOT exist.')
                         nk = int(str(self.year + 1) + '01')
-                        logging.debug('The next month key is %s' % nk)
-                elif self.month == 13:
-                    logging.debug('%s is equal to 13' % self.month)
-                    logging.debug(
-                        '+1 on the year part of the id and reset month to 01')
-                    nk = int(str(self.year + 1) + '01')
-                    logging.debug('The next month key is %s' % nk)
-        except KeyError:
-            logging.debug('%s does NOT exist in known_moons' % self.dict_k)
-            logging.debug(
-                'Unable to say anything about the next month right now.')
-        try:
-            if known_moons[nk]:
-                get_end_g_date(nk)
-                self.length = get_length(self.start_g_date, self.end_g_date)
-                self.last_name = bib_day_of_month[self.length - 1]
-        except KeyError:
-            logging.debug('%s does NOT exist in known_moons' % nk)
-            logging.debug(
-                'Unable to say anything about the next month right now.')
+            if self.month == 13:
+                nk = int(str(self.year + 1) + '01')
+            try:
+                if known_moons[nk]:
+                    get_end_g_date(nk)
+                    self.length = get_length(self.start_g_date,
+                                             self.end_g_date)
+                    logging.debug('self.length is %s' % self.length)
+                    self.last_name = bib_day_of_month[self.length - 1]
+            except KeyError:
+                try:
+                    if estimated_moons[nk]:
+                        get_end_g_date(nk)
+                        self.length = get_length(self.start_g_date,
+                                                 self.end_g_date)
+                        logging.debug('self.length is %s' % self.length)
+                except KeyError:
+                    self.length = None
+        else:
             self.length = None
 
 

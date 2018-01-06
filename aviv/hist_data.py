@@ -45,6 +45,7 @@
 # day), GREGORIAN month of that same day, GREGORIAN day of said day.
 
 estimated_moons = {
+    601608: (6016, 8, 2016, 11, 1)     # stellarium
 }
 
 known_moons = {

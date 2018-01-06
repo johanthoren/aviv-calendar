@@ -335,16 +335,7 @@ class BibMonth(BibCalItem):
         # Primary reason for doing this is because we want to get the data
         # on the next month so that we can calculate the end date, and thus
         # the length.
-        try:
-            if known_moons[self.dict_k]:
-                next_exists = True
-        except KeyError:
-            try:
-                if estimated_moons[self.dict_k]:
-                    next_exists = True
-            except KeyError:
-                next_exists = False
-        if next_exists is True:
+        if self.is_known is True:
             if 0 < self.month <= 11:
                 nk = self.dict_k + 1
             elif self.month == 12:

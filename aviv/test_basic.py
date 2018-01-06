@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import logging
 import core
 import hist_data
 import datetime
@@ -54,6 +55,7 @@ def test_known_reference_days():
     }
 
     for key, value in known_reference_days.items():
+        logging.debug('key is {}'.format(key))
         d = core.BibDay(*key)
 
         result_g_date = d.start_g_date

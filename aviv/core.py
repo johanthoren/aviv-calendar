@@ -50,8 +50,8 @@ bib_months = ('1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th',
               '10th', '11th', '12th', '13th')
 
 # Define the gregorian weekdays.
-greg_weekday = ('Monday', 'Tuesday', 'Wednesday', 'Thursday',
-                'Friday', 'Saturday', 'Sunday', 'Monday')
+greg_weekday = ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
+                'Saturday', 'Sunday', 'Monday')
 
 # Tuple containing the biblical weekday names. Simply refered to by
 # their number.
@@ -73,25 +73,25 @@ fixed_feast_days = {
 # List of high feast days. True if they are considered
 # "High days of convocation" where no work shall be done.
 fixed_high_feast_days = {
-    '1, 1': ('1st day of the Aviv Year.', False),
-    '1, 14': ('Passover', False),
-    '1, 15': ('1st day of "Feast of Unleavened Bread"', True),
-    '1, 16': ('2nd day of "Feast of Unleavened Bread"', False),
-    '1, 17': ('3rd day of "Feast of Unleavened Bread"', False),
-    '1, 18': ('4th day of "Feast of Unleavened Bread"', False),
-    '1, 19': ('5th day of "Feast of Unleavened Bread"', False),
-    '1, 20': ('6th day of "Feast of Unleavened Bread"', False),
-    '1, 21': ('Last day of "Feast of Unleavened Bread"', True),
-    '7, 1': ('Yom Teruah / "Feast of Trumpets or Feast of Shouting"', True),
-    '7, 10': ('Yom Kippur / "Day of Atonement"', True),
-    '7, 15': ('1st day of Sukkot / "Feast of Tabernacles"', True),
-    '7, 16': ('2nd day of Sukkot / "Feast of Tabernacles"', False),
-    '7, 17': ('3rd day of Sukkot / "Feast of Tabernacles"', False),
-    '7, 18': ('4th day of Sukkot / "Feast of Tabernacles"', False),
-    '7, 19': ('5th day of Sukkot / "Feast of Tabernacles"', False),
-    '7, 20': ('6th day of Sukkot / "Feast of Tabernacles"', False),
-    '7, 21': ('Last day of Sukkot / "Feast of Tabernacles"', False),
-    '7, 22': ('Last Great Day', True)
+    (1, 1): ('1st day of the Aviv Year.', False),
+    (1, 14): ('Passover', False),
+    (1, 15): ('1st day of "Feast of Unleavened Bread"', True),
+    (1, 16): ('2nd day of "Feast of Unleavened Bread"', False),
+    (1, 17): ('3rd day of "Feast of Unleavened Bread"', False),
+    (1, 18): ('4th day of "Feast of Unleavened Bread"', False),
+    (1, 19): ('5th day of "Feast of Unleavened Bread"', False),
+    (1, 20): ('6th day of "Feast of Unleavened Bread"', False),
+    (1, 21): ('Last day of "Feast of Unleavened Bread"', True),
+    (7, 1): ('Yom Teruah / "Feast of Trumpets or Feast of Shouting"', True),
+    (7, 10): ('Yom Kippur / "Day of Atonement"', True),
+    (7, 15): ('1st day of Sukkot / "Feast of Tabernacles"', True),
+    (7, 16): ('2nd day of Sukkot / "Feast of Tabernacles"', False),
+    (7, 17): ('3rd day of Sukkot / "Feast of Tabernacles"', False),
+    (7, 18): ('4th day of Sukkot / "Feast of Tabernacles"', False),
+    (7, 19): ('5th day of Sukkot / "Feast of Tabernacles"', False),
+    (7, 20): ('6th day of Sukkot / "Feast of Tabernacles"', False),
+    (7, 21): ('Last day of Sukkot / "Feast of Tabernacles"', False),
+    (7, 22): ('Last Great Day', True)
 }
 
 
@@ -173,9 +173,7 @@ class BibCalItem:
             print('Error: Year value lower than 4000.')
             raise IndexError
         self.year = int(year)
-        self.date()
 
-    def date(self):
         # Generate a yk (year_key) combining the year with 01 to get a
         # searchable key to get the first month.
         self.dict_k = int(str(self.year) + '01')
@@ -210,9 +208,7 @@ class BibMonth(BibCalItem):
             print('Error: Could not convert the value to an integer.')
         except IndexError:
             print('Error: The specified value is out of the allowed range.')
-        self.date()
 
-    def date(self):
         # searchable key to get the month.
         self.dict_k = int(str(self.year) + '{0:0=2d}'.format(self.month))
 
@@ -337,15 +333,13 @@ class BibDay(BibCalItem):
         self.is_known = m.is_known
         self.is_estimated = m.is_estimated
         self.is_certain = None
+        self.date = (self.year, self.month, self.day)
         self.start_g_date = m.start_g_date + datetime.timedelta(
             days=self.day - 1)
-        self.weekday()
-        self.weekly_sabbath()
 
-    def weekday(self):
-
-        self.is_ws = False  # ws stands for weekly sabbath
-        self.is_hfd = False  # hs stands for High Feast day
+        self.is_ws = None  # ws stands for weekly sabbath
+        self.is_hfd = None  # hs stands for High Feast day
+        self.is_sabbath = None
 
         # Get the gregorian weekday from datetime. Monday is 0, Sunday is 6.
         y = self.start_g_date.year
@@ -360,17 +354,24 @@ class BibDay(BibCalItem):
         self.weekday = b_weekday_today
         self.g_weekday = g_weekday_today
 
-    def weekly_sabbath(self):
+        f = (self.month, self.day)
+        try:
+            if fixed_high_feast_days[f]:
+                self.is_hfd = True
+                self.is_hfs = fixed_high_feast_days[f][1]
+        except KeyError:
+            self.is_hfd = False
+            self.is_hfs = False
+
         if self.weekday == '7th':
             self.is_ws = True  # ws stands for weekly Sabbath.
         else:
             self.is_ws = False
-            # Check for a High Feast day and override to True if that's
-            # the case.
-            if self.is_hfd is True:
-                self.sabbath = self.is_hfd
-            else:
-                self.sabbath = self.is_ws
+
+        if self.is_hfs is True: # hfs stands for high feast sabbath
+            self.sabbath = self.is_hfs
+        else:
+            self.sabbath = self.is_ws
 
 
 class BibHour(BibCalItem):
@@ -477,9 +478,9 @@ class BibLocation:
     def weekday(self):
         self.sun()
 
-        self.is_ws = False  # ws stands for weekly sabbath
-        self.is_hfd = False  # hfd stands for High Feast day
-        self.if_hfs = False # hfs stands for High Feast Sabbath
+        self.is_ws = None  # ws stands for weekly sabbath
+        self.is_hfd = None  # hfd stands for High Feast day
+        self.if_hfs = None  # hfs stands for High Feast Sabbath
 
         # Get the current weekday from datetime. Monday is 0, Sunday is 6.
         b_weekday_index = datetime.datetime.now(self.astral_city.tz).weekday()

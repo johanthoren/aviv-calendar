@@ -45,7 +45,8 @@
 # day), GREGORIAN month of that same day, GREGORIAN day of said day.
 
 estimated_moons = {
-    601608: (6016, 8, 2016, 11, 1)     # stellarium
+    601608: (6016, 8, 2016, 11, 1),     # stellarium
+    601711: (6017, 11, 2018, 1, 18)     # renewedmoon.com estimate
 }
 
 known_moons = {
@@ -222,5 +223,8 @@ known_moons = {
     601609: (6016, 9, 2016, 11, 30),   # renewedmoon.com
     601610: (6016, 10, 2016, 12, 30),  # renewedmoon.com
     601611: (6016, 11, 2017, 1, 29),   # renewedmoon.com
-    601612: (6016, 12, 2017, 2, 27)    # renewedmoon.com
+    601612: (6016, 12, 2017, 2, 27),   # renewedmoon.com
+    # Missing months.
+    601709: (6017, 9, 2017, 11, 20),   # renewedmoon.com
+    601710: (6017, 10, 2017, 12, 20)   # a rood awakening / michael rood
 }

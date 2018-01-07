@@ -367,6 +367,8 @@ class BibMonth(BibCalItem):
                 except KeyError:
                     self.length = None
         else:
+            logging.debug('Unable to set the length.'
+                          'Likely because next month is not known.')
             self.length = None
 
 

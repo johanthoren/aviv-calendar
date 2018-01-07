@@ -516,13 +516,6 @@ class BibLocation:
         self.current_time = self.time_now.strftime("%H:%M")
         self.current_date = self.time_now.strftime("%Y-%m-%d")
 
-    def weekday(self):
-        self.sun()
-
-        self.is_ws = None  # ws stands for weekly sabbath
-        self.is_hfd = None  # hfd stands for High Feast day
-        self.if_hfs = None  # hfs stands for High Feast Sabbath
-
         # Get the current weekday from datetime. Monday is 0, Sunday is 6.
         b_weekday_index = datetime.datetime.now(self.astral_city.tz).weekday()
 
@@ -542,30 +535,18 @@ class BibLocation:
         # Return the weekday string.
         self.weekday = b_weekday_today
 
-    def weekly_sabbath(self):
-        self.weekday()
-        if self.weekday == '7th':
-            self.is_ws = True  # ws stands for weekly Sabbath.
-        else:
-            self.is_ws = False
-        # Check for a High Feast day and override to True if that's the case.
-        if self.is_hfs is True:
+        f = test_is_feast(self.time_now.month, self.time_now.day)
+
+        self.is_hfd = f[0]
+        self.is_hfs = f[1]
+        self.feast_name = f[2]
+
+        self.is_ws = test_is_sabbath(self.weekday)
+
+        if self.is_hfs is True:  # hfs stands for high feast sabbath
             self.sabbath = self.is_hfs
         else:
             self.sabbath = self.is_ws
-
-    # The following function is basically just a placeholder for later code.
-    def high_feast_day(self):
-        self.weekday()
-        self.is_hfd = True
-        logging.debug('It is a High Feast day.')
-        self.sabbath = True
-
-    # The following function is basically just a placeholder for later code.
-    def regular_day(self):
-        self.weekday()
-        logging.debug('It is a regular day.')
-        self.sabbath = False
 
 
 if __name__ == '__main__':
@@ -582,7 +563,6 @@ if __name__ == '__main__':
         logging.debug('entry is %s' % entry)
         location = BibLocation(entry)
         logging.debug('Creating object %s' % location)
-        location.weekly_sabbath()
         print('The chosen location is {}'.format(location.city_name))
         print('The gregorian date in {} is now {}'.format(
             location.city_name, location.current_date))
@@ -608,7 +588,7 @@ if __name__ == '__main__':
         if location.sabbath is True:
             if location.is_ws is True:
                 print('It is now the weekly Sabbath')
-            elif location.is_hfd is True:
-                print('It is now a High Feast day, and therefore a Sabbath')
+            elif location.is_hfs is True:
+                print('It is now a High Feast Sabbath.')
             else:
                 print('Error: Unkown Sabbath')

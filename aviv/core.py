@@ -36,6 +36,7 @@ from astral import Astral
 import logging
 from hist_data import known_moons
 from hist_data import estimated_moons
+import urllib.request
 
 logging.basicConfig(
     level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
@@ -93,6 +94,24 @@ fixed_high_feast_days = {
     (7, 21): ('Last day of Sukkot / "Feast of Tabernacles"', False),
     (7, 22): ('Last Great Day', True)
 }
+
+
+def get_latest_data():
+    # Download the file from `https://www.avivcalendar.com/latest_data`
+    # and save it locally under `latest_data`:
+    url = 'https://www.avivcalendar.com/latest-data'
+    with urllib.request.urlopen(url) as response, open('aviv/latest_data.py',
+                                                       'wb') as out_file:
+        d = response.read()
+        out_file.write(d)
+        out_file.close()
+
+
+def combine_data():
+    hd = open('hist_data', 'r')
+    nd = open('latest_data', 'r')
+    cd = open('current_data', 'w')
+    pass
 
 
 # Creates a datetime object from key (k). First tries to find the month in the
@@ -370,6 +389,11 @@ class BibMonth(BibCalItem):
             logging.debug('Unable to set the length.'
                           'Likely because next month is not known.')
             self.length = None
+
+    def is_aviv(self):
+        if self.end_g_date.year == datetime.datetime.now().year:
+            if self.month >= 11:
+                pass
 
 
 class BibDay(BibCalItem):

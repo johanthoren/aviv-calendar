@@ -81,3 +81,10 @@ def test_known_reference_days():
 # def test_stockholm_today():
 #     s = core.BibLocation('Stockholm')
 #     time = datetime.datetime.now(s.astral_city.tz).replace(microsecond=0)
+
+def test_get_latest_data():
+    core.get_latest_data()
+    import latest_data
+    assert latest_data.last_known_moon is not None
+    assert latest_data.next_estimated_moon is not None
+    assert latest_data.aviv_barley is not None

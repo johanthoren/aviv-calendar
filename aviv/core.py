@@ -34,9 +34,10 @@ import datetime
 # Using the builtin geocoder. Se Astral documentation for alternatives.
 from astral import Astral
 import logging
-from hist_data import known_moons
-from hist_data import estimated_moons
 import urllib.request
+import os
+import sys
+import shelve
 
 logging.basicConfig(
     level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
@@ -98,20 +99,46 @@ fixed_high_feast_days = {
 
 def get_latest_data():
     # Download the file from `https://www.avivcalendar.com/latest_data`
-    # and save it locally under `latest_data`:
+    # and save it locally under `latest_data.py`:
     url = 'https://www.avivcalendar.com/latest-data'
-    with urllib.request.urlopen(url) as response, open('aviv/latest_data.py',
-                                                       'wb') as out_file:
+    file = os.path.join(sys.path[0], 'latest_data.py')
+    with urllib.request.urlopen(url) as response, open(file, 'wb') as out_file:
         d = response.read()
         out_file.write(d)
         out_file.close()
 
 
+db_file = os.path.join(sys.path[0], 'current_data')
+
+
 def combine_data():
-    hd = open('hist_data', 'r')
-    nd = open('latest_data', 'r')
-    cd = open('current_data', 'w')
-    pass
+    get_latest_data()
+    import latest_data
+    import hist_data
+    db = shelve.open(db_file)
+    db.clear()
+
+    def merge_two_dicts(x, y):
+        z = x.copy()  # start with x's keys and values
+        z.update(y)  # modifies z with y's keys and values & returns None
+        return z
+
+    now_known_moons = merge_two_dicts(latest_data.last_known_moon,
+                                      hist_data.known_moons)
+    now_estimated_moons = merge_two_dicts(latest_data.next_estimated_moon,
+                                          hist_data.estimated_moons)
+    db['known_moons'] = now_known_moons
+    db['estimated_moons'] = now_estimated_moons
+    db['aviv_barley'] = latest_data.aviv_barley
+    db.close()
+
+
+combine_data()
+
+db = shelve.open(db_file)
+known_moons = db['known_moons']
+estimated_moons = db['estimated_moons']
+aviv_barley = db['aviv_barley']
 
 
 # Creates a datetime object from key (k). First tries to find the month in the
@@ -618,3 +645,4 @@ if __name__ == '__main__':
                 print('It is now a High Feast Sabbath.')
             else:
                 print('Error: Unkown Sabbath')
+    db.close()

@@ -4,6 +4,9 @@ import logging
 import core
 import hist_data
 import datetime
+import os
+import sys
+import shelve
 
 
 def test_estimated_days_of_month():
@@ -78,13 +81,25 @@ def test_known_reference_days():
         assert result_feast_day == ref_feast_day
 
 
-# def test_stockholm_today():
-#     s = core.BibLocation('Stockholm')
-#     time = datetime.datetime.now(s.astral_city.tz).replace(microsecond=0)
-
-def test_get_latest_data():
-    core.get_latest_data()
+def test_current_data():
     import latest_data
-    assert latest_data.last_known_moon is not None
-    assert latest_data.next_estimated_moon is not None
-    assert latest_data.aviv_barley is not None
+    if not os.path.join(sys.path[0], 'current_data.db'):
+        core.combine_data()
+
+    db_file = os.path.join(sys.path[0], 'current_data')
+    db = shelve.open(db_file)
+    known_moons = db['known_moons']
+    estimated_moons = db['estimated_moons']
+    aviv_barley = db['aviv_barley']
+
+    def merge_two_dicts(x, y):
+        z = x.copy()  # start with x's keys and values
+        z.update(y)  # modifies z with y's keys and values & returns None
+        return z
+
+    assert known_moons == merge_two_dicts(hist_data.known_moons,
+                                          latest_data.last_known_moon)
+    assert estimated_moons == merge_two_dicts(hist_data.estimated_moons,
+                                              latest_data.next_estimated_moon)
+    assert aviv_barley == latest_data.aviv_barley
+    db.close()

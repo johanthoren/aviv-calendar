@@ -103,4 +103,5 @@ ENV/
 # MacOS
 .DS_Store
 
-/aviv/latest_data.py
+/aviv/latest_data.*
+/aviv/current_data.*

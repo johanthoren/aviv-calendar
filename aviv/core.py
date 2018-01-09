@@ -104,6 +104,7 @@ fixed_high_feast_days = {
 
 
 def get_latest_data():
+    """Fetches the latest data available from avivcalendar.com."""
     # Download the file from `https://www.avivcalendar.com/latest_data`
     # and save it locally under `latest_data.py`. This is updated as soon
     # as news of the new moon or the Aviv barley breaks.
@@ -125,6 +126,7 @@ db_file = os.path.join(sys.path[0], 'current_data')
 # Combine the data from hist_data (which is distributed with the source code),
 # and data from latest_data, which is synced in get_latest_data above.
 def combine_data():
+    """Combine data from source code with data fetched online and create db."""
     get_latest_data()
     # I didn't want this import to be at the top of the file, since the
     # latest_data.py file will not exist on first run.
@@ -137,6 +139,7 @@ def combine_data():
     # db.clear()
 
     def merge_two_dicts(x, y):
+        """Merges two dictionaries: historical data and latest data."""
         z = x.copy()  # start with x's keys and values
         z.update(y)  # modifies z with y's keys and values & returns None
         return z
@@ -169,6 +172,7 @@ aviv_barley = db['aviv_barley']
 # Note that most historical moons before 6001 will always be estimated.
 # Keys need to be in the form of YYYYMM (example: 600101).
 def datetime_from_key(k):
+    """Tries to find the key in dictionaries of known and estimated moons."""
     try:
         if known_moons[k]:
             y = known_moons[k][2]
@@ -200,6 +204,7 @@ def datetime_from_key(k):
 # This function tries to create a BibMonth object given a key (k).
 # Keys need to be in the form of YYYYMM (example: 600101).
 def bibitem_from_key(k):
+    """Creates a BibCalItem object from a key (k) in the form YYYYMM."""
     try:
         if known_moons[k]:
             m = BibCalItem(*known_moons[k][0:1])
@@ -216,6 +221,7 @@ def bibitem_from_key(k):
 # This function tries to create a BibMonth object given a key (k).
 # Keys need to be in the form of YYYYMM (example: 600101).
 def bibmonth_from_key(k):
+    """Creates a BibMonth object from a key (k) in the form of YYYYMM."""
     try:
         if known_moons[k]:
             m = BibMonth(*known_moons[k][0:2])
@@ -232,6 +238,7 @@ def bibmonth_from_key(k):
 # This function tests to see if a year is within the given range of this
 # program.
 def test_year(year):
+    """Tests if a year is within the scope of the program. Namely 4001-8001."""
     y = int(year)
     try:
         if y <= 4000:
@@ -247,6 +254,7 @@ def test_year(year):
 
 # This function tests to see if a month is within the given range of a year.
 def test_month(month):
+    """Tests if a month is within the range of a biblical year: 1-13."""
     m = int(month)
     try:
         if m <= 0:
@@ -265,6 +273,7 @@ def test_month(month):
 
 # This function tests to see if a day is within the given range of a month.
 def test_day(day, length):
+    """Tests if a day is within the range of a biblical month: 1-30"""
     d = int(day)
     l = int(length)
     try:
@@ -288,6 +297,7 @@ def test_day(day, length):
 # This function tests to see if a day is a feast day.
 # TODO: Work in progress.
 def test_is_feast(month, day):
+    """Tests if a day is a High Feast Day."""
     f = (month, day)
     try:
         if fixed_high_feast_days[f]:
@@ -304,6 +314,7 @@ def test_is_feast(month, day):
 # This function tests to see if a day of the week is the weekly sabbath.
 # Hint: Only tests if it's the 7th day.
 def test_is_sabbath(weekday):
+    """Tests if a weekday is the 7th, and thus a weekly sabbath."""
     try:
         if weekday == '7th':
             ws = True  # ws stands for weekly Sabbath.
@@ -319,6 +330,7 @@ def test_is_sabbath(weekday):
 # I can't imagine using anything larger like decade, century or
 # millenia.
 class BibCalItem:
+    """Base class for date related objects."""
     def __init__(self, year):
         self.year = test_year(year)
 
@@ -340,6 +352,7 @@ class BibCalItem:
 
 
 class BibMonth(BibCalItem):
+    """Represents a biblical month."""
     def __init__(self, year, month):
         # Make integers from the input.
         y = BibCalItem(year)
@@ -365,6 +378,7 @@ class BibMonth(BibCalItem):
 
         # nk = next (month) key
         def get_end_g_date(nk):
+            """Tries to calculate the end date of self."""
             try:
                 if known_moons[nk]:
                     y = known_moons[nk][2]
@@ -393,6 +407,7 @@ class BibMonth(BibCalItem):
         # end date will be Nov 30.
 
         def get_length(start_d, end_d):
+            """Tries to calculate the length of self in days."""
             self.length = (end_d - start_d).days + 1
             return self.length
 
@@ -438,12 +453,14 @@ class BibMonth(BibCalItem):
             self.length = None
 
     def is_aviv(self):
+        """Reads the latest_data to check if the Barley in Israel is Aviv."""
         if self.end_g_date.year == datetime.datetime.now().year:
             if self.month >= 11:
                 pass
 
 
 class BibDay(BibCalItem):
+    """Represents a biblical day."""
     def __init__(self, year, month, day):
         # Make integers from the input.
         m = BibMonth(year, month)
@@ -489,6 +506,7 @@ class BibDay(BibCalItem):
 
 
 class BibHour(BibCalItem):
+    """Represents a biblical hour."""
     def __init__(self, year, month, day, hour):
         pass
 
@@ -501,6 +519,7 @@ class BibHour(BibCalItem):
 # Example usage: 'sthlm.weekday' <- Gives back the day of week as a string.
 # Example usage: 'sthlm.sabbath' <- Gives back if it's a sabbath as boolean.
 class BibLocation:
+    """Defines a location and calculates date related data, such as sunset."""
     def __init__(self, city_name):
         self.city_name = city_name
         self.astral_city = Astral()[city_name]

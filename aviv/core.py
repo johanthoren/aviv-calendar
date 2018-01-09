@@ -38,6 +38,8 @@ import urllib.request
 import os
 import sys
 import shelve
+import latest_data
+import hist_data
 
 logging.basicConfig(
     level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
@@ -113,8 +115,6 @@ db_file = os.path.join(sys.path[0], 'current_data')
 
 def combine_data():
     get_latest_data()
-    import latest_data
-    import hist_data
     db = shelve.open(db_file)
     db.clear()
 
@@ -133,7 +133,8 @@ def combine_data():
     db.close()
 
 
-combine_data()
+if not os.path.exists(db_file):
+    combine_data()
 
 db = shelve.open(db_file)
 known_moons = db['known_moons']
@@ -207,14 +208,6 @@ def bibmonth_from_key(k):
                 return m
         except KeyError:
             return None
-
-
-# This function attempts to create a BibDay object given a gregorian
-# date. Example d = 2017, 1, 1
-def bibday_from_g_date(year, month, day):
-    if year <= 4000:
-        print('Error: Year value lower than 4000. Not searchable.')
-        raise IndexError
 
 
 def test_year(year):
@@ -495,11 +488,11 @@ class BibLocation:
         # Uses the timezone of the given location to fetch the solar data.
         # This solution could probably be prettier. By default astral uses
         # UTC (I think...) as timezone.
-        self.daily_sun = self.astral_city.sun(
+        daily_sun = self.astral_city.sun(
             date=datetime.datetime.now(self.astral_city.tz), local=True)
         # Get the relevant data.
-        self.daily_sunset = self.daily_sun['sunset']
-        self.daily_sunrise = self.daily_sun['sunrise']
+        daily_sunset = daily_sun['sunset']
+        daily_sunrise = daily_sun['sunrise']
         # Before I set microsecond=0 I had trouble comparing the time_now
         # with daily_sunset below.
         self.time_now = datetime.datetime.now(self.astral_city.tz).replace(
@@ -523,18 +516,18 @@ class BibLocation:
 
         # If after noon, Check if the sun has set.
         if self.after_noon is True:
-            if self.time_now >= self.daily_sunset:
+            if self.time_now >= daily_sunset:
                 self.sun_has_set = True
-            elif self.time_now < self.daily_sunset:
+            elif self.time_now < daily_sunset:
                 self.sun_has_set = False
             else:
                 raise Exception('Unable to tell if the sun has set.')
 
         # If NOT in the afternoon, check if the sun has risen.
         elif self.after_noon is False:
-            if self.time_now >= self.daily_sunrise:
+            if self.time_now >= daily_sunrise:
                 self.sun_has_risen = True
-            elif self.time_now < self.daily_sunrise:
+            elif self.time_now < daily_sunrise:
                 self.sun_has_risen = False
             else:
                 raise Exception('Unable to tell if the sun has risen.')
@@ -556,16 +549,16 @@ class BibLocation:
                 self.daylight = False
 
         # Misc. attributes.
-        self.sunrise_hour = self.daily_sunrise.hour
-        self.sunrise_minute = self.daily_sunrise.minute
-        self.sunrise_second = self.daily_sunrise.second
-        self.sunrise_timezone = self.daily_sunrise.tzname()
-        self.sunrise_time = self.daily_sunrise.strftime("%H:%M")
-        self.sunset_hour = self.daily_sunset.hour
-        self.sunset_minute = self.daily_sunset.minute
-        self.sunset_second = self.daily_sunset.second
-        self.sunset_timezone = self.daily_sunset.tzname()
-        self.sunset_time = self.daily_sunset.strftime("%H:%M")
+        self.sunrise_hour = daily_sunrise.hour
+        self.sunrise_minute = daily_sunrise.minute
+        self.sunrise_second = daily_sunrise.second
+        self.sunrise_timezone = daily_sunrise.tzname()
+        self.sunrise_time = daily_sunrise.strftime("%H:%M")
+        self.sunset_hour = daily_sunset.hour
+        self.sunset_minute = daily_sunset.minute
+        self.sunset_second = daily_sunset.second
+        self.sunset_timezone = daily_sunset.tzname()
+        self.sunset_time = daily_sunset.strftime("%H:%M")
         self.current_time = self.time_now.strftime("%H:%M")
         self.current_date = self.time_now.strftime("%Y-%m-%d")
 
@@ -588,7 +581,38 @@ class BibLocation:
         # Return the weekday string.
         self.weekday = b_weekday_today
 
-        f = test_is_feast(self.time_now.month, self.time_now.day)
+        # This function attempts to find out the biblical
+        # date.
+
+        last_moon = latest_data.last_known_moon
+        k = list(last_moon.keys())[0]
+        bm = bibmonth_from_key(k)
+        start_of_month_time = datetime.datetime(
+            bm.start_g_year, bm.start_g_month, bm.start_g_day).replace(
+                tzinfo=self.astral_city.tzinfo, microsecond=0)
+        d = self.time_now - start_of_month_time
+        n = d.days
+
+        day_of_month_index = n - 1
+        if self.sun_has_set is not None:
+            if self.sun_has_set is True:
+                day_of_month_index += 1
+                day_of_month = bib_day_of_month[day_of_month_index]
+            else:
+                day_of_month = bib_day_of_month[day_of_month_index]
+        elif self.sun_has_set is None:
+            day_of_month = bib_day_of_month[day_of_month_index]
+        else:
+            raise Exception('''Unable to tell what day of month it is.
+                Unclear if the sun has set.''')
+
+        self.day = day_of_month
+
+        month_index = bm.month - 1
+        self.month = bib_months[month_index]
+        self.year = bm.year
+
+        f = test_is_feast(self.month, self.day)
 
         self.is_hfd = f[0]
         self.is_hfs = f[1]
@@ -638,6 +662,10 @@ if __name__ == '__main__':
             print('The sun is still up')
             print('The sunset will be at {}'.format(location.sunset_time))
         print('Today is the {} day of the week'.format(location.weekday))
+        print('The biblical date in {} is now:\n'
+              'The {} day of the {} month in the year {}.'.format(
+                  location.city_name, location.day, location.month,
+                  location.year))
         if location.sabbath is True:
             if location.is_ws is True:
                 print('It is now the weekly Sabbath')
@@ -645,4 +673,5 @@ if __name__ == '__main__':
                 print('It is now a High Feast Sabbath.')
             else:
                 print('Error: Unkown Sabbath')
+
     db.close()

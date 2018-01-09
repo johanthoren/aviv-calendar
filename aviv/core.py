@@ -8,9 +8,9 @@
 # the Feasts of the Lord as well as the Sabbath.
 
 # CURRENT STATUS:
-# Currently, it only decides what day of week it is according to
-# biblical timekeeping. It will also tell you some details about
-# sunset and sunrise and wether or not is is a weekly sabbath.
+# Currently, it only decides what day of week, month and year it is according
+# to biblical timekeeping. It will also tell you some details about sunset
+# and sunrise and wether or not is is a weekly sabbath.
 
 # COPYRIGHT:
 # Copyright (C) 2017 - 2018 Johan Thorén <johan@thoren.xyz>
@@ -38,22 +38,24 @@ import urllib.request
 import os
 import sys
 import shelve
-import latest_data
 import hist_data
 
 logging.basicConfig(
-    level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
+    level=logging.CRITICAL,
+    format=' %(asctime)s - %(levelname)s - %(message)s')
 
 # Define the traditional names of the biblical months of the year.
+# These are not per definition biblical, rather they come from the exile
+# in Babylon.
 trad_month_names = ('Nisan', 'Iyyar', 'Sivan', 'Tammuz', 'Av', 'Elul',
                     'Tishri', 'Marheshvan', 'Kislev', 'Tevet', 'Shvat', 'Adar',
                     'Adar (2)')
 
-# Define the biblical months.
+# Define the biblical months. 1st month could be named Aviv. Maybe later.
 bib_months = ('1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th',
               '10th', '11th', '12th', '13th')
 
-# Define the gregorian weekdays.
+# Define the gregorian weekdays. Wrapping for ease of index reference.
 greg_weekday = ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
                 'Saturday', 'Sunday', 'Monday')
 
@@ -68,13 +70,15 @@ bib_day_of_month = ('1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th',
                     '23rd', '24th', '25th', '26th', '27th', '28th', '29th',
                     '30th')
 
-# List of feast days that are not biblically commanded to keep.
+# List of feast days that are NOT biblically commanded to keep but still
+# of interest.
 fixed_feast_days = {
     '9, 25', ('1st day of Hanukkah', False), '12, 14', ('Purim', False)
 }
 # TODO: Feast days that are relative to weekday, or that span over
 # months (like Hanukkah).
-# List of high feast days. True if they are considered
+
+# List of high feast days. Boolean True if they are considered
 # "High days of convocation" where no work shall be done.
 fixed_high_feast_days = {
     (1, 1): ('1st day of the Aviv Year.', False),
@@ -101,7 +105,9 @@ fixed_high_feast_days = {
 
 def get_latest_data():
     # Download the file from `https://www.avivcalendar.com/latest_data`
-    # and save it locally under `latest_data.py`:
+    # and save it locally under `latest_data.py`. This is updated as soon
+    # as news of the new moon or the Aviv barley breaks.
+    # TODO: This needs error handling.
     url = 'https://www.avivcalendar.com/latest-data'
     file = os.path.join(sys.path[0], 'latest_data.py')
     with urllib.request.urlopen(url) as response, open(file, 'wb') as out_file:
@@ -110,19 +116,32 @@ def get_latest_data():
         out_file.close()
 
 
+# Working with a db_file since we will be joining dictionaries from both git
+# synced sources, as well as the latest_data.py that is retrieved from
+# online.
 db_file = os.path.join(sys.path[0], 'current_data')
 
 
+# Combine the data from hist_data (which is distributed with the source code),
+# and data from latest_data, which is synced in get_latest_data above.
 def combine_data():
     get_latest_data()
+    # I didn't want this import to be at the top of the file, since the
+    # latest_data.py file will not exist on first run.
+    # TODO: Is that the correct way to do it?
+    import latest_data
     db = shelve.open(db_file)
-    db.clear()
+
+    # Potentially needed clearing of db befor each run. Or is that overkill?
+    # TODO: Needs testing.
+    # db.clear()
 
     def merge_two_dicts(x, y):
         z = x.copy()  # start with x's keys and values
         z.update(y)  # modifies z with y's keys and values & returns None
         return z
 
+    # Combine hist_data and latest_data and stash it in the database.
     now_known_moons = merge_two_dicts(latest_data.last_known_moon,
                                       hist_data.known_moons)
     now_estimated_moons = merge_two_dicts(latest_data.next_estimated_moon,
@@ -133,6 +152,7 @@ def combine_data():
     db.close()
 
 
+# Open the database, if none exists run the function to create one.
 if not os.path.exists(db_file):
     combine_data()
 
@@ -143,11 +163,10 @@ aviv_barley = db['aviv_barley']
 
 
 # Creates a datetime object from key (k). First tries to find the month in the
-# hist_data.known_moons and tries hist_data.estimated_moons as backup. Also
-# sets the value of the attribute is_known to reflect wether or not it was
-# found among the known (and therefore confirmed) moons or if it's an
-# estimated guess.
-# Note that most historical moons will always be estimated.
+# known_moons and tries estimated_moons as backup. Also sets the value of the
+# attribute is_known to reflect wether or not it was found among the known
+# (and therefore confirmed) moons or if it's an estimated guess.
+# Note that most historical moons before 6001 will always be estimated.
 # Keys need to be in the form of YYYYMM (example: 600101).
 def datetime_from_key(k):
     try:
@@ -210,6 +229,8 @@ def bibmonth_from_key(k):
             return None
 
 
+# This function tests to see if a year is within the given range of this
+# program.
 def test_year(year):
     y = int(year)
     try:
@@ -224,6 +245,7 @@ def test_year(year):
         print('Error: Incorrect Type or Value')
 
 
+# This function tests to see if a month is within the given range of a year.
 def test_month(month):
     m = int(month)
     try:
@@ -241,6 +263,7 @@ def test_month(month):
         print('Error: The specified value is out of the allowed range.')
 
 
+# This function tests to see if a day is within the given range of a month.
 def test_day(day, length):
     d = int(day)
     l = int(length)
@@ -262,6 +285,8 @@ def test_day(day, length):
         print('Error: The value is out of the allowed range.')
 
 
+# This function tests to see if a day is a feast day.
+# TODO: Work in progress.
 def test_is_feast(month, day):
     f = (month, day)
     try:
@@ -276,6 +301,8 @@ def test_is_feast(month, day):
     return (is_hfd, is_hfs, feast_name)
 
 
+# This function tests to see if a day of the week is the weekly sabbath.
+# Hint: Only tests if it's the 7th day.
 def test_is_sabbath(weekday):
     try:
         if weekday == '7th':
@@ -468,6 +495,7 @@ class BibHour(BibCalItem):
 
 # Creates the object BibLocation which takes the argument of a city name
 # as a string. Note that only major capitals and some cities in U.S will work.
+# Only working with current time for now.
 # Example: 'sthlm = BibLocation('Stockholm)' <- Creates an object with the name
 # 'sthlm'.
 # Example usage: 'sthlm.weekday' <- Gives back the day of week as a string.
@@ -584,6 +612,7 @@ class BibLocation:
         # This function attempts to find out the biblical
         # date.
 
+        import latest_data
         last_moon = latest_data.last_known_moon
         k = list(last_moon.keys())[0]
         bm = bibmonth_from_key(k)
@@ -666,6 +695,12 @@ if __name__ == '__main__':
               'The {} day of the {} month in the year {}.'.format(
                   location.city_name, location.day, location.month,
                   location.year))
+        # if location.is_estimated is True:
+        #     print('The date and time is estimated'
+        #           ' and is NOT based on actual observations')
+        # if location.is_known is True:
+        #     print('The date and time is certain'
+        #           ' and is based on actual observations')
         if location.sabbath is True:
             if location.is_ws is True:
                 print('It is now the weekly Sabbath')

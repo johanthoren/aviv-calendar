@@ -2,8 +2,10 @@
 ## Goal: 
 Tries to find out what day it is according to biblical time keeping.
 ## Status:
-Right now it does nothing, except give you the current biblical day
-of week as well as telling you if it's a weekly Sabbath or not.
+Right now it does a few things when called upon:
+* It gives you the current biblical date your chosen location.
+* It also give you the current day of the week as well as telling you if it's a weekly Sabbath or not.
+* In the source code there is a lot more, but not that is being triggered by the running of the program. Not yet.
 ## Dependencies:
 Depends on *astral*. Install with `pip install astral`.
 ## Definitions:
@@ -17,3 +19,5 @@ The aviv-calendar project is based on the following ideas:
 Since this calendar is not a purely mathematical calendar, such as the Gregorian calendar or the traditional Rabbinic calendar, it cannot rely on math alone. It needs to be tied to different services on the web to get updates on the new moon sighting as well as the status of the barley in Israel.
 
 It also needs a trusted database of reported sightings from Israel. See aviv/hist_data.py for this.
+## Contributing:
+It's worth noting that this is my 'learning-by-doing-project' to learn python. In other words, please contribute and don't feel shy about pointing out obvious errors or style related issues. Please create an issue or a pull-request.

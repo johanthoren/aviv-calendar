@@ -331,6 +331,7 @@ def test_is_sabbath(weekday):
 # millenia.
 class BibCalItem:
     """Base class for date related objects."""
+
     def __init__(self, year):
         self.year = test_year(year)
 
@@ -353,6 +354,7 @@ class BibCalItem:
 
 class BibMonth(BibCalItem):
     """Represents a biblical month."""
+
     def __init__(self, year, month):
         # Make integers from the input.
         y = BibCalItem(year)
@@ -461,6 +463,7 @@ class BibMonth(BibCalItem):
 
 class BibDay(BibCalItem):
     """Represents a biblical day."""
+
     def __init__(self, year, month, day):
         # Make integers from the input.
         m = BibMonth(year, month)
@@ -507,6 +510,7 @@ class BibDay(BibCalItem):
 
 class BibHour(BibCalItem):
     """Represents a biblical hour."""
+
     def __init__(self, year, month, day, hour):
         pass
 
@@ -520,6 +524,7 @@ class BibHour(BibCalItem):
 # Example usage: 'sthlm.sabbath' <- Gives back if it's a sabbath as boolean.
 class BibLocation:
     """Defines a location and calculates date related data, such as sunset."""
+
     def __init__(self, city_name):
         self.city_name = city_name
         self.astral_city = Astral()[city_name]
@@ -672,6 +677,77 @@ class BibLocation:
             self.sabbath = self.is_hfs
         else:
             self.sabbath = self.is_ws
+
+
+now = datetime.datetime.now().replace(microsecond=0)
+
+
+class BibTime():
+    def __init__(self, city_name):
+        location = Astral()[city_name]
+        self.location = location
+        self.location.solar_depression = 'civil'
+
+        def time_now():
+            gdatetime = datetime.datetime.now(self.location.tz).replace(
+                tzinfo=self.location.tzinfo)
+            return gdatetime
+
+        self.gdatetime = time_now()
+
+        def sun_status():
+            sun = self.location.sun(date=self.gdatetime, local=True)
+            sunrise = sun['sunrise']
+            sunset = sun['sunset']
+
+            h = self.gdatetime.hour
+
+            if h >= 12:
+                after_noon = True
+            elif h < 12:
+                after_noon = False
+
+            t = self.gdatetime
+
+            sun_has_set = None
+            sun_has_risen = None
+
+            if after_noon is True:
+                if t >= sunset:
+                    sun_has_set = True
+                elif t < sunset:
+                    sun_has_set = False
+                else:
+                    raise Exception(
+                        'Error: Unable to tell if the sun has set.')
+
+            elif after_noon is False:
+                if t >= sunrise:
+                    sun_has_risen = True
+                elif t < sunrise:
+                    sun_has_risen = False
+                else:
+                    raise Exception(
+                        'Error: Unable to tell if the sun has risen.')
+
+            if sun_has_set is not None:
+                if sun_has_set is True:
+                    daylight = False
+                elif sun_has_set is False:
+                    daylight = True
+            if sun_has_risen is not None:
+                if sun_has_risen is True:
+                    daylight = True
+                elif sun_has_risen is False:
+                    daylight = False
+
+            self.sunrise = sunrise
+            self.sunset = sunset
+            self.sun_has_set = sun_has_set
+            self.sun_has_risen = sun_has_risen
+            self.daylight = daylight
+
+        sun_status()
 
 
 if __name__ == '__main__':

@@ -162,18 +162,12 @@ def combine_data():
 if not os.path.exists(db_file):
     combine_data()
 
+# Get the database in order.
 db = shelve.open(db_file)
 known_moons = db['known_moons']
 estimated_moons = db['estimated_moons']
 aviv_barley = db['aviv_barley']
-
-
-def init_db():
-    # Get the database in order.
-    db = shelve.open(db_file)
-    known_moons = db['known_moons']
-    estimated_moons = db['estimated_moons']
-    aviv_barley = db['aviv_barley']
+db.close()
 
 
 # Creates a datetime object from key (k). First tries to find the month in the
@@ -361,6 +355,7 @@ class BibCalItem:
         except AttributeError:
             self.is_known = False
             self.is_estimated = False
+        db.close()
 
 
 class BibMonth(BibCalItem):
@@ -464,6 +459,7 @@ class BibMonth(BibCalItem):
             logging.debug('Unable to set the length.'
                           'Likely because next month is not known.')
             self.length = None
+        db.close()
 
     def is_aviv(self):
         """Reads the latest_data to check if the Barley in Israel is Aviv."""
@@ -619,7 +615,6 @@ class BibTime():
 
         # Import last_data and initialize the database.
         import latest_data
-        init_db()
         last_moon = latest_data.last_known_moon
         last_moon_key = list(last_moon.keys())[0]
 
@@ -665,21 +660,19 @@ class BibTime():
         # Find out if it's a High Feast Day or a Sabbath.
         f = test_is_feast(self.month, self.day)
 
-        is_hfd = f[0]
-        is_hfs = f[1]
+        self.is_hfd = f[0]
+        self.is_hfs = f[1]
 
-        self.feast_day = is_hfd
+        self.feast_day = self.is_hfd
         self.feast_name = f[2]
 
         self.weekday = self.bweekday_now()
-        is_ws = test_is_sabbath(self.weekday)
+        self.is_ws = test_is_sabbath(self.weekday)
 
-        if is_hfs is True:  # hfs stands for high feast sabbath
-            self.sabbath = is_hfs
+        if self.is_hfs is True:  # hfs stands for high feast sabbath
+            self.sabbath = self.is_hfs
         else:
-            self.sabbath = is_ws
-
-        db.close()
+            self.sabbath = self.is_ws
 
 
 if __name__ == '__main__':
@@ -694,46 +687,63 @@ if __name__ == '__main__':
         print('Example: Manila')
     else:
         logging.debug('entry is %s' % entry)
-        location = BibLocation(entry)
-        logging.debug('Creating object %s' % location)
-        print('The chosen location is {}'.format(location.city_name))
+        x = BibTime(entry)
+        x.bdate_now()
+        x.bweekday_now()
+        logging.debug('Creating object %s' % x)
+        print('The chosen location is {}'.format(x.location.name))
         print('The gregorian date in {} is now {}'.format(
-            location.city_name, location.current_date))
-        print('The time in {} is now {}'.format(location.city_name,
-                                                location.current_time))
-        if location.sun_has_set is True:
+            x.location.name, x.gdatetime.strftime('%Y-%m-%d')))
+        print('The time in {} is now {}'.format(x.location.name,
+                                                x.gdatetime.strftime('%H:%M')))
+        if x.sun_has_set is True:
             print('The sun is down')
-            print('The sunset was at {}'.format(location.sunset_time))
-        if location.sun_has_risen is False:
+            print('The sunset was at {}'.format(x.sunset.strftime('%H:%M')))
+        if x.sun_has_risen is False:
             print('The sun has not yet risen')
-            print('The sunrise will be at {}'.format(location.sunrise_time))
+            print('The sunrise will be at {}'.format(
+                x.sunrise.strftime('%H:%M')))
         # If sun_has_set is None, it should be in the morning. Therefore, check
         # if the sun has risen.
-        if location.sun_has_set is None and location.sun_has_risen is True:
+        if x.sun_has_set is None and x.sun_has_risen is True:
             print('The sun is still up')
-            print('The sunset will be at {}'.format(location.sunset_time))
+            print(
+                'The sunset will be at {}'.format(x.sunset.strftime('%H:%M')))
         # If sun_has_risen is None it should be in the afternoon. Therefore,
         # check if the sun has set.
-        if location.sun_has_risen is None and location.sun_has_set is False:
+        if x.sun_has_risen is None and x.sun_has_set is False:
             print('The sun is still up')
-            print('The sunset will be at {}'.format(location.sunset_time))
-        print('Today is the {} day of the week'.format(location.weekday))
+            print(
+                'The sunset will be at {}'.format(x.sunset.strftime('%H:%M')))
+        print('Today is the {} day of the week'.format(x.weekday))
         print('The biblical date in {} is now:\n'
               'The {} day of the {} month in the year {}.'.format(
-                  location.city_name, location.day, location.month,
-                  location.year))
-        # if location.is_estimated is True:
+                  x.location.name, x.day_name, x.month, x.year))
+        # if x.is_estimated is True:
         #     print('The date and time is estimated'
         #           ' and is NOT based on actual observations')
-        # if location.is_known is True:
+        # if x.is_known is True:
         #     print('The date and time is certain'
         #           ' and is based on actual observations')
-        if location.sabbath is True:
-            if location.is_ws is True:
+        if x.sabbath is True:
+            if x.is_ws is True:
                 print('It is now the weekly Sabbath')
-            elif location.is_hfs is True:
+            elif x.is_hfs is True:
                 print('It is now a High Feast Sabbath.')
             else:
                 print('Error: Unkown Sabbath')
-
-    db.close()
+        if x.feast_day is True:
+            print('It is now the {}'.format(x.feast_name))
+            if x.is_hfs is True:
+                print('It is a Holy Day of Convocation where no work '
+                      'shall be done.')
+            elif x.is_hfs is False:
+                print('It is not a Holy Day of Convocation.')
+        if x.month == 12:
+            if x.aviv_barley is False:
+                print('The barley in the land of Israel is NOT yet aviv.')
+                print('There will be a 13th month if it is not aviv before '
+                      'the end of the month.')
+            if x.aviv_barley is True:
+                print('The barley in the land of Israel is aviv!')
+                print('The next new moon will begin the new year.')

@@ -717,8 +717,7 @@ class BibTime():
             elif t < sunset:
                 sun_has_set = False
             else:
-                raise Exception(
-                    'Error: Unable to tell if the sun has set.')
+                raise Exception('Error: Unable to tell if the sun has set.')
 
         elif after_noon is False:
             if t >= sunrise:
@@ -726,8 +725,7 @@ class BibTime():
             elif t < sunrise:
                 sun_has_risen = False
             else:
-                raise Exception(
-                    'Error: Unable to tell if the sun has risen.')
+                raise Exception('Error: Unable to tell if the sun has risen.')
 
         if sun_has_set is not None:
             if sun_has_set is True:
@@ -745,6 +743,22 @@ class BibTime():
         self.sun_has_set = sun_has_set
         self.sun_has_risen = sun_has_risen
         self.daylight = daylight
+
+    def bweekday(self):
+        self.sun_status()
+        bwi = self.gdatetime.weekday()  # biblical weekday index
+        ss = self.sun_has_set
+
+        if ss is not None:
+            if ss is True:
+                bwi += 1
+                bweekday = bib_weekdays[bwi]
+            else:
+                bweekday = bib_weekdays[bwi]
+        elif ss is None:
+            bweekday = bib_weekdays[bwi]
+
+        self.weekday = bweekday
 
 
 if __name__ == '__main__':

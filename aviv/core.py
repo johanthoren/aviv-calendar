@@ -688,13 +688,13 @@ class BibTime():
         self.location = location
         self.location.solar_depression = 'civil'
 
-    def gdatetime(self):
+    def get_gdatetime(self):
         gdatetime = datetime.datetime.now(self.location.tz).replace(
             tzinfo=self.location.tzinfo)
         return gdatetime
 
     def sun_status(self):
-        self.gdatetime = self.gdatetime()
+        self.gdatetime = self.get_gdatetime()
         sun = self.location.sun(date=self.gdatetime, local=True)
         sunrise = sun['sunrise']
         sunset = sun['sunset']
@@ -744,7 +744,7 @@ class BibTime():
         self.sun_has_risen = sun_has_risen
         self.daylight = daylight
 
-    def bweekday(self):
+    def bweekday_now(self):
         self.sun_status()
         bwi = self.gdatetime.weekday()  # biblical weekday index
         ss = self.sun_has_set
@@ -759,6 +759,69 @@ class BibTime():
             bweekday = bib_weekdays[bwi]
 
         self.weekday = bweekday
+
+    def bdate_now(self):
+        # Update the needed data.
+        self.sun_status()
+        gdate = self.gdatetime.date()
+        mp = self.location.moon_phase(date=gdate)
+
+        # Get the database in order.
+        db_file = os.path.join(sys.path[0], 'current_data')
+        db_actual_file = os.path.join(sys.path[0], 'current_data.db')
+        db_exists = os.path.exists(db_actual_file)
+        db_mod_time = os.path.getmtime(db_actual_file)
+        if mp <= 1:
+            combine_data()
+        elif db_exists is False:
+            combine_data()
+        elif db_mod_time > 86400:
+            combine_data()
+
+        # Import and put in reasonable variables.
+        import latest_data
+        db = shelve.open(db_file)
+        known_moons = db['known_moons']
+        estimated_moons = db['estimated_moons']
+        aviv_barley = db['aviv_barley']
+        last_moon = latest_data.last_known_moon
+        last_moon_key = list(last_moon.keys())[0]
+
+        bm = datetime_from_key(last_moon_key)
+
+        self.is_known = bm[0]
+        self.is_estimated = bm[1]
+
+        bm_y = bm[2].year
+        bm_m = bm[2].month
+        bm_d = bm[2].day
+
+        month_start_time = datetime.datetime(bm_y, bm_m, bm_d).replace(
+            tzinfo=self.location.tzinfo, microsecond=0)
+
+        time_lapsed = self.gdatetime - month_start_time
+        dom = time_lapsed.days  # day of month
+
+        if self.sun_has_set is True:
+            dom += 1
+
+        # If moon phase is less than or equal to 27 but higher than 1 we
+        # should be able to confidently set the day, year and month based
+        # on the last moon.
+        self.day = dom
+        self.day_name = bib_day_of_month[dom - 1]
+        self.year = last_moon[last_moon_key][0]
+        self.month = last_moon[last_moon_key][1]
+        self.month_trad_name = trad_month_names[self.month - 1]
+
+        if 1 < mp <= 27:
+            confident = True
+        elif mp <= 1:
+            confident = False
+
+        self.confident = confident
+
+        self.bweekday_now()
 
 
 if __name__ == '__main__':

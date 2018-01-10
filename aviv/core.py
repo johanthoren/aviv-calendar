@@ -121,6 +121,9 @@ def get_latest_data():
 # synced sources, as well as the latest_data.py that is retrieved from
 # online.
 db_file = os.path.join(sys.path[0], 'current_data')
+db_actual_file = os.path.join(sys.path[0], 'current_data.db')
+db_exists = os.path.exists(db_actual_file)
+db_mod_time = os.path.getmtime(db_actual_file)
 
 
 # Combine the data from hist_data (which is distributed with the source code),
@@ -163,6 +166,14 @@ db = shelve.open(db_file)
 known_moons = db['known_moons']
 estimated_moons = db['estimated_moons']
 aviv_barley = db['aviv_barley']
+
+
+def init_db():
+    # Get the database in order.
+    db = shelve.open(db_file)
+    known_moons = db['known_moons']
+    estimated_moons = db['estimated_moons']
+    aviv_barley = db['aviv_barley']
 
 
 # Creates a datetime object from key (k). First tries to find the month in the
@@ -766,11 +777,6 @@ class BibTime():
         gdate = self.gdatetime.date()
         mp = self.location.moon_phase(date=gdate)
 
-        # Get the database in order.
-        db_file = os.path.join(sys.path[0], 'current_data')
-        db_actual_file = os.path.join(sys.path[0], 'current_data.db')
-        db_exists = os.path.exists(db_actual_file)
-        db_mod_time = os.path.getmtime(db_actual_file)
         if mp <= 1:
             combine_data()
         elif db_exists is False:
@@ -778,12 +784,9 @@ class BibTime():
         elif db_mod_time > 86400:
             combine_data()
 
-        # Import and put in reasonable variables.
+        # Import last_data and initialize the database.
         import latest_data
-        db = shelve.open(db_file)
-        known_moons = db['known_moons']
-        estimated_moons = db['estimated_moons']
-        aviv_barley = db['aviv_barley']
+        init_db()
         last_moon = latest_data.last_known_moon
         last_moon_key = list(last_moon.keys())[0]
 
@@ -821,7 +824,12 @@ class BibTime():
 
         self.confident = confident
 
-        self.bweekday_now()
+        if self.month >= 11:
+            self.aviv_barley = aviv_barley
+        else:
+            self.aviv_barley = None
+
+        db.close()
 
 
 if __name__ == '__main__':

@@ -688,66 +688,63 @@ class BibTime():
         self.location = location
         self.location.solar_depression = 'civil'
 
-        def time_now():
-            gdatetime = datetime.datetime.now(self.location.tz).replace(
-                tzinfo=self.location.tzinfo)
-            return gdatetime
+    def gdatetime(self):
+        gdatetime = datetime.datetime.now(self.location.tz).replace(
+            tzinfo=self.location.tzinfo)
+        return gdatetime
 
-        self.gdatetime = time_now()
+    def sun_status(self):
+        self.gdatetime = self.gdatetime()
+        sun = self.location.sun(date=self.gdatetime, local=True)
+        sunrise = sun['sunrise']
+        sunset = sun['sunset']
 
-        def sun_status():
-            sun = self.location.sun(date=self.gdatetime, local=True)
-            sunrise = sun['sunrise']
-            sunset = sun['sunset']
+        h = self.gdatetime.hour
 
-            h = self.gdatetime.hour
+        if h >= 12:
+            after_noon = True
+        elif h < 12:
+            after_noon = False
 
-            if h >= 12:
-                after_noon = True
-            elif h < 12:
-                after_noon = False
+        t = self.gdatetime
 
-            t = self.gdatetime
+        sun_has_set = None
+        sun_has_risen = None
 
-            sun_has_set = None
-            sun_has_risen = None
+        if after_noon is True:
+            if t >= sunset:
+                sun_has_set = True
+            elif t < sunset:
+                sun_has_set = False
+            else:
+                raise Exception(
+                    'Error: Unable to tell if the sun has set.')
 
-            if after_noon is True:
-                if t >= sunset:
-                    sun_has_set = True
-                elif t < sunset:
-                    sun_has_set = False
-                else:
-                    raise Exception(
-                        'Error: Unable to tell if the sun has set.')
+        elif after_noon is False:
+            if t >= sunrise:
+                sun_has_risen = True
+            elif t < sunrise:
+                sun_has_risen = False
+            else:
+                raise Exception(
+                    'Error: Unable to tell if the sun has risen.')
 
-            elif after_noon is False:
-                if t >= sunrise:
-                    sun_has_risen = True
-                elif t < sunrise:
-                    sun_has_risen = False
-                else:
-                    raise Exception(
-                        'Error: Unable to tell if the sun has risen.')
+        if sun_has_set is not None:
+            if sun_has_set is True:
+                daylight = False
+            elif sun_has_set is False:
+                daylight = True
+        if sun_has_risen is not None:
+            if sun_has_risen is True:
+                daylight = True
+            elif sun_has_risen is False:
+                daylight = False
 
-            if sun_has_set is not None:
-                if sun_has_set is True:
-                    daylight = False
-                elif sun_has_set is False:
-                    daylight = True
-            if sun_has_risen is not None:
-                if sun_has_risen is True:
-                    daylight = True
-                elif sun_has_risen is False:
-                    daylight = False
-
-            self.sunrise = sunrise
-            self.sunset = sunset
-            self.sun_has_set = sun_has_set
-            self.sun_has_risen = sun_has_risen
-            self.daylight = daylight
-
-        sun_status()
+        self.sunrise = sunrise
+        self.sunset = sunset
+        self.sun_has_set = sun_has_set
+        self.sun_has_risen = sun_has_risen
+        self.daylight = daylight
 
 
 if __name__ == '__main__':

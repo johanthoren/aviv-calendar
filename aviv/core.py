@@ -526,173 +526,6 @@ class BibHour(BibCalItem):
         pass
 
 
-# Creates the object BibLocation which takes the argument of a city name
-# as a string. Note that only major capitals and some cities in U.S will work.
-# Only working with current time for now.
-# Example: 'sthlm = BibLocation('Stockholm)' <- Creates an object with the name
-# 'sthlm'.
-# Example usage: 'sthlm.weekday' <- Gives back the day of week as a string.
-# Example usage: 'sthlm.sabbath' <- Gives back if it's a sabbath as boolean.
-class BibLocation:
-    """Defines a location and calculates date related data, such as sunset."""
-
-    def __init__(self, city_name):
-        self.city_name = city_name
-        self.astral_city = Astral()[city_name]
-        #  The number of degrees the sun must be below the horizon for the
-        #  dawn/dusk calculation. Can either be set as a number of degrees
-        #  below the horizon or as one of the following strings:
-        #  'civil', 'nautical' or 'astronomical'. Can also be set to a
-        #  floating number, representing the degrees of depression below
-        #  the horizon.
-        self.solar_depression = 'civil'
-
-        #    def sun(self):
-        # Uses the timezone of the given location to fetch the solar data.
-        # This solution could probably be prettier. By default astral uses
-        # UTC (I think...) as timezone.
-        daily_sun = self.astral_city.sun(
-            date=datetime.datetime.now(self.astral_city.tz), local=True)
-        # Get the relevant data.
-        daily_sunset = daily_sun['sunset']
-        daily_sunrise = daily_sun['sunrise']
-        # Before I set microsecond=0 I had trouble comparing the time_now
-        # with daily_sunset below.
-        self.time_now = datetime.datetime.now(self.astral_city.tz).replace(
-            tzinfo=self.astral_city.tzinfo, microsecond=0)
-
-        # DONE: Check if it's past midnight but before noon. If TRUE, then
-        #       the time for the sunset should be adjusted and set at the
-        #       time of the previous days' sunset.
-        # TODO: Needs more testing.
-
-        self.sun_has_set = None
-        self.sun_has_risen = None
-
-        # Check if it's past noon.
-        if self.time_now.hour >= 12:
-            self.after_noon = True
-        elif self.time_now.hour < 12:
-            self.after_noon = False
-        else:
-            raise Exception('Neither before or after 12.')
-
-        # If after noon, Check if the sun has set.
-        if self.after_noon is True:
-            if self.time_now >= daily_sunset:
-                self.sun_has_set = True
-            elif self.time_now < daily_sunset:
-                self.sun_has_set = False
-            else:
-                raise Exception('Unable to tell if the sun has set.')
-
-        # If NOT in the afternoon, check if the sun has risen.
-        elif self.after_noon is False:
-            if self.time_now >= daily_sunrise:
-                self.sun_has_risen = True
-            elif self.time_now < daily_sunrise:
-                self.sun_has_risen = False
-            else:
-                raise Exception('Unable to tell if the sun has risen.')
-
-        else:
-            raise Exception('Unable to tell if it is after noon or not.')
-
-        # Now create a value to give to the weekday function.
-        if self.sun_has_set is not None:
-            if self.sun_has_set is True:
-                self.daylight = False
-            elif self.sun_has_set is False:
-                self.daylight = True
-
-        if self.sun_has_risen is not None:
-            if self.sun_has_risen is True:
-                self.daylight = True
-            elif self.sun_has_risen is False:
-                self.daylight = False
-
-        # Misc. attributes.
-        self.sunrise_hour = daily_sunrise.hour
-        self.sunrise_minute = daily_sunrise.minute
-        self.sunrise_second = daily_sunrise.second
-        self.sunrise_timezone = daily_sunrise.tzname()
-        self.sunrise_time = daily_sunrise.strftime("%H:%M")
-        self.sunset_hour = daily_sunset.hour
-        self.sunset_minute = daily_sunset.minute
-        self.sunset_second = daily_sunset.second
-        self.sunset_timezone = daily_sunset.tzname()
-        self.sunset_time = daily_sunset.strftime("%H:%M")
-        self.current_time = self.time_now.strftime("%H:%M")
-        self.current_date = self.time_now.strftime("%Y-%m-%d")
-
-        # Get the current weekday from datetime. Monday is 0, Sunday is 6.
-        b_weekday_index = datetime.datetime.now(self.astral_city.tz).weekday()
-
-        # Check if the sun has set and add 1 to get the correct day.
-        if self.sun_has_set is not None:
-            if self.sun_has_set is True:
-                b_weekday_index += 1
-                b_weekday_today = bib_weekdays[b_weekday_index]
-            else:
-                b_weekday_today = bib_weekdays[b_weekday_index]
-        elif self.sun_has_set is None:
-            b_weekday_today = bib_weekdays[b_weekday_index]
-        else:
-            raise Exception('''Unable to tell what day of week it is.
-                Unclear if the sun has set.''')
-
-        # Return the weekday string.
-        self.weekday = b_weekday_today
-
-        # This function attempts to find out the biblical
-        # date.
-
-        import latest_data
-        last_moon = latest_data.last_known_moon
-        k = list(last_moon.keys())[0]
-        bm = bibmonth_from_key(k)
-        start_of_month_time = datetime.datetime(
-            bm.start_g_year, bm.start_g_month, bm.start_g_day).replace(
-                tzinfo=self.astral_city.tzinfo, microsecond=0)
-        d = self.time_now - start_of_month_time
-        n = d.days
-
-        day_of_month_index = n - 1
-        if self.sun_has_set is not None:
-            if self.sun_has_set is True:
-                day_of_month_index += 1
-                day_of_month = bib_day_of_month[day_of_month_index]
-            else:
-                day_of_month = bib_day_of_month[day_of_month_index]
-        elif self.sun_has_set is None:
-            day_of_month = bib_day_of_month[day_of_month_index]
-        else:
-            raise Exception('''Unable to tell what day of month it is.
-                Unclear if the sun has set.''')
-
-        self.day = day_of_month
-
-        month_index = bm.month - 1
-        self.month = bib_months[month_index]
-        self.year = bm.year
-
-        f = test_is_feast(self.month, self.day)
-
-        self.is_hfd = f[0]
-        self.is_hfs = f[1]
-        self.feast_name = f[2]
-
-        self.is_ws = test_is_sabbath(self.weekday)
-
-        if self.is_hfs is True:  # hfs stands for high feast sabbath
-            self.sabbath = self.is_hfs
-        else:
-            self.sabbath = self.is_ws
-
-
-now = datetime.datetime.now().replace(microsecond=0)
-
-
 class BibTime():
     def __init__(self, city_name):
         location = Astral()[city_name]
@@ -828,6 +661,23 @@ class BibTime():
             self.aviv_barley = aviv_barley
         else:
             self.aviv_barley = None
+
+        # Find out if it's a High Feast Day or a Sabbath.
+        f = test_is_feast(self.month, self.day)
+
+        is_hfd = f[0]
+        is_hfs = f[1]
+
+        self.feast_day = is_hfd
+        self.feast_name = f[2]
+
+        self.weekday = self.bweekday_now()
+        is_ws = test_is_sabbath(self.weekday)
+
+        if is_hfs is True:  # hfs stands for high feast sabbath
+            self.sabbath = is_hfs
+        else:
+            self.sabbath = is_ws
 
         db.close()
 

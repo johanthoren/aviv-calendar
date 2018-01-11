@@ -41,8 +41,7 @@ import shelve
 import hist_data
 
 logging.basicConfig(
-    level=logging.CRITICAL,
-    format=' %(asctime)s - %(levelname)s - %(message)s')
+    level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
 
 # Define the traditional names of the biblical months of the year.
 # These are not per definition biblical, rather they come from the exile
@@ -515,26 +514,42 @@ class BibDay(BibCalItem):
             self.sabbath = self.is_ws
 
 
-class BibHour(BibCalItem):
-    """Represents a biblical hour."""
-
-    def __init__(self, year, month, day, hour):
-        pass
+now = datetime.datetime.now().replace(microsecond=0)
 
 
 class BibTime():
-    def __init__(self, city_name):
+    def __init__(self,
+                 city_name,
+                 gyear=now.year,
+                 gmonth=now.month,
+                 gday=now.day,
+                 ghour=now.hour,
+                 gminute=now.minute,
+                 gsecond=now.second,
+                 gmicrosecond=0):
         location = Astral()[city_name]
         self.location = location
         self.location.solar_depression = 'civil'
 
-    def get_gdatetime(self):
-        gdatetime = datetime.datetime.now(self.location.tz).replace(
+        self.gyear = gyear
+        self.gmonth = gmonth
+        self.gday = gday
+        self.ghour = ghour
+        self.gminute = gminute
+        self.gsecond = gsecond
+        self.gmicrosecond = gmicrosecond
+
+        self.gdatetime = datetime.datetime(self.gyear, self.gmonth, self.gday,
+                                           self.ghour, self.gsecond,
+                                           self.gmicrosecond).replace(
+                                               tzinfo=self.location.tzinfo)
+
+    def get_gdatetime_now(self):
+        self.gdatetime = datetime.datetime.now(self.location.tz).replace(
             tzinfo=self.location.tzinfo)
-        return gdatetime
+        return self.gdatetime
 
     def sun_status(self):
-        self.gdatetime = self.get_gdatetime()
         sun = self.location.sun(date=self.gdatetime, local=True)
         sunrise = sun['sunrise']
         sunset = sun['sunset']
@@ -584,7 +599,11 @@ class BibTime():
         self.sun_has_risen = sun_has_risen
         self.daylight = daylight
 
-    def bweekday_now(self):
+    def sun_status_now(self):
+        self.gdatetime = self.get_gdatetime_now()
+        self.sun_status()
+
+    def bweekday(self):
         self.sun_status()
         bwi = self.gdatetime.weekday()  # biblical weekday index
         ss = self.sun_has_set
@@ -600,7 +619,11 @@ class BibTime():
 
         self.weekday = bweekday
 
-    def bdate_now(self):
+    def bweekday_now(self):
+        self.gdatetime = self.get_gdatetime_now()
+        self.bweekday()
+
+    def bdate(self):
         # Update the needed data.
         self.sun_status()
         gdate = self.gdatetime.date()
@@ -613,42 +636,238 @@ class BibTime():
         elif db_mod_time > 86400:
             combine_data()
 
-        # Import last_data and initialize the database.
+        # Import latest_data and initialize the database.
         import latest_data
         last_moon = latest_data.last_known_moon
         last_moon_key = list(last_moon.keys())[0]
 
-        bm = datetime_from_key(last_moon_key)
+        def find_month(m):
+            i = 0
+            list_of_known_moons = []
+            logging.debug('created empty list list_of_known_moons')
+            list_of_keys = []
+            logging.debug('created empty list list_of_keys')
+            for k, v in known_moons.items():
+                km = datetime.date(v[2], v[3], v[4])
+                list_of_known_moons.append(km)
+                list_of_keys.append(k)
+                i += 1
+                if km == m:
+                    logging.debug('%s is equal to %s, returning %s' % (km, m,
+                                                                       k))
+                    return k
+                elif km > m:
+                    logging.debug('%s (km) is greater than %s (m)' % (km, m))
+                    if km.year == m.year:
+                        logging.debug('%s is equal to %s' % (km.year, m.year))
+                        if km.month == m.month:
+                            logging.debug('%s is equal to %s' % (km.month,
+                                                                 m.month))
+                            pm = list_of_known_moons[i - 2]
+                            logging.debug('pm is %s' % pm)
+                            pk = list_of_keys[i - 2]
+                            logging.debug('pk is %s' % pk)
+                            if pm < m:
+                                logging.debug('%s is lesser than %s' % (pm, m))
+                                logging.debug('returning %s' % pk)
+                                return pk
+                            else:
+                                logging.debug('%s is NOT lesser than %s' % (pm,
+                                                                            m))
+                                logging.debug('moving on (continue)')
+                                continue
+                        elif km.month > m.month:
+                            logging.debug('%s is greater than %s' % (km.month,
+                                                                     m.month))
+                            logging.debug('moving on (continue)')
+                            continue
+                    if km.year > m.year:
+                        logging.debug('%s is greater than %s' % (km.year,
+                                                                 m.year))
+                        logging.debug('moving on (continue)')
+                        continue
+                elif km < m:
+                    logging.debug('%s (km) is lesser than %s (m)' % (km, m))
+                    if km.year == m.year:
+                        logging.debug('%s is equal to %s' % (km.year, m.year))
+                        if km.month == m.month:
+                            logging.debug('%s is equal to %s' % (km.month,
+                                                                 m.month))
+                            pm = list_of_known_moons[i - 2]
+                            logging.debug('pm is %s' % pm)
+                            pk = list_of_keys[i - 2]
+                            logging.debug('pk is %s' % pk)
+                            if pm < m:
+                                logging.debug('%s is lesser than %s' % (pm, m))
+                                logging.debug('returning %s' % pk)
+                                return pk
+                            else:
+                                logging.debug('%s is NOT lesser than %s' % (pm,
+                                                                            m))
+                                logging.debug('moving on (continue)')
+                                continue
+                        elif km.month > m.month:
+                            logging.debug('%s is greater than %s' % (km.month,
+                                                                     m.month))
+                            logging.debug('moving on (continue)')
+                            continue
+                    elif km.year > m.year:
+                        logging.debug('%s is greater than %s' % (km.year,
+                                                                 m.year))
+                        logging.debug('moving on (continue)')
+                        continue
+                else:
+                    logging.debug('%s is NOT lesser than %s' % (km, m))
+                    i = 0
+                    logging.debug('reset counter i to %s' % i)
+                    list_of_estimated_moons = []
+                    logging.debug('created empty list list_of_estimated_moons')
+                    list_of_ekeys = []
+                    logging.debug('created empty list list_of_ekeys')
+                    for k, v in known_moons.items():
+                        em = datetime.date(v[2], v[3], v[4])
+                        list_of_estimated_moons.append(em)
+                        list_of_ekeys.append(k)
+                        i += 1
+                        if km == m:
+                            logging.debug('%s is equal to %s, returning %s' %
+                                          (km, m, k))
+                            return k
+                        elif em > m:
+                            if em.year == m.year:
+                                if em.month == m.month:
+                                    pem = list_of_estimated_moons[i - 2]
+                                    pek = list_of_ekeys[i - 2]
+                                    if pem < m:
+                                        return pek
+                                    else:
+                                        continue
+                                elif em.month > m.month:
+                                    continue
+                            if em.year > m.year:
+                                continue
+                        elif em < m:
+                            if em.year == m.year:
+                                if em.month == m.month:
+                                    pem = list_of_estimated_moons[i - 2]
+                                    pek = list_of_ekeys[i - 2]
+                                    if pem < m:
+                                        return pek
+                                    else:
+                                        continue
+                                elif em.month > m.month:
+                                    continue
+                            elif em.year > m.year:
+                                continue
+                        else:
+                            pm = None
+                            return pm
+
+        # Test wether or not we are looking for a current date.
+
+        today = datetime.datetime.now(self.location.tz).replace(
+            tzinfo=self.location.tzinfo)
+        date_to_test = self.gdatetime.date()
+
+        print('year today is {}'.format(today.year))
+        print('month today is {}'.format(today.month))
+        print('day today is {}'.format(today.day))
+
+        if today.date() - date_to_test > datetime.timedelta(days=29):
+            current = False
+            logging.debug('current is %s' % current)
+        elif date_to_test - today.date() > datetime.timedelta(days=29):
+            current = False
+            logging.debug('current is %s' % current)
+        else:
+            current = True
+            logging.debug('current is %s' % current)
+
+        def get_month_key(year, month):
+            mk = int(str(year) + '{0:0=2d}'.format(month))
+            return mk
+
+        if current is True:
+            bm = datetime_from_key(last_moon_key)
+            if bm is None:
+                m = self.gdatetime.date()
+                print('bm is None, trying m. m is {}'.format(m))
+                pm = find_month(m)
+                bm = datetime_from_key(pm)
+        elif current is False:
+            m = self.gdatetime.date()
+            print('m is {}'.format(m))
+            pm = find_month(m)
+            bm = datetime_from_key(pm)
 
         self.is_known = bm[0]
         self.is_estimated = bm[1]
 
+        def set_month_start_time(y, m, d):
+            month_start_time = datetime.datetime(y, m, d).replace(
+                tzinfo=self.location.tzinfo, microsecond=0)
+            return month_start_time
+
+        def set_time_lapsed(t):
+            time_lapsed = self.gdatetime - t
+            d = time_lapsed.days  # day of month
+            if self.sun_has_set is True:
+                d += 1
+            return d
+
         bm_y = bm[2].year
+        logging.debug('bm_y is %s' % bm_y)
         bm_m = bm[2].month
+        logging.debug('bm_m is %s' % bm_m)
         bm_d = bm[2].day
+        logging.debug('bm_d is %s' % bm_d)
 
-        month_start_time = datetime.datetime(bm_y, bm_m, bm_d).replace(
-            tzinfo=self.location.tzinfo, microsecond=0)
+        month_start_time = set_month_start_time(bm_y, bm_m, bm_d)
+        dom = set_time_lapsed(month_start_time)
 
-        time_lapsed = self.gdatetime - month_start_time
-        dom = time_lapsed.days  # day of month
+        # Catch any false positives.
+        def catch_false_postitive(year, month):
+            if month <= 12:
+                mk = get_month_key(year, month)
+                mk = mk + 1
+            elif month == 13:
+                mk = int(str(year + 1) + '01')
+            try:
+                if known_moons[mk]:
+                    logging.debug('%s (mk) found in known_moons' % mk)
+                    bm = datetime_from_key(mk)
+                    y = bm[2].year
+                    m = bm[2].month
+                    d = bm[2].day
+                    return (y, m, d)
+            except KeyError:
+                try:
+                    if estimated_moons[mk]:
+                        logging.debug('%s (mk) found in estimated_moons' % mk)
+                        bm = datetime_from_key(mk)
+                        y = bm[2].year
+                        m = bm[2].month
+                        d = bm[2].day
+                        return (y, m, d)
+                except KeyError:
+                    pass
 
-        if self.sun_has_set is True:
-            dom += 1
+        def set_month_attributes(dom, mk):
+            self.day = dom
+            self.day_name = bib_day_of_month[dom - 1]
+            self.month_trad_name = trad_month_names[self.month - 1]
 
-        # If moon phase is less than or equal to 27 but higher than 1 we
-        # should be able to confidently set the day, year and month based
-        # on the last moon.
-        self.day = dom
-        self.day_name = bib_day_of_month[dom - 1]
-        self.year = last_moon[last_moon_key][0]
-        self.month = last_moon[last_moon_key][1]
-        self.month_trad_name = trad_month_names[self.month - 1]
+        set_month_attributes(dom, mk)
 
-        if 1 < mp <= 27:
+        if 2 < mp <= 27:
             confident = True
-        elif mp <= 1:
+        elif mp <= 2:
             confident = False
+
+        if confident is False:
+            bm = catch_false_postitive(self.year, self.month)
+            month_start_time = set_month_start_time(bm_y, bm_m, bm_d)
+            dom = set_time_lapsed(month_start_time)
 
         self.confident = confident
 
@@ -666,13 +885,17 @@ class BibTime():
         self.feast_day = self.is_hfd
         self.feast_name = f[2]
 
-        self.weekday = self.bweekday_now()
+        self.weekday = self.bweekday()
         self.is_ws = test_is_sabbath(self.weekday)
 
         if self.is_hfs is True:  # hfs stands for high feast sabbath
             self.sabbath = self.is_hfs
         else:
             self.sabbath = self.is_ws
+
+    def bdate_now(self):
+        self.sun_status_now()
+        self.bdate()
 
 
 if __name__ == '__main__':

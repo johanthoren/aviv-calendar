@@ -151,6 +151,7 @@ def combine_data():
                                       hist_data.known_moons)
     now_estimated_moons = merge_two_dicts(latest_data.next_estimated_moon,
                                           hist_data.estimated_moons)
+
     db['known_moons'] = now_known_moons
     db['estimated_moons'] = now_estimated_moons
     db['aviv_barley'] = latest_data.aviv_barley

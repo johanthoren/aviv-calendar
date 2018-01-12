@@ -408,13 +408,13 @@ class BibTime():
 
         def find_month(m):
             i = 0
-            list_of_known_moons = []
-            logging.debug('created empty list list_of_known_moons')
+            list_of_moons = []
+            logging.debug('created empty list list_of_moons')
             list_of_keys = []
             logging.debug('created empty list list_of_keys')
-            for k, v in known_moons.items():
+            for k, v in moons.items():
                 km = datetime.date(v[2], v[3], v[4])
-                list_of_known_moons.append(km)
+                list_of_moons.append(km)
                 list_of_keys.append(k)
                 i += 1
                 if km == m:
@@ -428,7 +428,7 @@ class BibTime():
                         if km.month == m.month:
                             logging.debug('%s is equal to %s' % (km.month,
                                                                  m.month))
-                            pm = list_of_known_moons[i - 2]
+                            pm = list_of_moons[i - 2]
                             logging.debug('pm is %s' % pm)
                             pk = list_of_keys[i - 2]
                             logging.debug('pk is %s' % pk)
@@ -458,7 +458,7 @@ class BibTime():
                         if km.month == m.month:
                             logging.debug('%s is equal to %s' % (km.month,
                                                                  m.month))
-                            pm = list_of_known_moons[i - 2]
+                            pm = list_of_moons[i - 2]
                             logging.debug('pm is %s' % pm)
                             pk = list_of_keys[i - 2]
                             logging.debug('pk is %s' % pk)
@@ -482,51 +482,8 @@ class BibTime():
                         logging.debug('moving on (continue)')
                         continue
                 else:
-                    logging.debug('%s is NOT lesser than %s' % (km, m))
-                    i = 0
-                    logging.debug('reset counter i to %s' % i)
-                    list_of_estimated_moons = []
-                    logging.debug('created empty list list_of_estimated_moons')
-                    list_of_ekeys = []
-                    logging.debug('created empty list list_of_ekeys')
-                    for k, v in known_moons.items():
-                        em = datetime.date(v[2], v[3], v[4])
-                        list_of_estimated_moons.append(em)
-                        list_of_ekeys.append(k)
-                        i += 1
-                        if km == m:
-                            logging.debug('%s is equal to %s, returning %s' %
-                                          (km, m, k))
-                            return k
-                        elif em > m:
-                            if em.year == m.year:
-                                if em.month == m.month:
-                                    pem = list_of_estimated_moons[i - 2]
-                                    pek = list_of_ekeys[i - 2]
-                                    if pem < m:
-                                        return pek
-                                    else:
-                                        continue
-                                elif em.month > m.month:
-                                    continue
-                            if em.year > m.year:
-                                continue
-                        elif em < m:
-                            if em.year == m.year:
-                                if em.month == m.month:
-                                    pem = list_of_estimated_moons[i - 2]
-                                    pek = list_of_ekeys[i - 2]
-                                    if pem < m:
-                                        return pek
-                                    else:
-                                        continue
-                                elif em.month > m.month:
-                                    continue
-                            elif em.year > m.year:
-                                continue
-                        else:
-                            pm = None
-                            return pm
+                    pm = None
+                    return pm
 
         # Test wether or not we are looking for a current date.
 
@@ -598,24 +555,15 @@ class BibTime():
             elif month == 13:
                 mk = int(str(year + 1) + '01')
             try:
-                if known_moons[mk]:
-                    logging.debug('%s (mk) found in known_moons' % mk)
+                if moons[mk]:
+                    logging.debug('%s (mk) found in moons' % mk)
                     bm = datetime_from_key(mk)
                     y = bm[2].year
                     m = bm[2].month
                     d = bm[2].day
                     return (y, m, d)
             except KeyError:
-                try:
-                    if estimated_moons[mk]:
-                        logging.debug('%s (mk) found in estimated_moons' % mk)
-                        bm = datetime_from_key(mk)
-                        y = bm[2].year
-                        m = bm[2].month
-                        d = bm[2].day
-                        return (y, m, d)
-                except KeyError:
-                    pass
+                pass
 
         def set_month_attributes(dom, mk):
             self.day = dom

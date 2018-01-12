@@ -109,8 +109,9 @@ def get_latest_data():
     # as news of the new moon or the Aviv barley breaks.
     # TODO: This needs error handling.
     url = 'https://www.avivcalendar.com/latest-data'
-    file = os.path.join(sys.path[0], 'latest_data.py')
-    with urllib.request.urlopen(url) as response, open(file, 'wb') as out_file:
+    latest_file = os.path.join(sys.path[0], 'latest_data.py')
+    with urllib.request.urlopen(url) as response, open(latest_file,
+                                                       'wb') as out_file:
         d = response.read()
         out_file.write(d)
         out_file.close()
@@ -138,7 +139,7 @@ def combine_data():
 
     # Potentially needed clearing of db befor each run. Or is that overkill?
     # TODO: Needs testing.
-    # db.clear()
+    db.clear()
 
     def merge_two_dicts(x, y):
         """Merges two dictionaries: historical data and latest data."""
@@ -167,13 +168,13 @@ db.close()
 
 
 # Creates a datetime object from key (k). First tries to find the month in the
-# known_moons and tries estimated_moons as backup. Also sets the value of the
-# attribute is_known to reflect wether or not it was found among the known
-# (and therefore confirmed) moons or if it's an estimated guess.
+# ´moons´. Also sets the value of the attribute is_known to reflect wether or
+# not it was based on observation (and therefore confirmed) or if it's an
+# estimated guess.
 # Note that most historical moons before 6001 will always be estimated.
 # Keys need to be in the form of YYYYMM (example: 600101).
 def datetime_from_key(k):
-    """Tries to find the key in dictionaries of known and estimated moons."""
+    """Tries to find the key in dictionary 'moons'."""
     try:
         if moons[k]:
             y = moons[k][2]
@@ -271,78 +272,73 @@ def test_is_sabbath(weekday):
     """Tests if a weekday is the 7th, and thus a weekly sabbath."""
     try:
         if weekday == '7th':
-            ws = True  # ws stands for weekly Sabbath.
+            weekly_sabbath = True
         else:
-            ws = False
-        return ws
+            weekly_sabbath = False
+        return weekly_sabbath
     except ValueError:
         print('Error: Wrong kind of input.')
 
 
-now = datetime.datetime.now().replace(microsecond=0)
+g_time_now = datetime.datetime.now().replace(microsecond=0)
 
 
 class BibTime():
     def __init__(self,
                  city_name,
-                 gyear=now.year,
-                 gmonth=now.month,
-                 gday=now.day,
-                 ghour=now.hour,
-                 gminute=now.minute,
-                 gsecond=now.second,
+                 gyear=g_time_now.year,
+                 gmonth=g_time_now.month,
+                 gday=g_time_now.day,
+                 ghour=g_time_now.hour,
+                 gminute=g_time_now.minute,
+                 gsecond=g_time_now.second,
                  gmicrosecond=0):
         location = Astral()[city_name]
         self.location = location
         self.location.solar_depression = 'civil'
 
-        self.gyear = gyear
-        self.gmonth = gmonth
-        self.gday = gday
-        self.ghour = ghour
-        self.gminute = gminute
-        self.gsecond = gsecond
-        self.gmicrosecond = gmicrosecond
+        self.g_datetime = datetime.datetime(gyear, gmonth, gday, ghour,
+                                            gsecond, gmicrosecond).replace(
+                                                tzinfo=self.location.tzinfo)
 
-        self.gdatetime = datetime.datetime(self.gyear, self.gmonth, self.gday,
-                                           self.ghour, self.gsecond,
-                                           self.gmicrosecond).replace(
-                                               tzinfo=self.location.tzinfo)
+        self.g_year = gyear
+        self.g_month = gmonth
+        self.g_day = gday
+        self.g_hour = ghour
+        self.g_minute = gminute
+        self.g_second = gsecond
+        self.g_microsecond = gmicrosecond
 
-    def get_gdatetime_now(self):
-        self.gdatetime = datetime.datetime.now(self.location.tz).replace(
+    def get_g_datetime_now(self):
+        self.g_datetime = datetime.datetime.now(self.location.tz).replace(
             tzinfo=self.location.tzinfo)
-        return self.gdatetime
+        return self.g_datetime
 
     def sun_status(self):
-        sun = self.location.sun(date=self.gdatetime, local=True)
+        sun = self.location.sun(date=self.g_datetime, local=True)
         sunrise = sun['sunrise']
         sunset = sun['sunset']
 
-        h = self.gdatetime.hour
-
-        if h >= 12:
+        if self.g_hour >= 12:
             after_noon = True
-        elif h < 12:
+        elif self.g_hour < 12:
             after_noon = False
-
-        t = self.gdatetime
 
         sun_has_set = None
         sun_has_risen = None
 
         if after_noon is True:
-            if t >= sunset:
+            if self.g_datetime >= sunset:
                 sun_has_set = True
-            elif t < sunset:
+            elif self.g_datetime < sunset:
                 sun_has_set = False
             else:
                 raise Exception('Error: Unable to tell if the sun has set.')
 
         elif after_noon is False:
-            if t >= sunrise:
+            if self.g_datetime >= sunrise:
                 sun_has_risen = True
-            elif t < sunrise:
+            elif self.g_datetime < sunrise:
                 sun_has_risen = False
             else:
                 raise Exception('Error: Unable to tell if the sun has risen.')
@@ -365,12 +361,12 @@ class BibTime():
         self.daylight = daylight
 
     def sun_status_now(self):
-        self.gdatetime = self.get_gdatetime_now()
+        self.g_datetime = self.get_g_datetime_now()
         self.sun_status()
 
     def bweekday(self):
         self.sun_status()
-        bwi = self.gdatetime.weekday()  # biblical weekday index
+        bwi = self.g_datetime.weekday()  # biblical weekday index
         ss = self.sun_has_set
 
         if ss is not None:
@@ -385,16 +381,15 @@ class BibTime():
         self.weekday = bweekday
 
     def bweekday_now(self):
-        self.gdatetime = self.get_gdatetime_now()
+        self.g_datetime = self.get_g_datetime_now()
         self.bweekday()
 
     def bdate(self):
         # Update the needed data.
         self.sun_status()
-        gdate = self.gdatetime.date()
-        mp = self.location.moon_phase(date=gdate)
+        m_phase = self.location.moon_phase(date=self.g_datetime.date())
 
-        if mp <= 1:
+        if m_phase <= 2:
             combine_data()
         elif db_exists is False:
             combine_data()
@@ -403,99 +398,117 @@ class BibTime():
 
         # Import latest_data and initialize the database.
         import latest_data
-        last_moon = latest_data.last_known_moon
+        last_moon = latest_data.last_moon
         last_moon_key = list(last_moon.keys())[0]
 
-        def find_month(m):
+        def find_month(x):
             i = 0
-            list_of_moons = []
+            list_of_tested_known_moons = []
             logging.debug('created empty list list_of_moons')
             list_of_keys = []
             logging.debug('created empty list list_of_keys')
-            for k, v in moons.items():
-                km = datetime.date(v[2], v[3], v[4])
-                list_of_moons.append(km)
-                list_of_keys.append(k)
+            for key, value in moons.items():
+                known_moon = datetime.date(value[2], value[3], value[4])
+                list_of_tested_known_moons.append(known_moon)
+                list_of_keys.append(key)
                 i += 1
-                if km == m:
-                    logging.debug('%s is equal to %s, returning %s' % (km, m,
-                                                                       k))
-                    return k
-                elif km > m:
-                    logging.debug('%s (km) is greater than %s (m)' % (km, m))
-                    if km.year == m.year:
-                        logging.debug('%s is equal to %s' % (km.year, m.year))
-                        if km.month == m.month:
-                            logging.debug('%s is equal to %s' % (km.month,
-                                                                 m.month))
-                            pm = list_of_moons[i - 2]
-                            logging.debug('pm is %s' % pm)
-                            pk = list_of_keys[i - 2]
-                            logging.debug('pk is %s' % pk)
-                            if pm < m:
-                                logging.debug('%s is lesser than %s' % (pm, m))
-                                logging.debug('returning %s' % pk)
-                                return pk
+                if known_moon == x:
+                    logging.debug('%s is equal to %s, returning %s' %
+                                  (known_moon, x, key))
+                    return key
+                elif known_moon > x:
+                    logging.debug('%s (known_moon) is greater than %s (x)' %
+                                  (known_moon, x))
+                    if known_moon.year == x.year:
+                        logging.debug('%s is equal to %s' % (known_moon.year,
+                                                             x.year))
+                        if known_moon.month == x.month:
+                            logging.debug('%s is equal to %s' %
+                                          (known_moon.month, x.month))
+                            prev_known_moon = list_of_tested_known_moons[i - 1]
+                            logging.debug(
+                                'prev_known_moon is %s' % prev_known_moon)
+                            prev_key = list_of_keys[i - 1]
+                            logging.debug('prev_key is %s' % prev_key)
+                            if prev_known_moon < x:
+                                logging.debug('%s is lesser than %s' %
+                                              (prev_known_moon, x))
+                                logging.debug('returning %s' % prev_key)
+                                return prev_key
                             else:
-                                logging.debug('%s is NOT lesser than %s' % (pm,
-                                                                            m))
+                                logging.debug('%s is NOT lesser than %s' %
+                                              (prev_known_moon, x))
                                 logging.debug('moving on (continue)')
                                 continue
-                        elif km.month > m.month:
-                            logging.debug('%s is greater than %s' % (km.month,
-                                                                     m.month))
+                        elif known_moon.month > x.month:
+                            logging.debug('%s is greater than %s' %
+                                          (known_moon.month, x.month))
                             logging.debug('moving on (continue)')
                             continue
-                    if km.year > m.year:
-                        logging.debug('%s is greater than %s' % (km.year,
-                                                                 m.year))
+                    if known_moon.year > x.year:
+                        logging.debug('%s is greater than %s' %
+                                      (known_moon.year, x.year))
                         logging.debug('moving on (continue)')
                         continue
-                elif km < m:
-                    logging.debug('%s (km) is lesser than %s (m)' % (km, m))
-                    if km.year == m.year:
-                        logging.debug('%s is equal to %s' % (km.year, m.year))
-                        if km.month == m.month:
-                            logging.debug('%s is equal to %s' % (km.month,
-                                                                 m.month))
-                            pm = list_of_moons[i - 2]
-                            logging.debug('pm is %s' % pm)
-                            pk = list_of_keys[i - 2]
-                            logging.debug('pk is %s' % pk)
-                            if pm < m:
-                                logging.debug('%s is lesser than %s' % (pm, m))
-                                logging.debug('returning %s' % pk)
-                                return pk
+                elif known_moon < x:
+                    logging.debug('%s (known_moon) is lesser than %s (x)' %
+                                  (known_moon, x))
+                    if known_moon.year == x.year:
+                        logging.debug('%s is equal to %s' % (known_moon.year,
+                                                             x.year))
+                        if known_moon.month == x.month:
+                            logging.debug('%s is equal to %s' %
+                                          (known_moon.month, x.month))
+                            prev_known_moon = list_of_tested_known_moons[i - 1]
+                            logging.debug(
+                                'prev_known_moon %s' % prev_known_moon)
+                            prev_key = list_of_keys[i - 1]
+                            logging.debug('prev_key is %s' % prev_key)
+                            if prev_known_moon < x:
+                                logging.debug('%s is lesser than %s' %
+                                              (prev_known_moon, x))
+                                logging.debug('returning %s' % prev_key)
+                                return prev_key
                             else:
-                                logging.debug('%s is NOT lesser than %s' % (pm,
-                                                                            m))
+                                logging.debug('%s is NOT lesser than %s' %
+                                              (prev_known_moon, x))
                                 logging.debug('moving on (continue)')
                                 continue
-                        elif km.month > m.month:
-                            logging.debug('%s is greater than %s' % (km.month,
-                                                                     m.month))
+                        elif known_moon.month > x.month:
+                            logging.debug('%s is greater than %s' %
+                                          (known_moon.month, x.month))
                             logging.debug('moving on (continue)')
                             continue
-                    elif km.year > m.year:
-                        logging.debug('%s is greater than %s' % (km.year,
-                                                                 m.year))
+                    elif known_moon.year > x.year:
+                        logging.debug('%s is greater than %s' %
+                                      (known_moon.year, x.year))
                         logging.debug('moving on (continue)')
                         continue
                 else:
-                    pm = None
-                    return pm
+                    known_moon = None
+                    return known_moon
 
         # Test wether or not we are looking for a current date.
-
         today = datetime.datetime.now(self.location.tz).replace(
             tzinfo=self.location.tzinfo)
-        date_to_test = self.gdatetime.date()
+        date_to_test = self.g_datetime.date()
+        m_phase_today = self.location.moon_phase(date=today.date())
+        m_phase_date_to_test = self.location.moon_phase(date=date_to_test)
+
+        print('the moon phase is %s' % m_phase_today)
+        print('the moon phase on the day to test is %s' % m_phase_date_to_test)
 
         print('year today is {}'.format(today.year))
         print('month today is {}'.format(today.month))
         print('day today is {}'.format(today.day))
 
-        if today.date() - date_to_test > datetime.timedelta(days=29):
+        if today.date() < date_to_test:
+            if m_phase_today > m_phase_date_to_test:
+                current = False
+        elif today.date() > date_to_test:
+            if m_phase_today > m_phase_date_to_test:
+                current = False
+        elif today.date() - date_to_test > datetime.timedelta(days=29):
             current = False
             logging.debug('current is %s' % current)
         elif date_to_test - today.date() > datetime.timedelta(days=29):
@@ -506,24 +519,38 @@ class BibTime():
             logging.debug('current is %s' % current)
 
         def get_month_key(year, month):
-            mk = int(str(year) + '{0:0=2d}'.format(month))
-            return mk
+            moon_key = int(str(year) + '{0:0=2d}'.format(month))
+            return moon_key
 
+        # If current is True, then try to find out the gregorian date of
+        # the month using the last_moon_key.
         if current is True:
-            bm = datetime_from_key(last_moon_key)
-            if bm is None:
-                m = self.gdatetime.date()
-                print('bm is None, trying m. m is {}'.format(m))
-                pm = find_month(m)
-                bm = datetime_from_key(pm)
-        elif current is False:
-            m = self.gdatetime.date()
-            print('m is {}'.format(m))
-            pm = find_month(m)
-            bm = datetime_from_key(pm)
+            g_month = datetime_from_key(last_moon_key)
+            # If no such month exists in the database we need to try to
+            # find the one that it most likely is.
+            self.year = last_moon[last_moon_key][0]
+            self.month = last_moon[last_moon_key][1]
+            if g_month is None:
+                q = self.g_datetime.date()
+                print('g_month is None, trying q. q is {}'.format(q))
+                q_key = find_month(q)
+                logging.debug('q_key is now {}'.format(q_key))
+                g_month = datetime_from_key(q_key)
+                tmpstring = str(q_key)
+                self.year = int(tmpstring[0:4])
+                self.month = int(tmpstring[4::])
 
-        self.is_known = bm[0]
-        self.is_estimated = bm[1]
+        elif current is False:
+            q = self.g_datetime.date()
+            print('q is {}'.format(q))
+            q_key = find_month(q)
+            logging.debug('q_key is now {}'.format(q_key))
+            g_month = datetime_from_key(q_key)
+            tmpstring = str(q_key)
+            self.year = int(tmpstring[0:4])
+            self.month = int(tmpstring[4::])
+
+        self.is_known = g_month[1]
 
         def set_month_start_time(y, m, d):
             month_start_time = datetime.datetime(y, m, d).replace(
@@ -531,21 +558,24 @@ class BibTime():
             return month_start_time
 
         def set_time_lapsed(t):
-            time_lapsed = self.gdatetime - t
+            time_lapsed = self.g_datetime - t
             d = time_lapsed.days  # day of month
             if self.sun_has_set is True:
                 d += 1
             return d
 
-        bm_y = bm[2].year
-        logging.debug('bm_y is %s' % bm_y)
-        bm_m = bm[2].month
-        logging.debug('bm_m is %s' % bm_m)
-        bm_d = bm[2].day
-        logging.debug('bm_d is %s' % bm_d)
+        g_month_year = g_month[0].year
+        logging.debug('g_month_year is %s' % g_month_year)
+        g_month_month = g_month[0].month
+        logging.debug('g_month_month is %s' % g_month_month)
+        g_month_day = g_month[0].day
+        logging.debug('g_month_day is %s' % g_month_day)
 
-        month_start_time = set_month_start_time(bm_y, bm_m, bm_d)
+        month_start_time = set_month_start_time(g_month_year, g_month_month,
+                                                g_month_day)
         dom = set_time_lapsed(month_start_time)
+        if dom > 30:
+            raise Exception('Error: Day of Month greater than 30.')
 
         # Catch any false positives.
         def catch_false_postitive(year, month):
@@ -558,28 +588,29 @@ class BibTime():
                 if moons[mk]:
                     logging.debug('%s (mk) found in moons' % mk)
                     bm = datetime_from_key(mk)
-                    y = bm[2].year
-                    m = bm[2].month
-                    d = bm[2].day
+                    y = bm[0].year
+                    m = bm[0].month
+                    d = bm[0].day
                     return (y, m, d)
             except KeyError:
                 pass
 
-        def set_month_attributes(dom, mk):
+        def set_month_attributes(dom):
             self.day = dom
             self.day_name = bib_day_of_month[dom - 1]
             self.month_trad_name = trad_month_names[self.month - 1]
 
-        set_month_attributes(dom, mk)
+        set_month_attributes(dom)
 
-        if 2 < mp <= 27:
+        if 2 < m_phase <= 27:
             confident = True
-        elif mp <= 2:
+        elif m_phase <= 2:
             confident = False
 
         if confident is False:
-            bm = catch_false_postitive(self.year, self.month)
-            month_start_time = set_month_start_time(bm_y, bm_m, bm_d)
+            g_month = catch_false_postitive(self.year, self.month)
+            month_start_time = set_month_start_time(g_month_year,
+                                                    g_month_month, g_month_day)
             dom = set_time_lapsed(month_start_time)
 
         self.confident = confident
@@ -598,7 +629,7 @@ class BibTime():
         self.feast_day = self.is_hfd
         self.feast_name = f[2]
 
-        self.weekday = self.bweekday()
+        self.bweekday()
         self.is_ws = test_is_sabbath(self.weekday)
 
         if self.is_hfs is True:  # hfs stands for high feast sabbath
@@ -629,9 +660,9 @@ if __name__ == '__main__':
         logging.debug('Creating object %s' % x)
         print('The chosen location is {}'.format(x.location.name))
         print('The gregorian date in {} is now {}'.format(
-            x.location.name, x.gdatetime.strftime('%Y-%m-%d')))
-        print('The time in {} is now {}'.format(x.location.name,
-                                                x.gdatetime.strftime('%H:%M')))
+            x.location.name, x.g_datetime.strftime('%Y-%m-%d')))
+        print('The time in {} is now {}'.format(
+            x.location.name, x.g_datetime.strftime('%H:%M')))
         if x.sun_has_set is True:
             print('The sun is down')
             print('The sunset was at {}'.format(x.sunset.strftime('%H:%M')))

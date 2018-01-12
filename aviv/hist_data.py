@@ -45,12 +45,7 @@
 # day), GREGORIAN month of that same day, GREGORIAN day of said day.
 # True or False is to reflect on confidence.
 
-estimated_moons = {
-    601608: (6016, 8, 2016, 11, 1, False),     # stellarium
-    601711: (6017, 11, 2018, 1, 18, False)     # renewedmoon.com estimate
-}
-
-known_moons = {
+moons = {
     # 6003
     600301: (6003, 1, 2003, 4, 3, True),     # karaite korner newsletter #127
     600302: (6003, 2, 2003, 5, 2, True),     # karaite korner newsletter #130
@@ -220,12 +215,13 @@ known_moons = {
     # Missing months.
     # 6016
     601607: (6016, 7, 2016, 10, 2, True),    # karaite korner newsletter
-    # Missing month.
+    601608: (6016, 8, 2016, 11, 1, False),     # stellarium
     601609: (6016, 9, 2016, 11, 30, True),   # renewedmoon.com
     601610: (6016, 10, 2016, 12, 30, True),  # renewedmoon.com
     601611: (6016, 11, 2017, 1, 29, True),   # renewedmoon.com
     601612: (6016, 12, 2017, 2, 27, True),   # renewedmoon.com
     # Missing months.
     601709: (6017, 9, 2017, 11, 20, True),   # renewedmoon.com
-    601710: (6017, 10, 2017, 12, 20, True)   # a rood awakening / michael rood
+    601710: (6017, 10, 2017, 12, 20, True),   # a rood awakening / michael rood
+    601711: (6017, 11, 2018, 1, 18, False)     # renewedmoon.com estimate
 }

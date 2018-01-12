@@ -147,13 +147,10 @@ def combine_data():
         return z
 
     # Combine hist_data and latest_data and stash it in the database.
-    now_known_moons = merge_two_dicts(latest_data.last_known_moon,
-                                      hist_data.known_moons)
-    now_estimated_moons = merge_two_dicts(latest_data.next_estimated_moon,
-                                          hist_data.estimated_moons)
+    temp_moons = merge_two_dicts(latest_data.last_moon, hist_data.moons)
+    moons = merge_two_dicts(temp_moons, latest_data.next_moon)
 
-    db['known_moons'] = now_known_moons
-    db['estimated_moons'] = now_estimated_moons
+    db['moons'] = moons
     db['aviv_barley'] = latest_data.aviv_barley
     db.close()
 
@@ -164,8 +161,7 @@ if not os.path.exists(db_file):
 
 # Get the database in order.
 db = shelve.open(db_file)
-known_moons = db['known_moons']
-estimated_moons = db['estimated_moons']
+moons = db['moons']
 aviv_barley = db['aviv_barley']
 db.close()
 
@@ -179,65 +175,18 @@ db.close()
 def datetime_from_key(k):
     """Tries to find the key in dictionaries of known and estimated moons."""
     try:
-        if known_moons[k]:
-            y = known_moons[k][2]
-            m = known_moons[k][3]
-            d = known_moons[k][4]
+        if moons[k]:
+            y = moons[k][2]
+            m = moons[k][3]
+            d = moons[k][4]
+            is_known = moons[k][5]
             date = datetime.date(y, m, d)
-            is_known = True
-            is_estimated = False
             # Returns as a tuple.
-            return (is_known, is_estimated, date)
+            return (date, is_known)
     except KeyError:
-        try:
-            if estimated_moons[k]:
-                y = estimated_moons[k][2]
-                m = estimated_moons[k][3]
-                d = estimated_moons[k][4]
-                date = datetime.date(y, m, d)
-                is_known = False
-                is_estimated = True
-                # Returns as a tuple.
-                return (is_known, is_estimated, date)
-        except KeyError:
-            is_known = False
-            is_estimated = False
-            # Returns as a tuple.
-            return (is_known, is_estimated, None)
-
-
-# This function tries to create a BibMonth object given a key (k).
-# Keys need to be in the form of YYYYMM (example: 600101).
-def bibitem_from_key(k):
-    """Creates a BibCalItem object from a key (k) in the form YYYYMM."""
-    try:
-        if known_moons[k]:
-            m = BibCalItem(*known_moons[k][0:1])
-            return m
-    except KeyError:
-        try:
-            if estimated_moons[k]:
-                m = BibCalItem(*estimated_moons[k][0:1])
-                return m
-        except KeyError:
-            return False
-
-
-# This function tries to create a BibMonth object given a key (k).
-# Keys need to be in the form of YYYYMM (example: 600101).
-def bibmonth_from_key(k):
-    """Creates a BibMonth object from a key (k) in the form of YYYYMM."""
-    try:
-        if known_moons[k]:
-            m = BibMonth(*known_moons[k][0:2])
-            return m
-    except KeyError:
-        try:
-            if estimated_moons[k]:
-                m = BibMonth(*estimated_moons[k][0:2])
-                return m
-        except KeyError:
-            return None
+        is_known = False
+        # Returns as a tuple.
+        return (None, is_known)
 
 
 # This function tests to see if a year is within the given range of this
@@ -328,191 +277,6 @@ def test_is_sabbath(weekday):
         return ws
     except ValueError:
         print('Error: Wrong kind of input.')
-
-
-# Base class for other classes.
-# Every point in time needs to at least have a year defined.
-# I can't imagine using anything larger like decade, century or
-# millenia.
-class BibCalItem:
-    """Base class for date related objects."""
-
-    def __init__(self, year):
-        self.year = test_year(year)
-
-        # Generate a yk (year_key) combining the year with 01 to get a
-        # searchable key to get the first month.
-        yk = int(str(self.year) + '01')
-
-        try:
-            d = datetime_from_key(yk)
-            self.start_g_year = d[2].year
-            self.start_g_month = d[2].month
-            self.start_g_day = d[2].day
-            self.start_g_date = d[2]
-            self.is_known = d[0]
-            self.is_estimated = d[1]
-        except AttributeError:
-            self.is_known = False
-            self.is_estimated = False
-        db.close()
-
-
-class BibMonth(BibCalItem):
-    """Represents a biblical month."""
-
-    def __init__(self, year, month):
-        # Make integers from the input.
-        y = BibCalItem(year)
-        self.year = y.year
-        self.month = test_month(month)
-
-        # ck = current (month) key
-        # searchable key to get the month.
-        ck = int(str(self.year) + '{0:0=2d}'.format(self.month))
-
-        d = datetime_from_key(ck)
-
-        self.is_known = d[0]
-        self.is_estimated = d[1]
-        self.start_g_date = d[2]
-        self.start_g_day = d[2].day
-        self.start_g_month = d[2].month
-        self.start_g_year = d[2].year
-        # Define the traditional name of the month.
-        self.name = bib_months[self.month - 1]
-        self.trad_name = trad_month_names[self.month - 1]
-        self.first_name = bib_day_of_month[0]
-
-        # nk = next (month) key
-        def get_end_g_date(nk):
-            """Tries to calculate the end date of self."""
-            try:
-                if known_moons[nk]:
-                    y = known_moons[nk][2]
-                    m = known_moons[nk][3]
-                    d = known_moons[nk][4]
-                    n = datetime.date(y, m, d)
-                    self.end_g_date = n - datetime.timedelta(days=1)
-                    return self.end_g_date
-            except KeyError:
-                if estimated_moons[nk]:
-                    y = estimated_moons[nk][2]
-                    m = estimated_moons[nk][3]
-                    d = estimated_moons[nk][4]
-                    n = datetime.date(y, m, d)
-                    self.end_g_date = n - datetime.timedelta(days=1)
-                    return self.end_g_date
-
-        # The first day of the biblical month equals to the gregorian day when
-        # the sunset signaled the start of the biblical day. To keep
-        # consistancy the last day of the month should therefore equal to the
-        # gregorian day when the last day started. This way, there is no
-        # overlap.
-        # Example: The 9th month of 6016 ended Nov 30 of 2016. The last
-        # day then continued until the sunset of Dec 1. But since the biblical
-        # day starts with sunset, the gregorian date to be marked as the last
-        # end date will be Nov 30.
-
-        def get_length(start_d, end_d):
-            """Tries to calculate the length of self in days."""
-            self.length = (end_d - start_d).days + 1
-            return self.length
-
-        # Check if the month is in the database of known_moons or
-        # estimated_moons
-        # Primary reason for doing this is because we want to get the data
-        # on the next month so that we can calculate the end date, and thus
-        # the length.
-        if self.is_known is True:
-            if 0 < self.month <= 11:
-                nk = ck + 1
-            elif self.month == 12:
-                try:
-                    if known_moons[ck + 1]:
-                        nk = ck + 1
-                except KeyError:
-                    try:
-                        if estimated_moons[ck + 1]:
-                            nk = ck + 1
-                    except KeyError:
-                        nk = int(str(self.year + 1) + '01')
-            if self.month == 13:
-                nk = int(str(self.year + 1) + '01')
-            try:
-                if known_moons[nk]:
-                    get_end_g_date(nk)
-                    self.length = get_length(self.start_g_date,
-                                             self.end_g_date)
-                    logging.debug('self.length is %s' % self.length)
-                    self.last_name = bib_day_of_month[self.length - 1]
-            except KeyError:
-                try:
-                    if estimated_moons[nk]:
-                        get_end_g_date(nk)
-                        self.length = get_length(self.start_g_date,
-                                                 self.end_g_date)
-                        logging.debug('self.length is %s' % self.length)
-                except KeyError:
-                    self.length = None
-        else:
-            logging.debug('Unable to set the length.'
-                          'Likely because next month is not known.')
-            self.length = None
-        db.close()
-
-    def is_aviv(self):
-        """Reads the latest_data to check if the Barley in Israel is Aviv."""
-        if self.end_g_date.year == datetime.datetime.now().year:
-            if self.month >= 11:
-                pass
-
-
-class BibDay(BibCalItem):
-    """Represents a biblical day."""
-
-    def __init__(self, year, month, day):
-        # Make integers from the input.
-        m = BibMonth(year, month)
-        self.year = m.year
-        self.month = m.month
-        self.day = test_day(day, m.length)
-        self.is_known = m.is_known
-        self.is_estimated = m.is_estimated
-        self.is_certain = None
-        self.date = (self.year, self.month, self.day)
-        self.start_g_date = m.start_g_date + datetime.timedelta(
-            days=self.day - 1)
-
-        self.is_ws = None  # ws stands for weekly sabbath
-        self.is_hfd = None  # hs stands for High Feast day
-        self.is_sabbath = None
-
-        # Get the gregorian weekday from datetime. Monday is 0, Sunday is 6.
-        y = self.start_g_date.year
-        m = self.start_g_date.month
-        d = self.start_g_date.day
-        weekday_index = datetime.datetime(y, m, d).weekday()
-        # +1 Since the day starts in the evening.
-        b_weekday_today = bib_weekdays[weekday_index + 1]
-        g_weekday_today = greg_weekday[weekday_index]
-
-        # Return the weekday string.
-        self.weekday = b_weekday_today
-        self.g_weekday = g_weekday_today
-
-        f = test_is_feast(self.month, self.day)
-
-        self.is_hfd = f[0]
-        self.is_hfs = f[1]
-        self.feast_name = f[2]
-
-        self.is_ws = test_is_sabbath(self.weekday)
-
-        if self.is_hfs is True:  # hfs stands for high feast sabbath
-            self.sabbath = self.is_hfs
-        else:
-            self.sabbath = self.is_ws
 
 
 now = datetime.datetime.now().replace(microsecond=0)

@@ -285,8 +285,88 @@ def test_is_sabbath(weekday):
 # g_time_now = datetime.datetime.now().replace(microsecond=0)
 
 
+class Location():
+    """Define a location. Takes city_name as argument."""
+
+    def __init__(self, city_name):
+        try:
+            location = Astral()[city_name]
+        except KeyError:
+            raise Exception(
+                'Error: That city is not found. Please try another.')
+        self.location = location
+
+    def gtime(self, year=2018, month=1, day=1, hour=12):
+        """Gives the object a point in time."""
+        gtime = datetime.datetime(year, month, day,
+                                  hour).replace(tzinfo=self.location.tzinfo)
+        return gtime
+
+    def gtime_now(self):
+        """Updates the g_datetime to reflect current time."""
+        gtime = datetime.datetime.now(
+            self.location.tz).replace(tzinfo=self.location.tzinfo)
+        return gtime
+
+    def sun_status(self):
+        """Updates the sunrise and sunset status based on location and time."""
+        gtime = self.gtime()
+        sun = self.location.sun(date=gtime, local=True)
+        sunrise = sun['sunrise']
+        sunset = sun['sunset']
+
+        def check_time_after_noon(gtime):
+            """Checks if it is after noon or not and returns a boolean."""
+            if gtime.hour >= 12:
+                after_noon = True
+            elif gtime.hour < 12:
+                after_noon = False
+            return after_noon
+
+        after_noon = check_time_after_noon(gtime)
+
+        def sunset_or_sunrise(after_noon, gtime):
+            """Checks if sun has risen or set depending on time of day."""
+            if after_noon is True:
+                if gtime >= sunset:
+                    sun_has_set = True
+                elif gtime < sunset:
+                    sun_has_set = False
+            elif after_noon is False:
+                if gtime >= sunrise:
+                    sun_has_risen = True
+                elif gtime < sunrise:
+                    sun_has_risen = False
+            return (sun_has_set, sun_has_risen)
+
+        sun_has_set = sunset_or_sunrise(after_noon, gtime)[0]
+        sun_has_risen = sunset_or_sunrise(after_noon, gtime)[1]
+
+        def check_daylight(sun_has_set, sun_has_risen):
+            """Checks if there is still daylight."""
+            if sun_has_set is not None:
+                if sun_has_set is True:
+                    daylight = False
+                elif sun_has_set is False:
+                    daylight = True
+            if sun_has_risen is not None:
+                if sun_has_risen is True:
+                    daylight = True
+                elif sun_has_risen is False:
+                    daylight = False
+            return daylight
+
+        daylight = check_daylight(sun_has_set, sun_has_risen)
+
+    def sun_status_now(self):
+        """Updates the g_datetime to reflect current time and then the sun."""
+        self.gtime = self.gtime_now()
+        self.sun_status()
+
+
 class BibTime():
     """Define biblical time and date. Takes city_name and optional time."""
+
     def __init__(self, city_name, gyear=2018, gmonth=1, gday=1, ghour=12):
         try:
             location = Astral()[city_name]
@@ -311,12 +391,14 @@ class BibTime():
         self.g_datetime = time
 
     def get_g_datetime_now(self):
-        t = datetime.datetime.now(
+        """Updates the g_datetime to reflect current time."""
+        time = datetime.datetime.now(
             self.location.tz).replace(tzinfo=self.location.tzinfo)
-        self.set_g_time(t)
-        return t
+        self.set_g_time(time)
+        return time
 
     def sun_status(self):
+        """Updates the sunrise and sunset status based on location and time."""
         sun = self.location.sun(date=self.g_datetime, local=True)
         sunrise = sun['sunrise']
         sunset = sun['sunset']

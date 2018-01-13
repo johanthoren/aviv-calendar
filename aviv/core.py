@@ -37,7 +37,7 @@ import urllib.request
 import os
 import sys
 import shelve
-from astral import Astral
+from astral import GoogleGeocoder
 import hist_data
 
 logging.basicConfig(
@@ -290,53 +290,63 @@ class Location():
 
     def __init__(self, city_name):
         try:
-            location = Astral()[city_name]
+            location = GoogleGeocoder()[city_name]
         except KeyError:
             raise Exception(
                 'Error: That city is not found. Please try another.')
         self.location = location
 
-    def gtime(self, year=2018, month=1, day=1, hour=12):
-        """Gives the object a point in time."""
-        gtime = datetime.datetime(year, month, day,
-                                  hour).replace(tzinfo=self.location.tzinfo)
-        return gtime
+        # The following attributes are set by `set_gtime` or `set_gtime_now`.
+        self.gtime = None
 
-    def gtime_now(self):
+        # The following attributes are set by `sun_status` function.
+        self.sunrise = None
+        self.sunset = None
+        self.sun_has_set = None
+        self.sun_has_risen = None
+        self.daylight = None
+
+    def _get_entry(self):
+        return 'The city name is set to {}'.format(self.location)
+
+    def _set_entry(self, city_name):
+        self.location = GoogleGeocoder()[city_name]
+
+    city = property(_get_entry, _set_entry)
+
+    def set_gtime(self, year=2018, month=1, day=1, hour=12):
+        """Gives the object a point in time."""
+        self.gtime = datetime.datetime(
+            year, month, day, hour).replace(tzinfo=self.location.tzinfo)
+        return self
+
+    def set_gtime_now(self):
         """Updates the g_datetime to reflect current time."""
-        gtime = datetime.datetime.now(
+        self.gtime = datetime.datetime.now(
             self.location.tz).replace(tzinfo=self.location.tzinfo)
-        return gtime
+        return self
 
     def sun_status(self):
         """Updates the sunrise and sunset status based on location and time."""
-        gtime = self.gtime()
+        gtime = self.set_gtime()
         sun = self.location.sun(date=gtime, local=True)
         sunrise = sun['sunrise']
         sunset = sun['sunset']
 
         def check_time_after_noon(gtime):
             """Checks if it is after noon or not and returns a boolean."""
-            if gtime.hour >= 12:
-                after_noon = True
-            elif gtime.hour < 12:
-                after_noon = False
+            after_noon = (gtime.hour >= 12)
             return after_noon
 
         after_noon = check_time_after_noon(gtime)
 
         def sunset_or_sunrise(after_noon, gtime):
             """Checks if sun has risen or set depending on time of day."""
+            sun_has_set, sun_has_risen = False, False
             if after_noon is True:
-                if gtime >= sunset:
-                    sun_has_set = True
-                elif gtime < sunset:
-                    sun_has_set = False
+                sun_has_set = (gtime >= sunset)
             elif after_noon is False:
-                if gtime >= sunrise:
-                    sun_has_risen = True
-                elif gtime < sunrise:
-                    sun_has_risen = False
+                sun_has_risen = (gtime >= sunrise)
             return (sun_has_set, sun_has_risen)
 
         sun_has_set = sunset_or_sunrise(after_noon, gtime)[0]
@@ -354,13 +364,20 @@ class Location():
                     daylight = True
                 elif sun_has_risen is False:
                     daylight = False
+            logging.debug('Returning daylight as %s', daylight)
             return daylight
 
         daylight = check_daylight(sun_has_set, sun_has_risen)
 
+        self.sunrise = sunrise
+        self.sunset = sunset
+        self.sun_has_set = sun_has_set
+        self.sun_has_risen = sun_has_risen
+        self.daylight = daylight
+
     def sun_status_now(self):
         """Updates the g_datetime to reflect current time and then the sun."""
-        self.gtime = self.gtime_now()
+        self.set_gtime_now()
         self.sun_status()
 
 

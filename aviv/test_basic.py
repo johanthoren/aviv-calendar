@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
-# import logging
-# import core
-# import hist_data
-# import datetime
-# import os
-# import sys
-# import shelve
+import logging
+import core
+import hist_data
+import datetime
+import os
+import sys
+import shelve
 
 
 # def test_estimated_days_of_month():
@@ -81,22 +81,22 @@
 #         assert result_feast_day == ref_feast_day
 
 
-# def test_current_data():
-#     import latest_data
-#     if not os.path.join(sys.path[0], 'current_data.db'):
-#         core.combine_data()
+def test_current_data():
+    import latest_data
+    if not os.path.join(sys.path[0], 'current_data.db'):
+        core.combine_data()
 
-#     db_file = os.path.join(sys.path[0], 'current_data')
-#     db = shelve.open(db_file)
-#     moons = db['moons']
-#     aviv_barley = db['aviv_barley']
+    db_file = os.path.join(sys.path[0], 'current_data')
+    db = shelve.open(db_file)
+    MOONS = db['MOONS']
+    AVIV_BARLEY = db['AVIV_BARLEY']
 
-#     def merge_two_dicts(x, y):
-#         z = x.copy()  # start with x's keys and values
-#         z.update(y)  # modifies z with y's keys and values & returns None
-#         return z
+    def merge_two_dicts(x, y):
+        z = x.copy()  # start with x's keys and values
+        z.update(y)  # modifies z with y's keys and values & returns None
+        return z
 
-#     assert moons == merge_two_dicts(hist_data.known_moons,
-#                                           latest_data.last_known_moon)
-#     assert aviv_barley == latest_data.aviv_barley
-#     db.close()
+    assert MOONS == merge_two_dicts(hist_data.MOONS,
+                                          latest_data.LAST_MOON)
+    assert AVIV_BARLEY == latest_data.AVIV_BARLEY
+    db.close()

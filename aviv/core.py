@@ -37,6 +37,7 @@ import urllib.request
 import os
 import sys
 import shelve
+from astral import Astral
 from astral import GoogleGeocoder
 import hist_data
 
@@ -285,19 +286,23 @@ def test_is_sabbath(weekday):
 # g_time_now = datetime.datetime.now().replace(microsecond=0)
 
 
-class Location():
+class BibLocation:
     """Define a location. Takes city_name as argument."""
 
     def __init__(self, city_name):
         try:
-            location = GoogleGeocoder()[city_name]
+            # astral_geo = Astral()
+            google_geo = GoogleGeocoder()
+            # astral_geo.solar_depression = 'civil'
+            google_geo.solar_depression = 'civil'
+            location = google_geo[city_name]
         except KeyError:
             raise Exception(
                 'Error: That city is not found. Please try another.')
         self.location = location
 
         # The following attributes are set by `set_gtime` or `set_gtime_now`.
-        self.gtime = None
+        self.gtime = self.set_gtime_now()
 
         # The following attributes are set by `sun_status` function.
         self.sunrise = None
@@ -306,29 +311,40 @@ class Location():
         self.sun_has_risen = None
         self.daylight = None
 
+        self.sun_status_now()
+
     def _get_entry(self):
         return 'The city name is set to {}'.format(self.location)
 
     def _set_entry(self, city_name):
-        self.location = GoogleGeocoder()[city_name]
+        try:
+            # astral_geo = Astral()
+            google_geo = GoogleGeocoder()
+            # astral_geo.solar_depression = 'civil'
+            google_geo.solar_depression = 'civil'
+            location = google_geo[city_name]
+        except KeyError:
+            raise Exception(
+                'Error: That city is not found. Please try another.')
+        self.location = location
 
     city = property(_get_entry, _set_entry)
 
     def set_gtime(self, year=2018, month=1, day=1, hour=12):
         """Gives the object a point in time."""
-        self.gtime = datetime.datetime(
+        gtime = datetime.datetime(
             year, month, day, hour).replace(tzinfo=self.location.tzinfo)
-        return self
+        return gtime
 
     def set_gtime_now(self):
         """Updates the g_datetime to reflect current time."""
-        self.gtime = datetime.datetime.now(
+        gtime = datetime.datetime.now(
             self.location.tz).replace(tzinfo=self.location.tzinfo)
-        return self
+        return gtime
 
     def sun_status(self):
         """Updates the sunrise and sunset status based on location and time."""
-        gtime = self.set_gtime()
+        gtime = self.gtime
         sun = self.location.sun(date=gtime, local=True)
         sunrise = sun['sunrise']
         sunset = sun['sunset']
@@ -355,16 +371,9 @@ class Location():
         def check_daylight(sun_has_set, sun_has_risen):
             """Checks if there is still daylight."""
             if sun_has_set is not None:
-                if sun_has_set is True:
-                    daylight = False
-                elif sun_has_set is False:
-                    daylight = True
+                daylight = not sun_has_set
             if sun_has_risen is not None:
-                if sun_has_risen is True:
-                    daylight = True
-                elif sun_has_risen is False:
-                    daylight = False
-            logging.debug('Returning daylight as %s', daylight)
+                daylight = not sun_has_risen
             return daylight
 
         daylight = check_daylight(sun_has_set, sun_has_risen)
@@ -381,89 +390,22 @@ class Location():
         self.sun_status()
 
 
-class BibTime():
-    """Define biblical time and date. Takes city_name and optional time."""
+class BibTime:
+    """Define biblical time and date.
+       Takes optional time as an argument
+       as year, month, day, hour.
+       Defaults to 2018, 1, 1, 12."""
 
-    def __init__(self, city_name, gyear=2018, gmonth=1, gday=1, ghour=12):
-        try:
-            location = Astral()[city_name]
-        except KeyError:
-            raise Exception(
-                'Error: That city is not found. Please try another.')
-        self.location = location
+    def __init__(self, year=2018, month=1, day=1, hour=12):
+        self.gtime = datetime.datetime(
+            year, month, day, hour, minute=0, second=0, microsecond=0)
+        # These attributes are set by the function set_btime.
+        self.weekday = None
+        self.btime = None
 
-        time = datetime.datetime(gyear, gmonth, gday,
-                                 ghour).replace(tzinfo=self.location.tzinfo)
-
-        self.set_g_time(time)
-        self.bdate()
-        self.bweekday()
-
-    def set_g_time(self, time):
-        """Puts the different arguments into attributes."""
-        self.g_year = time.year
-        self.g_month = time.month
-        self.g_day = time.day
-        self.g_hour = time.hour
-        self.g_datetime = time
-
-    def get_g_datetime_now(self):
-        """Updates the g_datetime to reflect current time."""
-        time = datetime.datetime.now(
-            self.location.tz).replace(tzinfo=self.location.tzinfo)
-        self.set_g_time(time)
-        return time
-
-    def sun_status(self):
-        """Updates the sunrise and sunset status based on location and time."""
-        sun = self.location.sun(date=self.g_datetime, local=True)
-        sunrise = sun['sunrise']
-        sunset = sun['sunset']
-
-        if self.g_hour >= 12:
-            after_noon = True
-        elif self.g_hour < 12:
-            after_noon = False
-
-        sun_has_set = None
-        sun_has_risen = None
-
-        if after_noon is True:
-            if self.g_datetime >= sunset:
-                sun_has_set = True
-            elif self.g_datetime < sunset:
-                sun_has_set = False
-            else:
-                raise Exception('Error: Unable to tell if the sun has set.')
-
-        elif after_noon is False:
-            if self.g_datetime >= sunrise:
-                sun_has_risen = True
-            elif self.g_datetime < sunrise:
-                sun_has_risen = False
-            else:
-                raise Exception('Error: Unable to tell if the sun has risen.')
-
-        if sun_has_set is not None:
-            if sun_has_set is True:
-                daylight = False
-            elif sun_has_set is False:
-                daylight = True
-        if sun_has_risen is not None:
-            if sun_has_risen is True:
-                daylight = True
-            elif sun_has_risen is False:
-                daylight = False
-
-        self.sunrise = sunrise
-        self.sunset = sunset
-        self.sun_has_set = sun_has_set
-        self.sun_has_risen = sun_has_risen
-        self.daylight = daylight
-
-    def sun_status_now(self):
-        self.g_datetime = self.get_g_datetime_now()
-        self.sun_status()
+    def set_btime(self):
+        """Tries to calculate the biblical time."""
+        pass
 
     def bweekday(self):
         self.sun_status()

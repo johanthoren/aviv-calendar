@@ -45,7 +45,7 @@
 # day), GREGORIAN month of that same day, GREGORIAN day of said day.
 # True or False is to reflect on confidence.
 
-moons = {
+MOONS = {
     # 6003
     600301: (6003, 1, 2003, 4, 3, True),     # karaite korner newsletter #127
     600302: (6003, 2, 2003, 5, 2, True),     # karaite korner newsletter #130

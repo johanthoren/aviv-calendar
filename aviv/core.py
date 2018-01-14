@@ -37,7 +37,7 @@ import urllib.request
 import os
 import sys
 import shelve
-from astral import Astral
+# from astral import Astral
 from astral import GoogleGeocoder
 import hist_data
 
@@ -287,9 +287,13 @@ def test_is_sabbath(weekday):
 
 
 class BibLocation:
-    """Define a location. Takes city_name as argument."""
+    """Define a location. Takes city_name as argument.
+       Also takes optional time as argument (which will
+       usually be passed on from BibTime.)
+       Arguments: city_name, year, month, day, hour.
+       Example: s = BibLocation('Stockholm, Sweden', 2018, 1, 1, 12)"""
 
-    def __init__(self, city_name):
+    def __init__(self, city_name, year=2018, month=1, day=1, hour=12):
         try:
             # astral_geo = Astral()
             google_geo = GoogleGeocoder()
@@ -302,7 +306,7 @@ class BibLocation:
         self.location = location
 
         # The following attributes are set by `set_gtime` or `set_gtime_now`.
-        self.gtime = self.set_gtime_now()
+        self.gtime = self.set_gtime(year, month, day, hour)
 
         # The following attributes are set by `sun_status` function.
         self.sunrise = None
@@ -311,7 +315,7 @@ class BibLocation:
         self.sun_has_risen = None
         self.daylight = None
 
-        self.sun_status_now()
+        self.sun_status()
 
     def _get_entry(self):
         return 'The city name is set to {}'.format(self.location)
@@ -332,8 +336,8 @@ class BibLocation:
 
     def set_gtime(self, year=2018, month=1, day=1, hour=12):
         """Gives the object a point in time."""
-        gtime = datetime.datetime(
-            year, month, day, hour).replace(tzinfo=self.location.tzinfo)
+        gtime = datetime.datetime(year, month, day, hour, 0, 0,
+                                  0).replace(tzinfo=self.location.tzinfo)
         return gtime
 
     def set_gtime_now(self):
@@ -349,31 +353,37 @@ class BibLocation:
         sunrise = sun['sunrise']
         sunset = sun['sunset']
 
-        def check_time_after_noon(gtime):
-            """Checks if it is after noon or not and returns a boolean."""
-            after_noon = (gtime.hour >= 12)
-            return after_noon
+        # The following might be unnecessary code:
 
-        after_noon = check_time_after_noon(gtime)
+        # def check_time_after_noon(gtime):
+        #     """Checks if it is after noon or not and returns a boolean."""
+        #     after_noon = (gtime.hour >= 12)
+        #     return after_noon
 
-        def sunset_or_sunrise(after_noon, gtime):
-            """Checks if sun has risen or set depending on time of day."""
-            sun_has_set, sun_has_risen = False, False
-            if after_noon is True:
-                sun_has_set = (gtime >= sunset)
-            elif after_noon is False:
-                sun_has_risen = (gtime >= sunrise)
-            return (sun_has_set, sun_has_risen)
+        # after_noon = check_time_after_noon(gtime)
 
-        sun_has_set = sunset_or_sunrise(after_noon, gtime)[0]
-        sun_has_risen = sunset_or_sunrise(after_noon, gtime)[1]
+        # def sunset_or_sunrise(after_noon, gtime):
+        #     """Checks if sun has risen or set depending on time of day."""
+        #     sun_has_set, sun_has_risen = False, False
+        #     if after_noon is True:
+        #         sun_has_set = (gtime >= sunset)
+        #         sun_has_risen = (gtime >= sunrise)
+        #     elif after_noon is False:
+        #         sun_has_risen = (gtime >= sunrise)
+        #     return (sun_has_set, sun_has_risen)
+
+        # sun_has_set = sunset_or_sunrise(after_noon, gtime)[0]
+        # sun_has_risen = sunset_or_sunrise(after_noon, gtime)[1]
+
+        # Instead just replace with this:
+        sun_has_set, sun_has_risen = (gtime >= sunset), (gtime >= sunrise)
 
         def check_daylight(sun_has_set, sun_has_risen):
             """Checks if there is still daylight."""
             if sun_has_set is not None:
                 daylight = not sun_has_set
             if sun_has_risen is not None:
-                daylight = not sun_has_risen
+                daylight = sun_has_risen
             return daylight
 
         daylight = check_daylight(sun_has_set, sun_has_risen)
@@ -392,15 +402,21 @@ class BibLocation:
 
 class BibTime:
     """Define biblical time and date.
+       Needs a city name as a string.
        Takes optional time as an argument
-       as year, month, day, hour.
-       Defaults to 2018, 1, 1, 12."""
+       as year, month, day.
+       Defaults to 2018, 1, 1.
+       Example: m = BibTime('Manila')
+       Example: s = BibTime('Skepplanda, Sweden', 2018, 2, 1)"""
 
-    def __init__(self, year=2018, month=1, day=1, hour=12):
-        self.gtime = datetime.datetime(
-            year, month, day, hour, minute=0, second=0, microsecond=0)
-        # These attributes are set by the function set_btime.
-        self.weekday = None
+    def __init__(self, city, year=2018, month=1, day=1):
+        try:
+            location = BibLocation(str(city), year, month, day)
+        except ValueError:
+            raise Exception('Error: Not a valid string.')
+        location.set_gtime()
+        location.sun_status()
+        self.location = location
         self.btime = None
 
     def set_btime(self):

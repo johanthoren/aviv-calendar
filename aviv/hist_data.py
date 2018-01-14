@@ -214,13 +214,22 @@ MOONS = {
     601513: (6015, 13, 2016, 3, 10, True),   # renewedmoon.com
     # Missing months.
     # 6016
+    601606: (6016, 6, 2016, 9, 2, True),     # renewedmoon twitter
     601607: (6016, 7, 2016, 10, 2, True),    # karaite korner newsletter
     601608: (6016, 8, 2016, 11, 1, False),     # stellarium
     601609: (6016, 9, 2016, 11, 30, True),   # renewedmoon.com
     601610: (6016, 10, 2016, 12, 30, True),  # renewedmoon.com
     601611: (6016, 11, 2017, 1, 29, True),   # renewedmoon.com
     601612: (6016, 12, 2017, 2, 27, True),   # renewedmoon.com
-    # Missing months.
+    # 6017
+    601701: (6017, 1, 2017, 3, 29, True),    # renewedmoon.com
+    601702: (6017, 2, 2017, 4, 27, True),    # renewedmoon twitter
+    601703: (6017, 3, 2017, 5, 27, True),    # jerusalemsaints facebook
+    601704: (6017, 4, 2017, 6, 25, True),    # jerusalemsaints facebook
+    601705: (6017, 5, 2017, 7, 25, True),    # whenisthenewmoon.com
+    601706: (6017, 6, 2017, 8, 23, True),    # whenisthenewmoon.com
+    601707: (6017, 7, 2017, 9, 21, True),    # renewedmoon twitter
+    601708: (6017, 8, 2017, 10, 21, True),   # whenisthenewmoon.com
     601709: (6017, 9, 2017, 11, 20, True),   # renewedmoon.com
     601710: (6017, 10, 2017, 12, 20, True),   # a rood awakening / michael rood
     601711: (6017, 11, 2018, 1, 18, False)     # renewedmoon.com estimate

@@ -10,7 +10,7 @@
 # CURRENT STATUS:
 # Currently, it only decides what day of week, month and year it is according
 # to biblical timekeeping. It will also tell you some details about sunset
-# and sunrise and wether or not is is a weekly sabbath.
+# and sunrise and wether or not is is a weekly sabbath or a feast day.
 
 # COPYRIGHT:
 # Copyright (C) 2017 - 2018 Johan Thorén <johan@thoren.xyz>

@@ -411,37 +411,299 @@ class BibTime:
 
     def __init__(self, city, year=2018, month=1, day=1):
         try:
-            location = BibLocation(str(city), year, month, day)
+            b_location = BibLocation(str(city), year, month, day)
         except ValueError:
             raise Exception('Error: Not a valid string.')
-        location.set_gtime()
-        location.sun_status()
-        self.location = location
-        self.btime = None
+        b_location.set_gtime()
+        b_location.sun_status()
+        self.b_location = b_location
+        self.b_time = self._set_b_time()
 
-    def set_btime(self):
+    def _set_b_time(self):
         """Tries to calculate the biblical time."""
-        pass
 
-    def bweekday(self):
-        self.sun_status()
-        bwi = self.g_datetime.weekday()  # biblical weekday index
-        ss = self.sun_has_set
+        def _check_db_status():
+            m_phase = self.b_location.location.moon_phase(
+                date=self.b_location.gtime.date())
 
-        if ss is not None:
-            if ss is True:
-                bwi += 1
-                bweekday = BIB_WEEKDAYS[bwi]
+            if m_phase <= 2:
+                combine_data()
+            elif DB_EXISTS is False:
+                combine_data()
+            elif DB_MOD_TIME > 86400:
+                combine_data()
+
+        _check_db_status()
+
+        # Import latest_data and initialize the database.
+        import latest_data
+        last_moon = latest_data.LAST_MOON
+        last_moon_key = list(last_moon.keys())[0]
+
+        def _calc_b_weekday():
+            """Tries to calculate the day of week.
+            Since the biblical day starts in the
+            evening, 1 needs to be added if sun
+            has set."""
+            self.b_location.sun_status()
+            b_weekday_index = self.b_location.gtime.weekday()
+            sun_has_set = self.b_location.sun_has_set
+
+            if sun_has_set is not None:
+                if sun_has_set is True:
+                    b_weekday_index += 1
+                    b_weekday = BIB_WEEKDAYS[b_weekday_index]
+                else:
+                    b_weekday = BIB_WEEKDAYS[b_weekday_index]
             else:
-                bweekday = BIB_WEEKDAYS[bwi]
-        elif ss is None:
-            bweekday = BIB_WEEKDAYS[bwi]
+                b_weekday = BIB_WEEKDAYS[b_weekday_index]
 
-        self.weekday = bweekday
+            return b_weekday
 
-    def bweekday_now(self):
-        self.g_datetime = self.get_g_datetime_now()
-        self.bweekday()
+        def _get_moon_phases():
+            logging.debug('Entering the "test_current" function.')
+            # Test wether or not we are looking for a current date.
+            today = datetime.datetime.now(self.b_location.location.tz).replace(
+                tzinfo=self.b_location.location.tzinfo).date()
+            date_to_test = self.b_location.gtime.date()
+            m_phase_today = self.b_location.location.moon_phase(date=today)
+            m_phase_date_to_test = self.b_location.location.moon_phase(
+                date=date_to_test)
+            return (today, m_phase_today, date_to_test, m_phase_date_to_test)
+
+        def _test_current():
+            m_phases = _get_moon_phases()
+            today = m_phases[0]
+            m_phase_today = m_phases[1]
+            date_to_test = m_phases[2]
+            m_phase_date_to_test = m_phases[3]
+
+            if today < date_to_test:
+                if m_phase_today > m_phase_date_to_test:
+                    current = False
+            elif today > date_to_test:
+                if m_phase_today > m_phase_date_to_test:
+                    current = False
+            elif today - date_to_test > datetime.timedelta(days=29):
+                current = False
+            elif date_to_test - today > datetime.timedelta(days=29):
+                current = False
+            else:
+                current = True
+
+            return current
+
+        def _find_month(unknown_moon):
+            i = 0
+            x_moons = {**MOONS}
+            m_phase = self.b_location.location.moon_phase(date=unknown_moon)
+            list_of_tested_known_moons = []
+            list_of_tested_keys = []
+            for key in sorted(list(x_moons.keys())):
+                logging.debug('there are %s more items to try',
+                              len(x_moons.keys()))
+                known_moon = datetime.date(x_moons[key][2], x_moons[key][3],
+                                           x_moons[key][4])
+                x_phase = self.b_location.location.moon_phase(date=known_moon)
+                list_of_tested_keys.append(key)
+                list_of_tested_known_moons.append(known_moon)
+                i += 1
+                if unknown_moon == known_moon:
+                    logging.debug('stage 1')
+                    return key
+                elif unknown_moon > known_moon:
+                    logging.debug('stage 2')
+                    logging.debug('removing %s from the dictionary', key)
+                    del x_moons[key]
+                    continue
+                elif unknown_moon < known_moon:
+                    logging.debug('stage 3')
+                    delta = unknown_moon - known_moon
+                    logging.debug('delta is %s', delta)
+                    if delta > datetime.timedelta(days=30):
+                        logging.debug('stage 4')
+                        logging.debug('delta (%s) is greater than 30', delta)
+                        logging.debug('removing %s from the dictionary', key)
+                        del x_moons[key]
+                        continue
+                    if unknown_moon.month == known_moon.month:
+                        logging.debug('stage 5')
+                        logging.debug(
+                            'unknown_moon.month equals known_moon.month '
+                            '(%s and %s)', unknown_moon.month,
+                            known_moon.month)
+                        if m_phase < x_phase:
+                            logging.debug('stage 6')
+                            logging.debug(
+                                'm_phase is NOT greater than x_phase '
+                                '(%s and %s)', m_phase, x_phase)
+                            logging.debug('returning %s', key)
+                            return key
+                        logging.debug('stage 7')
+                        logging.debug('m_phase is greater than x_phase '
+                                      '(%s and %s)', m_phase, x_phase)
+                        x_key = list_of_tested_keys[i - 2]
+                        return x_key
+                    elif unknown_moon.month - 1 == known_moon.month:
+                        logging.debug('stage 8')
+                        logging.debug(
+                            'm.month - 1 is equal to known_moon.month '
+                            '(%s and %s)', unknown_moon.month - 1,
+                            known_moon.month)
+                        if m_phase > x_phase:
+                            logging.debug('stage 9')
+                            logging.debug('m_phase is greater than x_phase '
+                                          '(%s and %s)', m_phase, x_phase)
+                            logging.debug('returning %s', key)
+                            return key
+                        logging.debug('stage 10')
+                        logging.debug('m_phase is NOT greater than x_phase '
+                                      '(%s and %s)', m_phase, x_phase)
+                        continue
+                    continue
+                else:
+                    key = None
+                    return key
+
+        def _get_moon_key(year, month):
+            moon_key = int(str(year) + '{0:0=2d}'.format(month))
+            return moon_key
+
+        def _get_moon_from_date():
+            current = _test_current()
+            # If current is True, then try to find out the gregorian date of
+            # the month using the last_moon_key.
+            if current is True:
+                g_month = datetime_from_key(last_moon_key)
+                # If no such month exists in the database we need to try to
+                # find the one that it most likely is.
+                year = last_moon[last_moon_key][0]
+                month = last_moon[last_moon_key][1]
+                if g_month is None:
+                    unknown_moon = self.b_location.gtime.date()
+                    logging.debug('g_month is None, trying unknown_moon. '
+                                  'unknown_moon is %s', unknown_moon)
+                    u_key = _find_month(unknown_moon)
+                    logging.debug('u_key is now %s', u_key)
+                    g_month = datetime_from_key(u_key)
+                    tmpstring = str(u_key)
+                    year = int(tmpstring[0:4])
+                    month = int(tmpstring[4::])
+                return (g_month, year, month)
+
+            else:
+                unknown_moon = self.b_location.gtime.date()
+                logging.debug('unknown_moon is %s', unknown_moon)
+                u_key = _find_month(unknown_moon)
+                logging.debug('u_key is now %s', u_key)
+                g_month = datetime_from_key(u_key)
+                tmpstring = str(u_key)
+                year = int(tmpstring[0:4])
+                month = int(tmpstring[4::])
+                return (g_month, year, month)
+
+        x_month = _get_moon_from_date()
+        is_known = x_month[0][1]
+        b_year = x_month[1]
+        b_month = x_month[2]
+
+        x_month_year = x_month[0][0].year
+        logging.debug('x_month_year is %s', x_month_year)
+        x_month_month = x_month[0][0].month
+        logging.debug('x_month_month is %s', x_month_month)
+        x_month_day = x_month[0][0].day
+        logging.debug('x_month_day is %s', x_month_day)
+
+        def _set_month_start_time(year, month, day):
+            month_start_time = datetime.datetime(year, month, day).replace(
+                tzinfo=self.b_location.location.tzinfo, microsecond=0)
+            return month_start_time
+
+        def _set_day_of_month(month_start_time):
+            time_lapsed = self.b_location.gtime - month_start_time
+            day = time_lapsed.days
+            if self.b_location.sun_has_set is True:
+                day += 1
+            return day
+
+        month_start_time = _set_month_start_time(x_month_year, x_month_month,
+                                                 x_month_day)
+        b_day = _set_day_of_month(month_start_time)
+
+        if b_day > 30:
+            raise Exception('Error: Day of Month greater than 30.')
+
+        # Catch any false positives.
+        def _catch_false_postitive(year, month):
+            if month <= 12:
+                moon_key = _get_moon_key(year, month)
+                moon_key += 1
+            elif month == 13:
+                moon_key = int(str(year + 1) + '01')
+            try:
+                if MOONS[moon_key]:
+                    logging.debug('%s (moon_key) found in MOONS', moon_key)
+                    b_moon = datetime_from_key(moon_key)
+                    b_year = b_moon[0].year
+                    b_month = b_moon[0].month
+                    b_day = b_moon[0].day
+                    return (b_year, b_month, b_day)
+            except KeyError:
+                pass
+            return None
+
+        b_day_name = BIB_DAY_OF_MONTH[b_day - 1]
+        b_month_trad_name = TRAD_MONTH_NAMES[b_month - 1]
+
+        m_phase = self.b_location.location.moon_phase(
+            date=self.b_location.gtime.date())
+        confident = 2 <= m_phase <= 27
+
+        if confident is False:
+            x_month = _catch_false_postitive(b_year, b_month)
+            month_start_time = _set_month_start_time(
+                x_month[0], x_month[1], x_month[2])
+            b_day = _set_day_of_month(month_start_time)
+
+        if b_month >= 11:
+            self.aviv_barley = AVIV_BARLEY
+        else:
+            self.aviv_barley = None
+
+        # Find out if it's a High Feast Day or a Sabbath.
+        feast_test = test_is_feast(b_month, b_day)
+
+        is_hfd = feast_test[0]
+        is_hfs = feast_test[1]
+
+        feast_day = is_hfd
+        feast_name = feast_test[2]
+
+        b_weekday = _calc_b_weekday()
+        is_ws = test_is_sabbath(b_weekday)
+
+        if is_hfs is True:  # hfs stands for high feast sabbath
+            b_sabbath = is_hfs
+        else:
+            b_sabbath = is_ws
+
+
+        class BibDay:
+            def __init__(self, b_year, b_month, b_day, b_weekday):
+                self.year = b_year
+                self.month = b_month
+                self.day = b_day
+                self.weekday = b_weekday
+
+            class BibSabbath:
+                def __init__(self, b_sabbath, is_hfd, is_hfs, is_ws):
+                    self.sabbath = b_sabbath
+                    self.high_feast_day = is_hfd
+                    self.holy_day_of_rest = is_hfs
+                    self.weekly_sabbath = is_ws
+
+        b_time = BibDay(b_year, b_month, b_day, b_weekday)
+        return b_time
 
     def bdate(self):
         # Update the needed data.

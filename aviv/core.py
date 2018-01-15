@@ -293,20 +293,29 @@ class BibLocation:
        Arguments: city_name, year, month, day, hour.
        Example: s = BibLocation('Stockholm, Sweden', 2018, 1, 1, 12)"""
 
-    def __init__(self, city_name, year=2018, month=1, day=1, hour=12):
+    def __init__(self, city_name, year=1, month=1, day=1, hour=1):
         try:
+            # You need to choose whether to use Astral or Google Geocoder.
+            # To use the GoogleGeocoder you have to agree to GoogleGeocoder
+            # terms and license found here:
+            # https://developers.google.com/maps/documentation/geocoding/usage-limits#terms-of-use-restrictions
+
             # astral_geo = Astral()
             google_geo = GoogleGeocoder()
             # astral_geo.solar_depression = 'civil'
             google_geo.solar_depression = 'civil'
+            # location = astral_geo[city_name]
             location = google_geo[city_name]
         except KeyError:
             raise Exception(
                 'Error: That city is not found. Please try another.')
         self.location = location
 
-        # The following attributes are set by `set_gtime` or `set_gtime_now`.
-        self.gtime = self.set_gtime(year, month, day, hour)
+        if year == month == day == hour == 1:
+            logging.debug('No date input given.')
+            self.gtime = self.set_gtime_now()
+        else:
+            self.gtime = self.set_gtime(year, month, day, hour)
 
         # The following attributes are set by `sun_status` function.
         self.sunrise = None
@@ -326,6 +335,7 @@ class BibLocation:
             google_geo = GoogleGeocoder()
             # astral_geo.solar_depression = 'civil'
             google_geo.solar_depression = 'civil'
+            # location = astral_geo[city_name]
             location = google_geo[city_name]
         except KeyError:
             raise Exception(
@@ -334,7 +344,7 @@ class BibLocation:
 
     city = property(_get_entry, _set_entry)
 
-    def set_gtime(self, year=2018, month=1, day=1, hour=12):
+    def set_gtime(self, year, month, day, hour):
         """Gives the object a point in time."""
         gtime = datetime.datetime(year, month, day, hour, 0, 0,
                                   0).replace(tzinfo=self.location.tzinfo)
@@ -409,13 +419,13 @@ class BibTime:
        Example: m = BibTime('Manila')
        Example: s = BibTime('Skepplanda, Sweden', 2018, 2, 1)"""
 
-    def __init__(self, city, year=2018, month=1, day=1):
+    def __init__(self, city, year=1, month=1, day=1, hour=1):
         try:
-            b_location = BibLocation(str(city), year, month, day)
+            b_location = BibLocation(str(city), year, month, day, hour)
         except ValueError:
             raise Exception('Error: Not a valid string.')
-        b_location.set_gtime()
-        b_location.sun_status()
+        # b_location.set_gtime()
+        # b_location.sun_status()
         self.b_location = b_location
         self.b_time = self._set_b_time()
 
@@ -661,8 +671,8 @@ class BibTime:
 
         if confident is False:
             x_month = _catch_false_postitive(b_year, b_month)
-            month_start_time = _set_month_start_time(
-                x_month[0], x_month[1], x_month[2])
+            month_start_time = _set_month_start_time(x_month[0], x_month[1],
+                                                     x_month[2])
             b_day = _set_day_of_month(month_start_time)
 
         if b_month >= 11:

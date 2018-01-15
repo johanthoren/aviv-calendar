@@ -698,21 +698,25 @@ class BibTime:
             b_sabbath = is_ws
 
         class BibSabbath:
-            def __init__(self, b_sabbath, is_hfd, is_hfs, is_ws):
+            def __init__(self, b_sabbath, is_hfd, is_hfs, is_ws, feast_name):
                 self.sabbath = b_sabbath
                 self.high_feast_day = is_hfd
                 self.holy_day_of_rest = is_hfs
                 self.weekly_sabbath = is_ws
+                if self.high_feast_day is True:
+                    self.feast_name = feast_name
 
         class BibDay:
-            def __init__(self, b_year, b_month, b_day, b_weekday):
+            def __init__(self, b_year, b_month, b_day, b_day_name, b_weekday):
                 self.year = b_year
                 self.month = b_month
                 self.day = b_day
+                self.day_name = b_day_name
                 self.weekday = b_weekday
 
-        b_time = BibDay(b_year, b_month, b_day, b_weekday)
-        b_time.sabbath = BibSabbath(b_sabbath, is_hfd, is_hfs, is_ws)
+        b_time = BibDay(b_year, b_month, b_day, b_day_name, b_weekday)
+        b_time.sabbath = BibSabbath(b_sabbath, is_hfd, is_hfs, is_ws,
+                                    feast_name)
         return b_time
 
 
@@ -727,65 +731,69 @@ def main():
         print('Try again.')
         print('Example: Manila')
     else:
-        logging.debug('entry is %s' % entry)
-        x = BibTime(entry)
-        logging.debug('Creating object %s' % x)
-        print('The chosen location is {}'.format(x))
+        logging.debug('entry is %s', entry)
+        city = BibTime(entry)
+        c_loc = city.b_location
+        c_btime = city.b_time
+        logging.debug('Creating object %s', entry)
+        print('The chosen location is {}'.format(entry))
         print('The gregorian date in {} is now {}'.format(
-            x.location.name, x.g_datetime.strftime('%Y-%m-%d')))
-        print('The time in {} is now {}'.format(
-            x.location.name, x.g_datetime.strftime('%H:%M')))
-        if x.sun_has_set is True:
+            entry, c_loc.gtime.strftime('%Y-%m-%d')))
+        print('The gregorian time in {} is now {}'.format(
+            entry, c_loc.gtime.strftime('%H:%M')))
+        if c_loc.sun_has_set is True:
             print('The sun is down')
-            print('The sunset was at {}'.format(x.sunset.strftime('%H:%M')))
-        if x.sun_has_risen is False:
+            print('The sunset was at {}'.format(
+                c_loc.sunset.strftime('%H:%M')))
+        if c_loc.sun_has_risen is False:
             print('The sun has not yet risen')
             print('The sunrise will be at {}'.format(
-                x.sunrise.strftime('%H:%M')))
+                c_loc.sunrise.strftime('%H:%M')))
         # If sun_has_set is None, it should be in the morning. Therefore, check
         # if the sun has risen.
-        if x.sun_has_set is None and x.sun_has_risen is True:
+        if c_loc.sun_has_set is None and c_loc.sun_has_risen is True:
             print('The sun is still up')
             print('The sunset will be at {}'.format(
-                x.sunset.strftime('%H:%M')))
+                c_loc.sunset.strftime('%H:%M')))
         # If sun_has_risen is None it should be in the afternoon. Therefore,
         # check if the sun has set.
-        if x.sun_has_risen is None and x.sun_has_set is False:
+        if c_loc.sun_has_risen is None and c_loc.sun_has_set is False:
             print('The sun is still up')
             print('The sunset will be at {}'.format(
-                x.sunset.strftime('%H:%M')))
-        print('Today is the {} day of the week'.format(x.weekday))
+                c_loc.sunset.strftime('%H:%M')))
+        print('Today is the {} day of the week'.format(c_btime.weekday))
         print('The biblical date in {} is now:\n'
               'The {} day of the {} month in the year {}.'.format(
-                  x.location.name, x.day_name, x.month, x.year))
+                  entry, c_btime.day_name, c_btime.month,
+                  c_btime.year))
         # if x.is_estimated is True:
         #     print('The date and time is estimated'
         #           ' and is NOT based on actual observations')
         # if x.is_known is True:
         #     print('The date and time is certain'
         #           ' and is based on actual observations')
-        if x.sabbath is True:
-            if x.is_ws is True:
+        if c_btime.sabbath.sabbath is True:
+            if c_btime.sabbath.weekly_sabbath is True:
                 print('It is now the weekly Sabbath')
-            elif x.is_hfs is True:
+            elif c_btime.sabbath.holy_day_of_rest is True:
                 print('It is now a High Feast Sabbath.')
             else:
                 print('Error: Unkown Sabbath')
-        if x.feast_day is True:
-            print('It is now the {}'.format(x.feast_name))
-            if x.is_hfs is True:
+        if c_btime.sabbath.high_feast_day is True:
+            print('It is now the {}'.format(c_btime.sabbath.feast_name))
+            if c_btime.sabbath.holy_day_of_rest is True:
                 print('It is a Holy Day of Convocation where no work '
                       'shall be done.')
-            elif x.is_hfs is False:
+            elif c_btime.sabbath.holy_day_of_rest is False:
                 print('It is not a Holy Day of Convocation.')
-        if x.month == 12:
-            if x.AVIV_BARLEY is False:
+        if c_btime.month == 12:
+            if city.aviv_barley is True:
+                print('The barley in the land of Israel is aviv!')
+                print('The next new moon will begin the new year.')
+            else:
                 print('The barley in the land of Israel is NOT yet aviv.')
                 print('There will be a 13th month if it is not aviv before '
                       'the end of the month.')
-            if x.AVIV_BARLEY is True:
-                print('The barley in the land of Israel is aviv!')
-                print('The next new moon will begin the new year.')
 
 
 if __name__ == '__main__':

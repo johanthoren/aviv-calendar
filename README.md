@@ -3,9 +3,9 @@
 Tries to find out what day it is according to biblical time keeping.
 ## Status:
 Right now it does a few things when called upon:
-* It gives you the current biblical date your chosen location.
+* It gives you the current biblical date of your chosen location.
 * It also give you the current day of the week as well as telling you if it's a weekly Sabbath or not.
-* In the source code there is a lot more, but not that is being triggered by the running of the program. Not yet.
+* In the source code there is a few more things, but not that is being triggered by the running of the program. Not yet.
 ## Dependencies:
 Depends on *astral*. Install with `pip install astral`.
 ## Definitions:

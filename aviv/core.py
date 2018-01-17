@@ -31,18 +31,24 @@
 
 # -- END OF INTRO -- #
 import datetime
-# Using the builtin geocoder. Se Astral documentation for alternatives.
 import logging
 import urllib.request
 import os
 import sys
 import shelve
+import time
+# Uncomment the following line to use the astral builtin geocoder.
+# Se Astral documentation for alternatives.
 # from astral import Astral
+# Using GoogleGeocoder requires you to accept their licenses and terms
+# of service.
 from astral import GoogleGeocoder
+from astral import AstralError
 import hist_data
 
 logging.basicConfig(
-    level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
+    level=logging.CRITICAL,
+    format=' %(asctime)s - %(levelname)s - %(message)s')
 
 # Define the traditional names of the biblical months of the year.
 # These are not per definition biblical, rather they come from the exile
@@ -72,9 +78,8 @@ BIB_DAY_OF_MONTH = ('1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th',
 
 # List of feast days that are NOT biblically commanded to keep but still
 # of interest.
-FIXED_FEAST_DAYS = {
-    '9, 25', ('1st day of Hanukkah', False), '12, 14', ('Purim', False)
-}
+FIXED_FEAST_DAYS = {(9, 25), ('1st day of Hanukkah', False), (12, 14),
+                    ('Purim', False)}
 # TODO: Feast days that are relative to weekday, or that span over
 # months (like Hanukkah).
 
@@ -161,6 +166,7 @@ def combine_data():
 
 # Open the database, if none exists run the function to create one.
 if not os.path.exists(DB_FILE):
+    logging.debug('DB_FILE does not exist on this system. Creating a new one.')
     combine_data()
 
 # Get the database in order.
@@ -170,14 +176,17 @@ AVIV_BARLEY = DB['AVIV_BARLEY']
 DB.close()
 
 
-# Creates a datetime object from key (k). First tries to find the month in the
-# ´MOONS´. Also sets the value of the attribute is_known to reflect wether or
-# not it was based on observation (and therefore confirmed) or if it's an
-# estimated guess.
-# Note that most historical MOONS before 6001 will always be estimated.
-# Keys need to be in the form of YYYYMM (example: 600101).
 def datetime_from_key(k):
-    """Tries to find the key in dictionary 'MOONS'."""
+    """Creates a datetime object from key (k).
+
+    First tries to find the month in the ´MOONS´.
+
+    Also sets the value of the attribute is_known to reflect wether or not
+    it was based on observation (and therefore confirmed) or if it's an
+    estimated guess. Note that most historical MOONS before 6001 will always
+    be estimated.
+
+    Keys need to be in the form of YYYYMM (example: 600101)."""
     try:
         if MOONS[k]:
             year = MOONS[k][2]
@@ -197,8 +206,6 @@ def datetime_from_key(k):
         return (date, is_known)
 
 
-# This function tests to see if a year is within the given range of this
-# program.
 def test_year(year):
     """Tests if a year is within the scope of the program. Namely 4001-8001."""
     year = int(year)
@@ -216,7 +223,6 @@ def test_year(year):
         raise Exception('Error: Input out of range')
 
 
-# This function tests to see if a month is within the given range of a year.
 def test_month(month):
     """Tests if a month is within the range of a biblical year: 1-13."""
     month = int(month)
@@ -234,7 +240,6 @@ def test_month(month):
         print('Error: The specified value is out of the allowed range.')
 
 
-# This function tests to see if a day is within the given range of a month.
 def test_day(day, length):
     """Tests if a day is within the range of a biblical month: 1-30"""
     day = int(day)
@@ -256,10 +261,12 @@ def test_day(day, length):
         print('Error: The value is out of the allowed range.')
 
 
-# This function tests to see if a day is a feast day.
 # TODO: Work in progress.
 def test_is_feast(month, day):
-    """Tests if a day is a High Feast Day."""
+    """Tests if a day is a High Feast Day.
+
+    Needs 2 integers as arguments: Month, Day.
+    Example: 1, 15"""
     potential_feast = (month, day)
     try:
         if FIXED_HIGH_FEAST_DAYS[potential_feast]:
@@ -273,8 +280,6 @@ def test_is_feast(month, day):
     return (is_hfd, is_hfs, feast_name)
 
 
-# This function tests to see if a day of the week is the weekly sabbath.
-# Hint: Only tests if it's the 7th day.
 def test_is_sabbath(weekday):
     """Tests if a weekday is the 7th, and thus a weekly sabbath."""
     weekly_sabbath = False
@@ -283,11 +288,9 @@ def test_is_sabbath(weekday):
     return weekly_sabbath
 
 
-# g_time_now = datetime.datetime.now().replace(microsecond=0)
-
-
 class BibLocation:
     """Define a location. Takes city_name as argument.
+
        Also takes optional time as argument (which will
        usually be passed on from BibTime.)
        Arguments: city_name, year, month, day, hour.
@@ -295,10 +298,12 @@ class BibLocation:
 
     def __init__(self, city_name, year=1, month=1, day=1, hour=1):
         try:
-            # You need to choose whether to use Astral or Google Geocoder.
-            # To use the GoogleGeocoder you have to agree to GoogleGeocoder
-            # terms and license found here:
-            # https://developers.google.com/maps/documentation/geocoding/usage-limits#terms-of-use-restrictions
+            r"""Creates an object using the Astral or Google Geocoder.
+
+            You need to choose whether to use Astral or Google Geocoder.
+            To use the GoogleGeocoder you have to agree to GoogleGeocoder
+            terms and license found here:
+            https://developers.google.com/maps/documentation/geocoding/usage-limits#terms-of-use-restrictions"""
 
             # astral_geo = Astral()
             google_geo = GoogleGeocoder()
@@ -311,11 +316,12 @@ class BibLocation:
                 'Error: That city is not found. Please try another.')
         self.location = location
 
+        # If no date input it given, defaults to the current date and time.
         if year == month == day == hour == 1:
             logging.debug('No date input given.')
-            self.gtime = self.set_gtime_now()
+            self.g_time = self._set_g_time_now()
         else:
-            self.gtime = self.set_gtime(year, month, day, hour)
+            self.g_time = self._set_g_time(year, month, day, hour)
 
         # The following attributes are set by `sun_status` function.
         self.sunrise = None
@@ -344,49 +350,49 @@ class BibLocation:
 
     city = property(_get_entry, _set_entry)
 
-    def set_gtime(self, year, month, day, hour):
-        """Gives the object a point in time."""
-        gtime = datetime.datetime(year, month, day, hour, 0, 0,
-                                  0).replace(tzinfo=self.location.tzinfo)
-        return gtime
+    def _set_g_time(self, year, month, day, hour):
+        """Sets the object at a point in time to use for calculation of sun."""
+        g_time = datetime.datetime(year, month, day, hour, 0, 0,
+                                   0).replace(tzinfo=self.location.tzinfo)
+        return g_time
 
-    def set_gtime_now(self):
+    def _set_g_time_now(self):
         """Updates the g_datetime to reflect current time."""
-        gtime = datetime.datetime.now(
+        g_time = datetime.datetime.now(
             self.location.tz).replace(tzinfo=self.location.tzinfo)
-        return gtime
+        return g_time
 
     def sun_status(self):
         """Updates the sunrise and sunset status based on location and time."""
-        gtime = self.gtime
-        sun = self.location.sun(date=gtime, local=True)
+        g_time = self.g_time
+        sun = self.location.sun(date=g_time, local=True)
         sunrise = sun['sunrise']
         sunset = sun['sunset']
 
         # The following might be unnecessary code:
 
-        # def check_time_after_noon(gtime):
+        # def check_time_after_noon(g_time):
         #     """Checks if it is after noon or not and returns a boolean."""
-        #     after_noon = (gtime.hour >= 12)
+        #     after_noon = (g_time.hour >= 12)
         #     return after_noon
 
-        # after_noon = check_time_after_noon(gtime)
+        # after_noon = check_time_after_noon(g_time)
 
-        # def sunset_or_sunrise(after_noon, gtime):
+        # def sunset_or_sunrise(after_noon, g_time):
         #     """Checks if sun has risen or set depending on time of day."""
         #     sun_has_set, sun_has_risen = False, False
         #     if after_noon is True:
-        #         sun_has_set = (gtime >= sunset)
-        #         sun_has_risen = (gtime >= sunrise)
+        #         sun_has_set = (g_time >= sunset)
+        #         sun_has_risen = (g_time >= sunrise)
         #     elif after_noon is False:
-        #         sun_has_risen = (gtime >= sunrise)
+        #         sun_has_risen = (g_time >= sunrise)
         #     return (sun_has_set, sun_has_risen)
 
-        # sun_has_set = sunset_or_sunrise(after_noon, gtime)[0]
-        # sun_has_risen = sunset_or_sunrise(after_noon, gtime)[1]
+        # sun_has_set = sunset_or_sunrise(after_noon, g_time)[0]
+        # sun_has_risen = sunset_or_sunrise(after_noon, g_time)[1]
 
         # Instead just replace with this:
-        sun_has_set, sun_has_risen = (gtime >= sunset), (gtime >= sunrise)
+        sun_has_set, sun_has_risen = (g_time >= sunset), (g_time >= sunrise)
 
         def check_daylight(sun_has_set, sun_has_risen):
             """Checks if there is still daylight."""
@@ -406,7 +412,7 @@ class BibLocation:
 
     def sun_status_now(self):
         """Updates the g_datetime to reflect current time and then the sun."""
-        self.set_gtime_now()
+        self._set_g_time_now()
         self.sun_status()
 
 
@@ -424,7 +430,7 @@ class BibTime:
             b_location = BibLocation(str(city), year, month, day, hour)
         except ValueError:
             raise Exception('Error: Not a valid string.')
-        # b_location.set_gtime()
+        # b_location._set_g_time()
         # b_location.sun_status()
         self.b_location = b_location
         self.b_time = self._set_b_time()
@@ -434,7 +440,7 @@ class BibTime:
 
         def _check_db_status():
             m_phase = self.b_location.location.moon_phase(
-                date=self.b_location.gtime.date())
+                date=self.b_location.g_time.date())
 
             if m_phase <= 2:
                 combine_data()
@@ -456,7 +462,7 @@ class BibTime:
             evening, 1 needs to be added if sun
             has set."""
             self.b_location.sun_status()
-            b_weekday_index = self.b_location.gtime.weekday()
+            b_weekday_index = self.b_location.g_time.weekday()
             sun_has_set = self.b_location.sun_has_set
 
             if sun_has_set is not None:
@@ -475,7 +481,7 @@ class BibTime:
             # Test wether or not we are looking for a current date.
             today = datetime.datetime.now(self.b_location.location.tz).replace(
                 tzinfo=self.b_location.location.tzinfo).date()
-            date_to_test = self.b_location.gtime.date()
+            date_to_test = self.b_location.g_time.date()
             m_phase_today = self.b_location.location.moon_phase(date=today)
             m_phase_date_to_test = self.b_location.location.moon_phase(
                 date=date_to_test)
@@ -590,7 +596,7 @@ class BibTime:
                 year = last_moon[last_moon_key][0]
                 month = last_moon[last_moon_key][1]
                 if g_month is None:
-                    unknown_moon = self.b_location.gtime.date()
+                    unknown_moon = self.b_location.g_time.date()
                     logging.debug('g_month is None, trying unknown_moon. '
                                   'unknown_moon is %s', unknown_moon)
                     u_key = _find_month(unknown_moon)
@@ -602,7 +608,7 @@ class BibTime:
                 return (g_month, year, month)
 
             else:
-                unknown_moon = self.b_location.gtime.date()
+                unknown_moon = self.b_location.g_time.date()
                 logging.debug('unknown_moon is %s', unknown_moon)
                 u_key = _find_month(unknown_moon)
                 logging.debug('u_key is now %s', u_key)
@@ -630,7 +636,7 @@ class BibTime:
             return month_start_time
 
         def _set_day_of_month(month_start_time):
-            time_lapsed = self.b_location.gtime - month_start_time
+            time_lapsed = self.b_location.g_time - month_start_time
             day = time_lapsed.days
             if self.b_location.sun_has_set is True:
                 day += 1
@@ -666,7 +672,7 @@ class BibTime:
         b_month_trad_name = TRAD_MONTH_NAMES[b_month - 1]
 
         m_phase = self.b_location.location.moon_phase(
-            date=self.b_location.gtime.date())
+            date=self.b_location.g_time.date())
         confident = 2 <= m_phase <= 27
 
         if confident is False:
@@ -721,8 +727,10 @@ class BibTime:
 
 
 def main():
+    """Gets the current information of a city. Format: 'City, Country'."""
     try:
-        print('Please enter the name of the city.')
+        print('Please enter the name of the city and the country. '
+              'Example: Jerusalem, Israel')
         entry = input()
         if not entry:
             raise ValueError('Error: Empty string')
@@ -732,15 +740,37 @@ def main():
         print('Example: Manila')
     else:
         logging.debug('entry is %s', entry)
-        city = BibTime(entry)
+        try:
+            city = BibTime(entry)
+        except AstralError:
+            print('Please wait.', end='')
+            time.sleep(2)
+            try:
+                city = BibTime(entry)
+            except AstralError:
+                print('.', end='')
+                time.sleep(2)
+                try:
+                    city = BibTime(entry)
+                except AstralError:
+                    print('.')
+                    time.sleep(2)
+                    try:
+                        city = BibTime(entry)
+                    except AstralError:
+                        raise Exception(
+                            'Error: Still not working. '
+                            'Please try again if you are certain of the '
+                            'spelling.\n'
+                            'Otherwise, please try another location.')
         c_loc = city.b_location
         c_btime = city.b_time
         logging.debug('Creating object %s', entry)
-        print('The chosen location is {}'.format(entry))
+        print('\nThe chosen location is {}'.format(entry))
         print('The gregorian date in {} is now {}'.format(
-            entry, c_loc.gtime.strftime('%Y-%m-%d')))
+            entry, c_loc.g_time.strftime('%Y-%m-%d')))
         print('The gregorian time in {} is now {}'.format(
-            entry, c_loc.gtime.strftime('%H:%M')))
+            entry, c_loc.g_time.strftime('%H:%M')))
         if c_loc.sun_has_set is True:
             print('The sun is down')
             print('The sunset was at {}'.format(
@@ -764,8 +794,7 @@ def main():
         print('Today is the {} day of the week'.format(c_btime.weekday))
         print('The biblical date in {} is now:\n'
               'The {} day of the {} month in the year {}.'.format(
-                  entry, c_btime.day_name, c_btime.month,
-                  c_btime.year))
+                  entry, c_btime.day_name, c_btime.month, c_btime.year))
         # if x.is_estimated is True:
         #     print('The date and time is estimated'
         #           ' and is NOT based on actual observations')

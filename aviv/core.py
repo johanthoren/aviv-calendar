@@ -288,6 +288,14 @@ def test_is_sabbath(weekday):
     return weekly_sabbath
 
 
+def last_moon_check():
+    """Imports latest data and sets the last_moon variables."""
+    import latest_data
+    last_moon = latest_data.LAST_MOON
+    last_moon_key = list(last_moon.keys())[0]
+    return (last_moon, last_moon_key)
+
+
 class BibLocation:
     """Define a location. Takes city_name as argument.
 
@@ -310,7 +318,24 @@ class BibLocation:
             # astral_geo.solar_depression = 'civil'
             google_geo.solar_depression = 'civil'
             # location = astral_geo[city_name]
-            location = google_geo[city_name]
+            logging.debug('city_name is %s', city_name)
+            logging.debug('trying to find the coordinates for %s', city_name)
+            try:
+                location = google_geo[city_name]
+            except AstralError:
+                print('Please wait...')
+                time.sleep(2)
+                try:
+                    location = google_geo[city_name]
+                except AstralError:
+                    print('Please wait some more...')
+                    time.sleep(2)
+                    try:
+                        location = google_geo[city_name]
+                    except AstralError:
+                        raise Exception(
+                            'GoogleGeocoder is having a fit. '
+                            'Or the city can not be found for real.)')
         except KeyError:
             raise Exception(
                 'Error: That city is not found. Please try another.')
@@ -418,49 +443,50 @@ class BibLocation:
 
 class BibTime:
     """Define biblical time and date.
-       Needs a city name as a string.
-       Takes optional time as an argument
-       as year, month, day.
-       Defaults to 2018, 1, 1.
-       Example: m = BibTime('Manila')
-       Example: s = BibTime('Skepplanda, Sweden', 2018, 2, 1)"""
+
+    Needs a city name as a string.
+    Takes optional time as an argument
+    as year, month, day.
+    Defaults to 2018, 1, 1.
+    Example: m = BibTime('Manila')
+    Example: s = BibTime('Skepplanda, Sweden', 2018, 2, 1)
+    """
 
     def __init__(self, city, year=1, month=1, day=1, hour=1):
         try:
-            b_location = BibLocation(str(city), year, month, day, hour)
+            b_location = BibLocation(city, year, month, day, hour)
         except ValueError:
             raise Exception('Error: Not a valid string.')
         # b_location._set_g_time()
         # b_location.sun_status()
         self.b_location = b_location
+        self._check_db_status()
         self.b_time = self._set_b_time()
+
+    def _check_db_status(self):
+        m_phase = self.b_location.location.moon_phase(
+            date=self.b_location.g_time.date())
+
+        if m_phase <= 2:
+            combine_data()
+        elif DB_EXISTS is False:
+            combine_data()
+        elif DB_MOD_TIME > 86400:
+            combine_data()
 
     def _set_b_time(self):
         """Tries to calculate the biblical time."""
 
-        def _check_db_status():
-            m_phase = self.b_location.location.moon_phase(
-                date=self.b_location.g_time.date())
-
-            if m_phase <= 2:
-                combine_data()
-            elif DB_EXISTS is False:
-                combine_data()
-            elif DB_MOD_TIME > 86400:
-                combine_data()
-
-        _check_db_status()
-
-        # Import latest_data and initialize the database.
-        import latest_data
-        last_moon = latest_data.LAST_MOON
-        last_moon_key = list(last_moon.keys())[0]
+        lmoon = last_moon_check()
+        last_moon = lmoon[0]
+        last_moon_key = lmoon[1]
 
         def _calc_b_weekday():
             """Tries to calculate the day of week.
             Since the biblical day starts in the
             evening, 1 needs to be added if sun
-            has set."""
+            has set.
+            """
             self.b_location.sun_status()
             b_weekday_index = self.b_location.g_time.weekday()
             sun_has_set = self.b_location.sun_has_set
@@ -477,7 +503,7 @@ class BibTime:
             return b_weekday
 
         def _get_moon_phases():
-            logging.debug('Entering the "test_current" function.')
+            logging.debug('Entering the "_test_current" function.')
             # Test wether or not we are looking for a current date.
             today = datetime.datetime.now(self.b_location.location.tz).replace(
                 tzinfo=self.b_location.location.tzinfo).date()
@@ -494,20 +520,25 @@ class BibTime:
             date_to_test = m_phases[2]
             m_phase_date_to_test = m_phases[3]
 
+            cur = None
+
             if today < date_to_test:
                 if m_phase_today > m_phase_date_to_test:
-                    current = False
+                    cur = False
             elif today > date_to_test:
                 if m_phase_today > m_phase_date_to_test:
-                    current = False
+                    cur = False
             elif today - date_to_test > datetime.timedelta(days=29):
-                current = False
+                cur = False
             elif date_to_test - today > datetime.timedelta(days=29):
-                current = False
+                cur = False
             else:
-                current = True
+                cur = True
 
-            return current
+            return cur
+
+        current = _test_current()
+        logging.debug('current is now %s', current)
 
         def _find_month(unknown_moon):
             i = 0
@@ -586,7 +617,6 @@ class BibTime:
             return moon_key
 
         def _get_moon_from_date():
-            current = _test_current()
             # If current is True, then try to find out the gregorian date of
             # the month using the last_moon_key.
             if current is True:
@@ -713,14 +743,17 @@ class BibTime:
                     self.feast_name = feast_name
 
         class BibDay:
-            def __init__(self, b_year, b_month, b_day, b_day_name, b_weekday):
+            def __init__(self, b_year, b_month, b_day, b_day_name, b_weekday,
+                         month_start_time):
                 self.year = b_year
                 self.month = b_month
                 self.day = b_day
                 self.day_name = b_day_name
                 self.weekday = b_weekday
+                self.month_start_time = month_start_time
 
-        b_time = BibDay(b_year, b_month, b_day, b_day_name, b_weekday)
+        b_time = BibDay(b_year, b_month, b_day, b_day_name, b_weekday,
+                        month_start_time)
         b_time.sabbath = BibSabbath(b_sabbath, is_hfd, is_hfs, is_ws,
                                     feast_name)
         return b_time

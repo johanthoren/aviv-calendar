@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Historical data to act as reference in aviv-calendar."""
 
 # -- BEGINNING OF INTRO: -- #
 

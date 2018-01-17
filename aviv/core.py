@@ -381,6 +381,11 @@ class BibLocation:
                                    0).replace(tzinfo=self.location.tzinfo)
         return g_time
 
+    def update_g_time(self):
+        """Updates the g_time to reflect current time."""
+        self.g_time = self._set_g_time_now()
+        self.sun_status()
+
     def _set_g_time_now(self):
         """Updates the g_datetime to reflect current time."""
         g_time = datetime.datetime.now(
@@ -460,6 +465,12 @@ class BibTime:
         # b_location._set_g_time()
         # b_location.sun_status()
         self.b_location = b_location
+        self._check_db_status()
+        self.b_time = self._set_b_time()
+
+    def update_time(self):
+        """Update time to current."""
+        self.b_location.update_g_time()
         self._check_db_status()
         self.b_time = self._set_b_time()
 
@@ -722,6 +733,7 @@ class BibTime:
         is_hfd = feast_test[0]
         is_hfs = feast_test[1]
 
+        feast_day = is_hfd
         feast_name = feast_test[2]
 
         b_weekday = _calc_b_weekday()

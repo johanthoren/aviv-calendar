@@ -233,5 +233,5 @@ MOONS = {
     601708: (6017, 8, 2017, 10, 21, True),   # whenisthenewmoon.com
     601709: (6017, 9, 2017, 11, 20, True),   # renewedmoon.com
     601710: (6017, 10, 2017, 12, 20, True),   # a rood awakening / michael rood
-    601711: (6017, 11, 2018, 1, 18, False)     # renewedmoon.com estimate
+    601711: (6017, 11, 2018, 1, 18, True)     # goo.gl/dftVJ9
 }

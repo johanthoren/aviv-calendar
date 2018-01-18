@@ -21,3 +21,7 @@ Since this calendar is not a purely mathematical calendar, such as the Gregorian
 It also needs a trusted database of reported sightings from Israel. See aviv/hist_data.py for this.
 ## Contributing:
 It's worth noting that this is my 'learning-by-doing-project' to learn python. In other words, please contribute and don't feel shy about pointing out obvious errors or style related issues. Please create an issue or a pull-request.
+## Donations:
+If you want to contribute financially it's much appreciated, and needed.
+### Paypal:
+You can find my Paypal account [here](https://www.paypal.me/johanthoren).

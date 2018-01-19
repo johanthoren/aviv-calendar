@@ -710,6 +710,7 @@ class BibTime:
             return None
 
         b_day_name = BIB_DAY_OF_MONTH[b_day - 1]
+        b_month_name = BIB_DAY_OF_MONTH[b_month - 1]
         b_month_trad_name = TRAD_MONTH_NAMES[b_month - 1]
 
         m_phase = self.b_location.location.moon_phase(
@@ -754,17 +755,20 @@ class BibTime:
                     self.feast_name = feast_name
 
         class BibDay:
-            def __init__(self, b_year, b_month, b_day, b_day_name, b_weekday,
+            def __init__(self, b_year, b_month, b_month_name,
+                         b_month_trad_name, b_day, b_day_name, b_weekday,
                          month_start_time):
                 self.year = b_year
                 self.month = b_month
+                self.month_name = b_month_name
+                self.month_trad_name = b_month_trad_name
                 self.day = b_day
                 self.day_name = b_day_name
                 self.weekday = b_weekday
                 self.month_start_time = month_start_time
 
-        b_time = BibDay(b_year, b_month, b_day, b_day_name, b_weekday,
-                        month_start_time)
+        b_time = BibDay(b_year, b_month, b_month_name, b_month_trad_name,
+                        b_day, b_day_name, b_weekday, month_start_time)
         b_time.sabbath = BibSabbath(b_sabbath, is_hfd, is_hfs, is_ws,
                                     feast_name)
         return b_time
@@ -838,7 +842,7 @@ def main():
         print('Today is the {} day of the week'.format(c_btime.weekday))
         print('The biblical date in {} is now:\n'
               'The {} day of the {} month in the year {}.'.format(
-                  entry, c_btime.day_name, c_btime.month, c_btime.year))
+                  entry, c_btime.day_name, c_btime.month_name, c_btime.year))
         # if x.is_estimated is True:
         #     print('The date and time is estimated'
         #           ' and is NOT based on actual observations')

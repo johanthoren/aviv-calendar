@@ -568,10 +568,6 @@ class BibTime:
             key = None
             return key
 
-        # def _get_moon_key(year, month):
-        #     moon_key = int(str(year) + '{0:0=2d}'.format(month))
-        #     return moon_key
-
         def _get_moon_from_date():
             # If current is True, then try to find out the gregorian date of
             # the month using the last_moon_key.

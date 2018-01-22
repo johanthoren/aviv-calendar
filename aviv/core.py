@@ -129,7 +129,7 @@ def get_latest_data():
 DB_FILE = os.path.join(sys.path[0], 'current_data')
 DB_ACTUAL_FILE = os.path.join(sys.path[0], 'current_data.DB')
 DB_EXISTS = os.path.exists(DB_ACTUAL_FILE)
-DB_MOD_TIME = os.path.getmtime(DB_ACTUAL_FILE)
+DB_MOD_TIME = datetime.datetime.fromtimestamp(os.path.getmtime(DB_ACTUAL_FILE))
 
 
 # Combine the data from hist_data (which is distributed with the source code),
@@ -165,7 +165,7 @@ def combine_data():
 
 
 # Open the database, if none exists run the function to create one.
-if not os.path.exists(DB_FILE):
+if DB_EXISTS is not True:
     logging.debug('DB_FILE does not exist on this system. Creating a new one.')
     combine_data()
 
@@ -435,8 +435,6 @@ class BibTime:
             b_location = BibLocation(city, year, month, day, hour)
         except ValueError:
             raise Exception('Error: Not a valid string.')
-        # b_location._set_g_time()
-        # b_location.sun_status()
         self.b_location = b_location
         self._check_db_status()
         self.b_time = self._set_b_time()
@@ -448,14 +446,20 @@ class BibTime:
         self.b_time = self._set_b_time()
 
     def _check_db_status(self):
+        """Rebuild the database if moon has recently renewed
+        or if no database exists, or if it's been more than 1
+        day since last modification."""
         m_phase = self.b_location.location.moon_phase(
-            date=self.b_location.g_time.date())
+            date=datetime.datetime.now())
+        logging.debug('current m_phase at time of test is %s', m_phase)
 
         if m_phase <= 2:
             combine_data()
         elif DB_EXISTS is False:
             combine_data()
-        elif DB_MOD_TIME > 86400:
+        # Only renew database if it's been more than one day since last mod.
+        elif datetime.datetime.now() - DB_MOD_TIME > datetime.timedelta(
+                days=1):
             combine_data()
 
     def _set_b_time(self):
@@ -527,15 +531,10 @@ class BibTime:
 
         def _find_month(unknown_moon):
             i = 0
-            x_moons = {**MOONS}
-            list_of_tested_known_moons = []
             potential_keys = []
-            for key in sorted(list(x_moons.keys())):
-                logging.debug('there are %s more items to try',
-                              len(x_moons.keys()))
-                known_moon = datetime.date(x_moons[key][2], x_moons[key][3],
-                                           x_moons[key][4])
-                list_of_tested_known_moons.append(known_moon)
+            for key in sorted(list(MOONS.keys())):
+                known_moon = datetime.date(MOONS[key][2], MOONS[key][3],
+                                           MOONS[key][4])
                 i += 1
                 if unknown_moon == known_moon:
                     logging.debug('stage 1')
@@ -545,8 +544,6 @@ class BibTime:
                 elif unknown_moon < known_moon:
                     logging.debug('stage 2')
                     logging.debug('known_moon is later than unknown_moon')
-                    logging.debug('removing %s from the dictionary', key)
-                    del x_moons[key]
                     continue
                 elif unknown_moon > known_moon:
                     logging.debug('stage 3')
@@ -555,8 +552,6 @@ class BibTime:
                     if delta > datetime.timedelta(days=30):
                         logging.debug('stage 4')
                         logging.debug('delta (%s) is greater than 30', delta)
-                        logging.debug('removing %s from the dictionary', key)
-                        del x_moons[key]
                         continue
                     elif delta <= datetime.timedelta(days=30):
                         logging.debug('stage 5')

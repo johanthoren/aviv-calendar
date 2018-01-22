@@ -55,3 +55,7 @@ def test_known_reference_days():
         assert result_g_weekday == ref_g_weekday
         assert result_sabbath == ref_sabbath
         assert result_feast_day == ref_feast_day
+
+
+if __name__ == '__main__':
+    test_known_reference_days()

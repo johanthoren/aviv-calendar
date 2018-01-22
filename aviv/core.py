@@ -39,10 +39,10 @@ import shelve
 import time
 # Uncomment the following line to use the astral builtin geocoder.
 # Se Astral documentation for alternatives.
-# from astral import Astral
+from astral import Astral
 # Using GoogleGeocoder requires you to accept their licenses and terms
 # of service.
-from astral import GoogleGeocoder
+# from astral import GoogleGeocoder
 from astral import AstralError
 import hist_data
 
@@ -305,28 +305,31 @@ class BibLocation:
             terms and license found here:
             https://developers.google.com/maps/documentation/geocoding/usage-limits#terms-of-use-restrictions"""
 
-            # astral_geo = Astral()
-            google_geo = GoogleGeocoder()
-            # astral_geo.solar_depression = 'civil'
-            google_geo.solar_depression = 'civil'
-            # location = astral_geo[city_name]
+            astral_geo = Astral()
+            # google_geo = GoogleGeocoder()
+            astral_geo.solar_depression = 'civil'
+            # google_geo.solar_depression = 'civil'
             logging.debug('city_name is %s', city_name)
             logging.debug('trying to find the coordinates for %s', city_name)
             try:
-                location = google_geo[city_name]
+                # location = google_geo[city_name]
+                location = astral_geo[city_name]
             except AstralError:
                 print('Please wait...')
                 time.sleep(2)
                 try:
-                    location = google_geo[city_name]
+                    # location = google_geo[city_name]
+                    location = astral_geo[city_name]
                 except AstralError:
                     print('Please wait some more...')
                     time.sleep(2)
                     try:
-                        location = google_geo[city_name]
+                        # location = google_geo[city_name]
+                        location = astral_geo[city_name]
                     except AstralError:
                         raise Exception(
-                            'GoogleGeocoder is having a fit. '
+                            'Astral Geocoder is having a fit.'
+                            # 'GoogleGeocoder is having a fit. '
                             "Or the location really can't be found.")
         except KeyError:
             raise Exception(
@@ -356,12 +359,12 @@ class BibLocation:
 
     def _set_entry(self, city_name):
         try:
-            # astral_geo = Astral()
-            google_geo = GoogleGeocoder()
-            # astral_geo.solar_depression = 'civil'
-            google_geo.solar_depression = 'civil'
-            # location = astral_geo[city_name]
-            location = google_geo[city_name]
+            astral_geo = Astral()
+            # google_geo = GoogleGeocoder()
+            astral_geo.solar_depression = 'civil'
+            # google_geo.solar_depression = 'civil'
+            location = astral_geo[city_name]
+            # location = google_geo[city_name]
         except KeyError:
             raise Exception(
                 'Error: That city is not found. Please try another.')
@@ -525,27 +528,27 @@ class BibTime:
         def _find_month(unknown_moon):
             i = 0
             x_moons = {**MOONS}
-            m_phase = self.b_location.location.moon_phase(date=unknown_moon)
             list_of_tested_known_moons = []
-            list_of_tested_keys = []
+            potential_keys = []
             for key in sorted(list(x_moons.keys())):
                 logging.debug('there are %s more items to try',
                               len(x_moons.keys()))
                 known_moon = datetime.date(x_moons[key][2], x_moons[key][3],
                                            x_moons[key][4])
-                x_phase = self.b_location.location.moon_phase(date=known_moon)
-                list_of_tested_keys.append(key)
                 list_of_tested_known_moons.append(known_moon)
                 i += 1
                 if unknown_moon == known_moon:
                     logging.debug('stage 1')
+                    logging.debug('known_moon equals unknown_moon')
+                    logging.debug('returning key %s', key)
                     return key
-                elif unknown_moon > known_moon:
+                elif unknown_moon < known_moon:
                     logging.debug('stage 2')
+                    logging.debug('known_moon is later than unknown_moon')
                     logging.debug('removing %s from the dictionary', key)
                     del x_moons[key]
                     continue
-                elif unknown_moon < known_moon:
+                elif unknown_moon > known_moon:
                     logging.debug('stage 3')
                     delta = unknown_moon - known_moon
                     logging.debug('delta is %s', delta)
@@ -555,48 +558,24 @@ class BibTime:
                         logging.debug('removing %s from the dictionary', key)
                         del x_moons[key]
                         continue
-                    if unknown_moon.month == known_moon.month:
+                    elif delta <= datetime.timedelta(days=30):
                         logging.debug('stage 5')
-                        logging.debug(
-                            'unknown_moon.month equals known_moon.month '
-                            '(%s and %s)', unknown_moon.month,
-                            known_moon.month)
-                        if m_phase < x_phase:
-                            logging.debug('stage 6')
-                            logging.debug(
-                                'm_phase is NOT greater than x_phase '
-                                '(%s and %s)', m_phase, x_phase)
-                            logging.debug('returning %s', key)
-                            return key
-                        logging.debug('stage 7')
-                        logging.debug('m_phase is greater than x_phase '
-                                      '(%s and %s)', m_phase, x_phase)
-                        x_key = list_of_tested_keys[i - 2]
-                        return x_key
-                    elif unknown_moon.month - 1 == known_moon.month:
-                        logging.debug('stage 8')
-                        logging.debug(
-                            'm.month - 1 is equal to known_moon.month '
-                            '(%s and %s)', unknown_moon.month - 1,
-                            known_moon.month)
-                        if m_phase > x_phase:
-                            logging.debug('stage 9')
-                            logging.debug('m_phase is greater than x_phase '
-                                          '(%s and %s)', m_phase, x_phase)
-                            logging.debug('returning %s', key)
-                            return key
-                        logging.debug('stage 10')
-                        logging.debug('m_phase is NOT greater than x_phase '
-                                      '(%s and %s)', m_phase, x_phase)
+                        logging.debug('saving potential key %s', key)
+                        potential_keys.append(key)
                         continue
                     continue
-                else:
-                    key = None
-                    return key
+                logging.debug('potential key = %s', potential_keys[0])
+            if potential_keys[0]:
+                logging.debug('returning previously tested potential key %s',
+                              potential_keys[0])
+                return potential_keys[0]
+            logging.debug('entering last fallback "else"')
+            key = None
+            return key
 
-        def _get_moon_key(year, month):
-            moon_key = int(str(year) + '{0:0=2d}'.format(month))
-            return moon_key
+        # def _get_moon_key(year, month):
+        #     moon_key = int(str(year) + '{0:0=2d}'.format(month))
+        #     return moon_key
 
         def _get_moon_from_date():
             # If current is True, then try to find out the gregorian date of
@@ -654,6 +633,8 @@ class BibTime:
                 day += 1
             return day
 
+        # TODO: Month start time should take sunset time into consideration
+        # to give a more exact datetime.datetime object.
         month_start_time = _set_month_start_time(x_month_year, x_month_month,
                                                  x_month_day)
         b_day = _set_day_of_month(month_start_time)
@@ -661,38 +642,44 @@ class BibTime:
         if b_day > 30:
             raise Exception('Error: Day of Month greater than 30.')
 
-        # Catch any false positives.
-        def _catch_false_postitive(year, month):
-            if month <= 12:
-                moon_key = _get_moon_key(year, month)
-                moon_key += 1
-            elif month == 13:
-                moon_key = int(str(year + 1) + '01')
-            try:
-                if MOONS[moon_key]:
-                    logging.debug('%s (moon_key) found in MOONS', moon_key)
-                    b_moon = datetime_from_key(moon_key)
-                    b_year = b_moon[0].year
-                    b_month = b_moon[0].month
-                    b_day = b_moon[0].day
-                    return (b_year, b_month, b_day)
-            except KeyError:
-                pass
-            return None
+        # # Catch any false positives.
+        # def _catch_false_postitive(year, month):
+        #     logging.debug('entering the _catch_false_potitives function')
+        #     logging.debug('year is %s and month is %s', year, month)
+        #     if month <= 12:
+        #         logging.debug(
+        #             'month is %s and thus equal to or greater than 12', month)
+        #         moon_key = int(str(year) + '{0:0=2d}'.format(month))
+        #         moon_key += 1
+        #         logging.debug('moon_key is %s', moon_key)
+        #     elif month == 13:
+        #         moon_key = int(str(year + 1) + '01')
+        #         logging.debug('moon_key is %s', moon_key)
+        #     try:
+        #         if MOONS[moon_key]:
+        #             logging.debug('%s (moon_key) found in MOONS', moon_key)
+        #             b_moon = datetime_from_key(moon_key)
+        #             b_year = b_moon[0].year
+        #             b_month = b_moon[0].month
+        #             b_day = b_moon[0].day
+        #             return (b_year, b_month, b_day)
+        #     except KeyError:
+        #         return None
 
         b_day_name = BIB_DAY_OF_MONTH[b_day - 1]
         b_month_name = BIB_DAY_OF_MONTH[b_month - 1]
         b_month_trad_name = TRAD_MONTH_NAMES[b_month - 1]
 
-        m_phase = self.b_location.location.moon_phase(
-            date=self.b_location.g_time.date())
-        confident = 2 <= m_phase <= 27
+        # m_phase = self.b_location.location.moon_phase(
+        #     date=self.b_location.g_time.date())
+        # confident = 2 <= m_phase <= 27
 
-        if confident is False:
-            x_month = _catch_false_postitive(b_year, b_month)
-            month_start_time = _set_month_start_time(x_month[0], x_month[1],
-                                                     x_month[2])
-            b_day = _set_day_of_month(month_start_time)
+        # if confident is False:
+        #     x_month = _catch_false_postitive(b_year, b_month)
+        #     month_start_time = _set_month_start_time(x_month[0], x_month[1],
+        #                                              x_month[2])
+
+        b_day = _set_day_of_month(month_start_time)
 
         if b_month >= 11:
             self.aviv_barley = AVIV_BARLEY

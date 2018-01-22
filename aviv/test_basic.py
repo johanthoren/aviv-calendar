@@ -24,13 +24,8 @@ def test_known_reference_days():
     for key, value in known_reference_days.items():
         logging.debug('key is %s', key)
 
-        loc = 'Jerusalem'
-        test_year = key[0]
-        test_month = key[1]
-        test_day = key[2]
-        test_hour = 22  # testing late in the evening so that the sun is down
-
-        d = core.BibTime(loc, test_year, test_month, test_day, test_hour)
+        # Adding the hour 22 to test after sundown.
+        d = core.BibTime('Jerusalem', key[0], key[1], key[2], 22)
         logging.debug('d is %s', d)
 
         result_b_year = d.b_time.year

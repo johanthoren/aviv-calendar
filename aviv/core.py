@@ -637,42 +637,9 @@ class BibTime:
         if b_day > 30:
             raise Exception('Error: Day of Month greater than 30.')
 
-        # # Catch any false positives.
-        # def _catch_false_postitive(year, month):
-        #     logging.debug('entering the _catch_false_potitives function')
-        #     logging.debug('year is %s and month is %s', year, month)
-        #     if month <= 12:
-        #         logging.debug(
-        #             'month is %s and thus equal to or greater than 12', month)
-        #         moon_key = int(str(year) + '{0:0=2d}'.format(month))
-        #         moon_key += 1
-        #         logging.debug('moon_key is %s', moon_key)
-        #     elif month == 13:
-        #         moon_key = int(str(year + 1) + '01')
-        #         logging.debug('moon_key is %s', moon_key)
-        #     try:
-        #         if MOONS[moon_key]:
-        #             logging.debug('%s (moon_key) found in MOONS', moon_key)
-        #             b_moon = datetime_from_key(moon_key)
-        #             b_year = b_moon[0].year
-        #             b_month = b_moon[0].month
-        #             b_day = b_moon[0].day
-        #             return (b_year, b_month, b_day)
-        #     except KeyError:
-        #         return None
-
         b_day_name = BIB_DAY_OF_MONTH[b_day - 1]
         b_month_name = BIB_DAY_OF_MONTH[b_month - 1]
         b_month_trad_name = TRAD_MONTH_NAMES[b_month - 1]
-
-        # m_phase = self.b_location.location.moon_phase(
-        #     date=self.b_location.g_time.date())
-        # confident = 2 <= m_phase <= 27
-
-        # if confident is False:
-        #     x_month = _catch_false_postitive(b_year, b_month)
-        #     month_start_time = _set_month_start_time(x_month[0], x_month[1],
-        #                                              x_month[2])
 
         b_day = _set_day_of_month(month_start_time)
 

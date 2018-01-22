@@ -341,11 +341,13 @@ class BibLocation:
             self.g_time = self._set_g_time(year, month, day, hour)
 
         # The following attributes are set by `sun_status` function.
-        self.sunrise = None
-        self.sunset = None
-        self.sun_has_set = None
-        self.sun_has_risen = None
-        self.daylight = None
+        self.sun_info = {
+            'sunrise': None,
+            'sunset': None,
+            'has_set': None,
+            'has_risen': None,
+            'daylight': None
+        }
 
         self.sun_status()
 
@@ -387,50 +389,26 @@ class BibLocation:
     def sun_status(self):
         """Updates the sunrise and sunset status based on location and time."""
         g_time = self.g_time
-        sun = self.location.sun(date=g_time, local=True)
-        sunrise = sun['sunrise']
-        sunset = sun['sunset']
+        loc_sun = self.location.sun(date=g_time, local=True)
 
-        # The following might be unnecessary code:
+        has_set = g_time >= loc_sun['sunset']
+        has_risen = g_time >= loc_sun['sunrise']
 
-        # def check_time_after_noon(g_time):
-        #     """Checks if it is after noon or not and returns a boolean."""
-        #     after_noon = (g_time.hour >= 12)
-        #     return after_noon
-
-        # after_noon = check_time_after_noon(g_time)
-
-        # def sunset_or_sunrise(after_noon, g_time):
-        #     """Checks if sun has risen or set depending on time of day."""
-        #     sun_has_set, sun_has_risen = False, False
-        #     if after_noon is True:
-        #         sun_has_set = (g_time >= sunset)
-        #         sun_has_risen = (g_time >= sunrise)
-        #     elif after_noon is False:
-        #         sun_has_risen = (g_time >= sunrise)
-        #     return (sun_has_set, sun_has_risen)
-
-        # sun_has_set = sunset_or_sunrise(after_noon, g_time)[0]
-        # sun_has_risen = sunset_or_sunrise(after_noon, g_time)[1]
-
-        # Instead just replace with this:
-        sun_has_set, sun_has_risen = (g_time >= sunset), (g_time >= sunrise)
-
-        def check_daylight(sun_has_set, sun_has_risen):
+        def check_daylight(has_set, has_risen):
             """Checks if there is still daylight."""
-            if sun_has_set is not None:
-                daylight = not sun_has_set
-            if sun_has_risen is not None:
-                daylight = sun_has_risen
+            if has_set is not None:
+                daylight = not has_set
+            if has_risen is not None:
+                daylight = has_risen
             return daylight
 
-        daylight = check_daylight(sun_has_set, sun_has_risen)
+        daylight = check_daylight(has_set, has_risen)
 
-        self.sunrise = sunrise
-        self.sunset = sunset
-        self.sun_has_set = sun_has_set
-        self.sun_has_risen = sun_has_risen
-        self.daylight = daylight
+        self.sun_info['sunrise'] = loc_sun['sunrise']
+        self.sun_info['sunset'] = loc_sun['sunset']
+        self.sun_info['has_set'] = has_set
+        self.sun_info['has_risen'] = has_risen
+        self.sun_info['daylight'] = daylight
 
     def sun_status_now(self):
         """Updates the g_datetime to reflect current time and then the sun."""
@@ -490,10 +468,10 @@ class BibTime:
             evening, 1 needs to be added if sun
             has set.
             """
-            if self.b_location.daylight is None:
+            if self.b_location.sun_info['daylight'] is None:
                 self.b_location.sun_status()
             b_weekday_index = self.b_location.g_time.weekday()
-            sun_has_set = self.b_location.sun_has_set
+            sun_has_set = self.b_location.sun_info['has_set']
 
             if sun_has_set is not None:
                 if sun_has_set is True:
@@ -672,7 +650,7 @@ class BibTime:
         def _set_day_of_month(month_start_time):
             time_lapsed = self.b_location.g_time - month_start_time
             day = time_lapsed.days
-            if self.b_location.sun_has_set is True:
+            if self.b_location.sun_info['has_set'] is True:
                 day += 1
             return day
 
@@ -812,26 +790,26 @@ def main():
             entry, c_loc.g_time.strftime('%Y-%m-%d')))
         print('The gregorian time in {} is now {}'.format(
             entry, c_loc.g_time.strftime('%H:%M')))
-        if c_loc.sun_has_set is True:
+        if c_loc.sun_info['has_set'] is True:
             print('The sun is down')
             print('The sunset was at {}'.format(
-                c_loc.sunset.strftime('%H:%M')))
-        if c_loc.sun_has_risen is False:
+                c_loc.sun_info['has_set'].strftime('%H:%M')))
+        if c_loc.sun_info['has_risen'] is False:
             print('The sun has not yet risen')
             print('The sunrise will be at {}'.format(
-                c_loc.sunrise.strftime('%H:%M')))
+                c_loc.sun_info['sunrise'].strftime('%H:%M')))
         # If sun_has_set is None, it should be in the morning. Therefore, check
         # if the sun has risen.
-        if c_loc.sun_has_set is None and c_loc.sun_has_risen is True:
+        if c_loc.sun_info['has_set'] is None and c_loc.sun_info['has_risen'] is True:
             print('The sun is still up')
             print('The sunset will be at {}'.format(
-                c_loc.sunset.strftime('%H:%M')))
-        # If sun_has_risen is None it should be in the afternoon. Therefore,
+                c_loc.sun_info['sunset'].strftime('%H:%M')))
+        # If sun_info['has_risen'] is None it should be in the afternoon. Therefore,
         # check if the sun has set.
-        if c_loc.sun_has_risen is None and c_loc.sun_has_set is False:
+        if c_loc.sun_info['has_risen'] is None and c_loc.sun_info['has_set'] is False:
             print('The sun is still up')
             print('The sunset will be at {}'.format(
-                c_loc.sunset.strftime('%H:%M')))
+                c_loc.sun_info['sunset'].strftime('%H:%M')))
         print('Today is the {} day of the week'.format(c_btime.weekday))
         print('The biblical date in {} is now:\n'
               'The {} day of the {} month in the year {}.'.format(

@@ -280,14 +280,6 @@ def test_is_feast(month, day):
     return (is_hfd, is_hfs, feast_name)
 
 
-def test_is_sabbath(weekday):
-    """Tests if a weekday is the 7th, and thus a weekly sabbath."""
-    weekly_sabbath = False
-    if weekday == '7th':
-        weekly_sabbath = True
-    return weekly_sabbath
-
-
 def last_moon_check():
     """Imports latest data and sets the last_moon variables."""
     import latest_data
@@ -335,7 +327,7 @@ class BibLocation:
                     except AstralError:
                         raise Exception(
                             'GoogleGeocoder is having a fit. '
-                            'Or the city can not be found for real.)')
+                            "Or the location really can't be found.")
         except KeyError:
             raise Exception(
                 'Error: That city is not found. Please try another.')
@@ -498,7 +490,8 @@ class BibTime:
             evening, 1 needs to be added if sun
             has set.
             """
-            self.b_location.sun_status()
+            if self.b_location.daylight is None:
+                self.b_location.sun_status()
             b_weekday_index = self.b_location.g_time.weekday()
             sun_has_set = self.b_location.sun_has_set
 
@@ -738,7 +731,7 @@ class BibTime:
         feast_name = feast_test[2]
 
         b_weekday = _calc_b_weekday()
-        is_ws = test_is_sabbath(b_weekday)
+        is_ws = True if b_weekday == '7th' else False
 
         if is_hfs is True:  # hfs stands for high feast sabbath
             b_sabbath = is_hfs

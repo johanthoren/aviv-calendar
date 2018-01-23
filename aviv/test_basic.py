@@ -1,6 +1,33 @@
 #!/usr/bin/env python3
 """Basic tests for aviv-calendar."""
 
+# -- BEGINNING OF INTRO: -- #
+
+# A SHORT DESCRIPTION:
+# Tests for aviv-calendar.
+
+# CURRENT STATUS:
+# Simple tests. Need more...
+
+# COPYRIGHT:
+# Copyright (C) 2017 - 2018 Johan Thorén <johan@thoren.xyz>
+
+# LICENSE:
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of version 2 of the GNU General Public License as
+# published by the Free Software Foundation.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+# -- END OF INTRO -- #
+
 import datetime
 import logging
 # from astral import AstralError

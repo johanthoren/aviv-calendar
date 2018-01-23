@@ -16,18 +16,18 @@
 # Copyright (C) 2017 - 2018 Johan Thorén <johan@thoren.xyz>
 
 # LICENSE:
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of version 2 of the GNU General Public License as
+# published by the Free Software Foundation.
 
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 # -- END OF INTRO -- #
 import datetime
@@ -35,6 +35,7 @@ import logging
 import urllib.request
 import os
 import sys
+import getopt
 import shelve
 import time
 # Uncomment the following line to use the astral builtin geocoder.
@@ -42,13 +43,32 @@ import time
 from astral import Astral
 # Using GoogleGeocoder requires you to accept their licenses and terms
 # of service.
-# from astral import GoogleGeocoder
+from astral import GoogleGeocoder
 from astral import AstralError
 import hist_data
 
 logging.basicConfig(
     level=logging.CRITICAL,
     format=' %(asctime)s - %(levelname)s - %(message)s')
+
+
+def main(argv):
+    geocoder = Astral
+    date = now
+    location = Jerusalem
+    try:
+        opts, args = getopt.getopt(argv, "hgdl:d",
+                                   ["help", "geocoder=", "date=", "location="])
+    except getopt.GetoptError:
+        usage()
+        sys.exit(2)
+
+
+def usage():
+    """Prints a useful message."""
+    # TODO: Create useful message.
+    print("""Useful message.""")
+
 
 # Define the traditional names of the biblical months of the year.
 # These are not per definition biblical, rather they come from the exile
@@ -690,7 +710,7 @@ class BibTime:
         return b_time
 
 
-def main():
+def demo():
     """Gets the current information of a city. Format: 'City, Country'."""
     try:
         print('Please enter the name of the city and the country. '

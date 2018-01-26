@@ -36,7 +36,6 @@ import urllib.request
 import os
 import sys
 import argparse
-import getopt
 import shelve
 import time
 # Uncomment the following line to use the astral builtin geocoder.
@@ -52,15 +51,18 @@ _DEBUG = False
 
 
 def main(argv):
-    geocoder = 'astral'
-    location = 'Jerusalem'
-
     parser = argparse.ArgumentParser(
         description='Find out the biblical time for a given location.')
     parser.add_argument(
+        '--debug',
+        metavar='D',
+        type=bool,
+        default=False,
+        nargs='?',
+        help='use this to show debug messages')
+    parser.add_argument(
         '--country',
         metavar='C',
-        default='Israel',
         type=str,
         nargs='?',
         help='the country where the location is located')
@@ -79,32 +81,9 @@ def main(argv):
         nargs='?',
         help='the geocoder to use for calculating the location')
 
-    # try:
-    #     opts, args = getopt.getopt(argv, "hgl:d",
-    #                                ["help", "geocoder=", "location="])
-    # except getopt.GetoptError:
-    #     usage()
-    #     sys.exit(2)
-
-    # for opt, arg in opts:
-    #     if opt in ("-h", "--help"):
-    #         usage()
-    #         sys.exit()
-    #     elif opt == '-d':
-    #         global _DEBUG
-    #         _DEBUG = True
-    #     elif opt in ("-g", "--geocoder"):
-    #         if opt == 'astral':
-    #             geocoder = Astral
-    #         elif opt == 'google':
-    #             geocoder = GoogleGeocoder
-    #         # else:
-    #         #     usage()
-    #         #     sys.exit()
-    #     elif opt in ("-l", "--location"):
-    #         location = arg
-
     args = parser.parse_args()
+    global _DEBUG
+    _DEBUG = args.debug
     _debug()
     if args.country:
         if args.geocoder == 'astral':
@@ -115,17 +94,55 @@ def main(argv):
                   format(args.country))
         elif args.geocoder == 'google':
             args.location = str(args.location + ', ' + args.country)
-    b = BibTime(args.location, args.geocoder)
-    print('The biblical date in {} is now {}{}{}'.format(
-        b.b_location.location.name, b.b_time.year, b.b_time.month,
-        b.b_time.day))
+    main_city = BibTime(args.location, args.geocoder)
+    _info(main_city)
 
 
-def usage():
-    """Prints a useful message."""
-    # TODO: Create useful message.
-    print("""Useful message.""")
-
+def _info(loc):
+    print('The chosen location is "{}".'.format(loc.b_location.location.name))
+    print('The gregorian date in {} is now {}'.format(
+        loc.b_location.location.name, loc.b_location.g_time.date()))
+    print('and the gregorian weekday is now {}.'.format(
+        GREG_WEEKDAYS[loc.b_location.g_time.weekday()]))
+    print('The current biblical date in {} is now:'.format(
+        loc.b_location.location.name))
+    print('The {} day of the {} month in the year {}.'.format(
+        loc.b_time.day_name, loc.b_time.month_name, loc.b_time.year))
+    print(
+        'The gregorian time is now {}'.format(
+            loc.b_location.g_time.strftime('%H:%M')),
+        end=' ')
+    if loc.b_location.sun_info['has_set'] is True:
+        print('and the sun has set.')
+        sunset_time = loc.b_location.sun_info['sunset'].strftime('%H:%M')
+        print('The sun set at {} and it is now the {} day of the week.'.format(
+            sunset_time, loc.b_time.weekday))
+    elif loc.b_location.sun_info['has_risen'] is False:
+        sunrise_time = loc.b_location.sun_info['sunrise'].strftime('%H:%M')
+        print('and the sun has not yet risen.')
+        print('The sun will rise at {} and it is now the {} day of the week.'.
+              format(sunrise_time, loc.b_time.weekday))
+    else:
+        print('and the sun is up.')
+        sunset_time = loc.b_location.sun_info['sunset'].strftime('%H:%M')
+        print('The sun will set at {} and it is now the {} day of the week.'.
+              format(sunset_time, loc.b_time.weekday))
+    if loc.b_time.sabbath.sabbath is True:
+        if loc.b_time.sabbath.holy_day_of_rest is True:
+            print('It is now a Holy Day of rest where no work shall be done.')
+            print('Shalom!')
+        elif loc.b_time.sabbath.weekly_sabbath is True:
+            print('It is now the weekly Sabbath. Shalom!')
+    if loc.b_time.sabbath.high_feast_day is True:
+        print('It is now the {}'.format(loc.b_time.sabbath.feast_name))
+    if loc.b_time.month == 12:
+        if loc.b_time.aviv_barley is True:
+            print('The barley in the land of Israel is aviv!')
+            print('The next new moon will begin the new year.')
+        else:
+            print('The barley in the land of Israel is NOT yet aviv.')
+            print('There will be a 13th month if it is not aviv before '
+                  'the end of the month.')
 
 def _debug():
     if _DEBUG is True:
@@ -401,33 +418,33 @@ class BibLocation:
             https://developers.google.com/maps/documentation/geocoding/usage-limits#terms-of-use-restrictions"""
 
             if geocoder == 'astral':
-                geo = Astral()
+                self.geo = Astral()
             elif geocoder == 'google':
-                geo = GoogleGeocoder()
+                self.geo = GoogleGeocoder()
             else:
                 raise Exception('Error: Unknown geocoder: {}'.format(geocoder))
 
-            geo.solar_depression = 'civil'
+            self.geo.solar_depression = 'civil'
             logging.debug('city_name is %s', city_name)
             logging.debug('trying to find the coordinates for %s', city_name)
             try:
-                location = geo[city_name]
+                location = self.geo[city_name]
             except AstralError:
                 print('Please wait...')
                 time.sleep(2)
                 try:
-                    location = geo[city_name]
+                    location = self.geo[city_name]
                 except AstralError:
                     print('Please wait some more...')
                     time.sleep(2)
                     try:
-                        location = geo[city_name]
+                        location = self.geo[city_name]
                     except AstralError:
                         raise Exception(
                             'The Geocoder ({}) is having a fit.'
                             # 'GoogleGeocoder is having a fit. '
                             "Or the location really can't be found.".format(
-                                geo))
+                                self.geo))
         except KeyError:
             raise Exception(
                 'Error: That city is not found. Please try another.')
@@ -456,12 +473,8 @@ class BibLocation:
 
     def _set_entry(self, city_name):
         try:
-            astral_geo = Astral()
-            # google_geo = GoogleGeocoder()
-            astral_geo.solar_depression = 'civil'
-            # google_geo.solar_depression = 'civil'
-            location = astral_geo[city_name]
-            # location = google_geo[city_name]
+            self.geo.solar_depression = 'civil'
+            location = self.geo[city_name]
         except KeyError:
             raise Exception(
                 'Error: That city is not found. Please try another.')
@@ -786,105 +799,6 @@ class BibTime:
         b_time.sabbath = BibSabbath(b_sabbath, is_hfd, is_hfs, is_ws,
                                     feast_name)
         return b_time
-
-
-def demo():
-    """Gets the current information of a city. Format: 'City, Country'."""
-    try:
-        print('Please enter the name of the city and the country. '
-              'Example: Jerusalem, Israel')
-        entry = input()
-        if not entry:
-            raise ValueError('Error: Empty string')
-    except ValueError:
-        print('You failed to provide your location.')
-        print('Try again.')
-        print('Example: Manila')
-    else:
-        logging.debug('entry is %s', entry)
-        try:
-            city = BibTime(entry)
-        except AstralError:
-            print('Please wait.', end='')
-            time.sleep(2)
-            try:
-                city = BibTime(entry)
-            except AstralError:
-                print('.', end='')
-                time.sleep(2)
-                try:
-                    city = BibTime(entry)
-                except AstralError:
-                    print('.')
-                    time.sleep(2)
-                    try:
-                        city = BibTime(entry)
-                    except AstralError:
-                        raise Exception(
-                            'Error: Still not working. '
-                            'Please try again if you are certain of the '
-                            'spelling.\n'
-                            'Otherwise, please try another location.')
-        c_loc = city.b_location
-        c_btime = city.b_time
-        logging.debug('Creating object %s', entry)
-        print('\nThe chosen location is {}'.format(entry))
-        print('The gregorian date in {} is now {}'.format(
-            entry, c_loc.g_time.strftime('%Y-%m-%d')))
-        print('The gregorian time in {} is now {}'.format(
-            entry, c_loc.g_time.strftime('%H:%M')))
-        if c_loc.sun_info['has_set'] is True:
-            print('The sun is down')
-            print('The sunset was at {}'.format(
-                c_loc.sun_info['has_set'].strftime('%H:%M')))
-        if c_loc.sun_info['has_risen'] is False:
-            print('The sun has not yet risen')
-            print('The sunrise will be at {}'.format(
-                c_loc.sun_info['sunrise'].strftime('%H:%M')))
-        # If sun_has_set is None, it should be in the morning. Therefore, check
-        # if the sun has risen.
-        if c_loc.sun_info['has_set'] is None and c_loc.sun_info['has_risen'] is True:
-            print('The sun is still up')
-            print('The sunset will be at {}'.format(
-                c_loc.sun_info['sunset'].strftime('%H:%M')))
-        # If sun_info['has_risen'] is None it should be in the afternoon. Therefore,
-        # check if the sun has set.
-        if c_loc.sun_info['has_risen'] is None and c_loc.sun_info['has_set'] is False:
-            print('The sun is still up')
-            print('The sunset will be at {}'.format(
-                c_loc.sun_info['sunset'].strftime('%H:%M')))
-        print('Today is the {} day of the week'.format(c_btime.weekday))
-        print('The biblical date in {} is now:\n'
-              'The {} day of the {} month in the year {}.'.format(
-                  entry, c_btime.day_name, c_btime.month_name, c_btime.year))
-        # if x.is_estimated is True:
-        #     print('The date and time is estimated'
-        #           ' and is NOT based on actual observations')
-        # if x.is_known is True:
-        #     print('The date and time is certain'
-        #           ' and is based on actual observations')
-        if c_btime.sabbath.sabbath is True:
-            if c_btime.sabbath.weekly_sabbath is True:
-                print('It is now the weekly Sabbath')
-            elif c_btime.sabbath.holy_day_of_rest is True:
-                print('It is now a High Feast Sabbath.')
-            else:
-                print('Error: Unkown Sabbath')
-        if c_btime.sabbath.high_feast_day is True:
-            print('It is now the {}'.format(c_btime.sabbath.feast_name))
-            if c_btime.sabbath.holy_day_of_rest is True:
-                print('It is a Holy Day of Convocation where no work '
-                      'shall be done.')
-            elif c_btime.sabbath.holy_day_of_rest is False:
-                print('It is not a Holy Day of Convocation.')
-        if c_btime.month == 12:
-            if city.aviv_barley is True:
-                print('The barley in the land of Israel is aviv!')
-                print('The next new moon will begin the new year.')
-            else:
-                print('The barley in the land of Israel is NOT yet aviv.')
-                print('There will be a 13th month if it is not aviv before '
-                      'the end of the month.')
 
 
 if __name__ == '__main__':

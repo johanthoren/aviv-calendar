@@ -35,6 +35,7 @@ import logging
 import urllib.request
 import os
 import sys
+import argparse
 import getopt
 import shelve
 import time
@@ -53,34 +54,71 @@ _DEBUG = False
 def main(argv):
     geocoder = 'astral'
     location = 'Jerusalem'
-    try:
-        opts, args = getopt.getopt(argv, "hgl:d",
-                                   ["help", "geocoder=", "location="])
-    except getopt.GetoptError:
-        usage()
-        sys.exit(2)
 
-    for opt, arg in opts:
-        if opt in ("-h", "--help"):
-            usage()
-            sys.exit()
-        elif opt == '-d':
-            global _DEBUG
-            _DEBUG = True
-        elif opt in ("-g", "--geocoder"):
-            if opt == 'astral':
-                geocoder = Astral
-            elif opt == 'google':
-                geocoder = GoogleGeocoder
-            # else:
-            #     usage()
-            #     sys.exit()
-        elif opt in ("-l", "--location"):
-            location = arg
+    parser = argparse.ArgumentParser(
+        description='Find out the biblical time for a given location.')
+    parser.add_argument(
+        '--country',
+        metavar='C',
+        default='Israel',
+        type=str,
+        nargs='?',
+        help='the country where the location is located')
+    parser.add_argument(
+        '--location',
+        metavar='L',
+        default='Jerusalem',
+        type=str,
+        nargs='?',
+        help='the location where the time will be calculated')
+    parser.add_argument(
+        '--geocoder',
+        metavar='G',
+        default='astral',
+        type=str,
+        nargs='?',
+        help='the geocoder to use for calculating the location')
 
-    b = BibTime(location, geocoder)
+    # try:
+    #     opts, args = getopt.getopt(argv, "hgl:d",
+    #                                ["help", "geocoder=", "location="])
+    # except getopt.GetoptError:
+    #     usage()
+    #     sys.exit(2)
+
+    # for opt, arg in opts:
+    #     if opt in ("-h", "--help"):
+    #         usage()
+    #         sys.exit()
+    #     elif opt == '-d':
+    #         global _DEBUG
+    #         _DEBUG = True
+    #     elif opt in ("-g", "--geocoder"):
+    #         if opt == 'astral':
+    #             geocoder = Astral
+    #         elif opt == 'google':
+    #             geocoder = GoogleGeocoder
+    #         # else:
+    #         #     usage()
+    #         #     sys.exit()
+    #     elif opt in ("-l", "--location"):
+    #         location = arg
+
+    args = parser.parse_args()
+    _debug()
+    if args.country:
+        if args.geocoder == 'astral':
+            print(
+                'Astral Geocoder does not like to have the country specified.')
+            print('Ignoring "--country {}"'.format(args.country))
+            print('To use "--country {}", please specify "--geocoder google".'.
+                  format(args.country))
+        elif args.geocoder == 'google':
+            args.location = str(args.location + ', ' + args.country)
+    b = BibTime(args.location, args.geocoder)
     print('The biblical date in {} is now {}{}{}'.format(
-        b.b_location.city, b.b_time.year, b.b_time.month, b.b_time.day))
+        b.b_location.location.name, b.b_time.year, b.b_time.month,
+        b.b_time.day))
 
 
 def usage():

@@ -52,7 +52,7 @@ def test_known_reference_days():
         logging.debug('key is %s', key)
 
         # Adding the hour 22 to test after sundown.
-        d = core.BibTime('Jerusalem', key[0], key[1], key[2], 22)
+        d = core.BibTime('Jerusalem', 'astral', key[0], key[1], key[2], 22)
         logging.debug('d is %s', d)
 
         result_b_year = d.b_time.year

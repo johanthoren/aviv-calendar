@@ -47,27 +47,55 @@ from astral import GoogleGeocoder
 from astral import AstralError
 import hist_data
 
-logging.basicConfig(
-    level=logging.CRITICAL,
-    format=' %(asctime)s - %(levelname)s - %(message)s')
+_DEBUG = False
 
 
 def main(argv):
     geocoder = Astral
-    date = now
     location = Jerusalem
     try:
-        opts, args = getopt.getopt(argv, "hgdl:d",
-                                   ["help", "geocoder=", "date=", "location="])
+        opts, args = getopt.getopt(argv, "hgl:d",
+                                   ["help", "geocoder=", "location="])
     except getopt.GetoptError:
         usage()
         sys.exit(2)
+
+    for opt, arg in opts:
+        if opt in ("-h", "--help"):
+            usage()
+            sys.exit()
+        elif opt == '-d':
+            global _DEBUG
+            _DEBUG = True
+        elif opt in ("-g", "--geocoder"):
+            if opt == 'astral':
+                geocoder = Astral
+            elif opt == 'google':
+                geocoder = GoogleGeocoder
+            else:
+                usage()
+                sys.exit()
+        elif opt in ("-l", "--location"):
+            location = arg
+
+    b = BibTime(location, geocoder)
 
 
 def usage():
     """Prints a useful message."""
     # TODO: Create useful message.
     print("""Useful message.""")
+
+
+def _debug():
+    if _DEBUG is True:
+        logging.basicConfig(
+            level=logging.DEBUG,
+            format=' %(asctime)s - %(levelname)s - %(message)s')
+    else:
+        logging.basicConfig(
+            level=logging.INFO,
+            format=' %(asctime)s - %(levelname)s - %(message)s')
 
 
 # Define the traditional names of the biblical months of the year.
@@ -313,10 +341,17 @@ class BibLocation:
 
        Also takes optional time as argument (which will
        usually be passed on from BibTime.)
-       Arguments: city_name, year, month, day, hour.
-       Example: s = BibLocation('Stockholm, Sweden', 2018, 1, 1, 12)"""
+       Arguments: city_name, geocoder, year, month, day, hour.
+       Example:
+       s = BibLocation('Stockholm, Sweden', 'google', 2018, 1, 1, 12)"""
 
-    def __init__(self, city_name, year=1, month=1, day=1, hour=1):
+    def __init__(self,
+                 city_name,
+                 geocoder='astral',
+                 year=1,
+                 month=1,
+                 day=1,
+                 hour=1):
         try:
             r"""Creates an object using the Astral or Google Geocoder.
 
@@ -325,32 +360,33 @@ class BibLocation:
             terms and license found here:
             https://developers.google.com/maps/documentation/geocoding/usage-limits#terms-of-use-restrictions"""
 
-            astral_geo = Astral()
-            # google_geo = GoogleGeocoder()
-            astral_geo.solar_depression = 'civil'
-            # google_geo.solar_depression = 'civil'
+            if geocoder == 'astral':
+                geo = Astral()
+            elif geocoder == 'google':
+                geo = GoogleGeocoder()
+            else:
+                raise Exception('Error: Unknown geocoder: {}'.format(geocoder))
+            geo.solar_depression = 'civil'
             logging.debug('city_name is %s', city_name)
             logging.debug('trying to find the coordinates for %s', city_name)
             try:
-                # location = google_geo[city_name]
-                location = astral_geo[city_name]
+                location = geo[city_name]
             except AstralError:
                 print('Please wait...')
                 time.sleep(2)
                 try:
-                    # location = google_geo[city_name]
-                    location = astral_geo[city_name]
+                    location = geo[city_name]
                 except AstralError:
                     print('Please wait some more...')
                     time.sleep(2)
                     try:
-                        # location = google_geo[city_name]
-                        location = astral_geo[city_name]
+                        location = geo[city_name]
                     except AstralError:
                         raise Exception(
-                            'Astral Geocoder is having a fit.'
+                            'The Geocoder ({}) is having a fit.'
                             # 'GoogleGeocoder is having a fit. '
-                            "Or the location really can't be found.")
+                            "Or the location really can't be found.".format(
+                                geo))
         except KeyError:
             raise Exception(
                 'Error: That city is not found. Please try another.')
@@ -447,12 +483,13 @@ class BibTime:
     as year, month, day.
     Defaults to 2018, 1, 1.
     Example: m = BibTime('Manila')
-    Example: s = BibTime('Skepplanda, Sweden', 2018, 2, 1)
+    Example: s = BibTime('Skepplanda, Sweden', 'google', 2018, 2, 1)
     """
 
-    def __init__(self, city, year=1, month=1, day=1, hour=1):
+    def __init__(self, city, geocoder='astral', year=1, month=1, day=1,
+                 hour=1):
         try:
-            b_location = BibLocation(city, year, month, day, hour)
+            b_location = BibLocation(city, geocoder, year, month, day, hour)
         except ValueError:
             raise Exception('Error: Not a valid string.')
         self.b_location = b_location

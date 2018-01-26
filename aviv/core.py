@@ -51,8 +51,8 @@ _DEBUG = False
 
 
 def main(argv):
-    geocoder = Astral
-    location = Jerusalem
+    geocoder = 'astral'
+    location = 'Jerusalem'
     try:
         opts, args = getopt.getopt(argv, "hgl:d",
                                    ["help", "geocoder=", "location="])
@@ -72,13 +72,15 @@ def main(argv):
                 geocoder = Astral
             elif opt == 'google':
                 geocoder = GoogleGeocoder
-            else:
-                usage()
-                sys.exit()
+            # else:
+            #     usage()
+            #     sys.exit()
         elif opt in ("-l", "--location"):
             location = arg
 
     b = BibTime(location, geocoder)
+    print('The biblical date in {} is now {}{}{}'.format(
+        b.b_location.city, b.b_time.year, b.b_time.month, b.b_time.day))
 
 
 def usage():
@@ -366,6 +368,7 @@ class BibLocation:
                 geo = GoogleGeocoder()
             else:
                 raise Exception('Error: Unknown geocoder: {}'.format(geocoder))
+
             geo.solar_depression = 'civil'
             logging.debug('city_name is %s', city_name)
             logging.debug('trying to find the coordinates for %s', city_name)

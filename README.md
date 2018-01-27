@@ -3,10 +3,7 @@
 Tries to find out what day it is according to biblical time keeping.
 ## Usage:
 `./core.py --location <city> [--country <country>] [--geocoder <google|astral>]`
-## Status:
-Right now it does a few things when called upon:
-* It gives you a lot of current data on your chosen location.
-### Example:
+## Example:
 ```
 ➜./core.py --location Skepplanda --country Sweden --geocoder google
 Location ...............................

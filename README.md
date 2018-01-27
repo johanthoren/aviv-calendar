@@ -6,8 +6,47 @@ Tries to find out what day it is according to biblical time keeping.
 ## Status:
 Right now it does a few things when called upon:
 * It gives you a lot of current data on your chosen location.
-### Screenshot:
-![aviv-calendar screenshot](https://www.avivcalendar.com/img/screenshot_2.png)
+### Example:
+```
+➜./core.py --location Skepplanda --country Sweden --geocoder google
+Location ...............................
+City:                         Skepplanda
+Country:                          Sweden
+
+Biblical ...............................
+Short (ISO) Date:             6017-11-10
+
+Year:                               6017
+Month:                              11th
+Month (traditional name):          Shvat
+Day of month:                         10
+
+Weekday:                             1st
+
+Weekly Sabbath:                       No
+Feast Day:                            No
+Holy Day of rest:                     No
+
+Barley:           The barley is NOT Aviv
+
+Gregorian ..............................
+Short (ISO) Date:             2018-01-27
+
+Year:                               2018
+Month:                           January
+Day of month:                         27
+
+Weekday:                        Saturday
+
+Time:                           21:06:59
+
+Solar info .............................
+Daylight:                             No
+Sun has set:                         Yes
+Time of sunset:                 16:24:01
+```
+<!-- ### Screenshot: -->
+<!-- ![aviv-calendar screenshot](https://www.avivcalendar.com/img/screenshot_2.png) -->
 ## Dependencies:
 Depends on *astral*. Install with `pip install astral`.
 ## Definitions:

@@ -59,27 +59,27 @@ def main(argv):
         type=bool,
         default=False,
         nargs='?',
-        help='use this to show debug messages')
+        help='show debug messages')
     parser.add_argument(
         '--country',
         metavar='C',
         type=str,
         nargs='?',
-        help='the country where the location is located')
+        help='specify the country where the location is located')
     parser.add_argument(
         '--location',
         metavar='L',
         default='Jerusalem',
         type=str,
         nargs='?',
-        help='the location where the time will be calculated')
+        help='specify the location where the time will be calculated')
     parser.add_argument(
         '--geocoder',
         metavar='G',
         default='astral',
         type=str,
         nargs='?',
-        help='the geocoder to use for calculating the location')
+        help='specify the geocoder to use for calculating the location')
 
     args = parser.parse_args()
     global _DEBUG

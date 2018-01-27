@@ -30,14 +30,15 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 # -- END OF INTRO -- #
+import argparse
 import datetime
 import logging
-import urllib.request
 import os
-import sys
-import argparse
+import re
 import shelve
+import sys
 import time
+import urllib.request
 # Uncomment the following line to use the astral builtin geocoder.
 # Se Astral documentation for alternatives.
 from astral import Astral
@@ -99,8 +100,91 @@ def main(argv):
 
 
 def _info(loc):
+    city_re = re.compile(r'\w+$')
+    match_obj = city_re.search(loc.b_location.location.name)
+    city_name = match_obj.group()
+    bib_date_str = str(loc.b_time.year) + '-' + str(
+        loc.b_time.month) + '-' + str(loc.b_time.day)
+    print('Location '.ljust(40, '.'))
+    print('{:20s}{:>20s}'.format('City:', city_name))
+    print('{:20s}{:>20s}'.format('Country:', loc.b_location.location.region))
+    print('')
+    print('Biblical '.ljust(40, '.'))
+    print('{:20s}{:>20s}'.format('Short (ISO) Date:', bib_date_str))
+    print('')
+    print('{:20s}{:>20d}'.format('Year:', loc.b_time.year))
+    print('{:20s}{:>20s}'.format('Month:', loc.b_time.month_name))
+    print('{:25s}{:>15s}'.format('Month (traditional name):',
+                                 loc.b_time.month_trad_name))
+    print('{:20s}{:>20d}'.format('Day of month:', loc.b_time.day))
+    print('')
+    print('{:20s}{:>20s}'.format('Weekday:', loc.b_time.weekday))
+    print('')
+    ws_statement = 'Yes' if loc.b_time.sabbath.weekly_sabbath is True else 'No'
+    if loc.b_time.sabbath.high_feast_day is True:
+        feast_day_statement = 'Yes'
+    else:
+        feast_day_statement = 'No'
+    if loc.b_time.sabbath.holy_day_of_rest is True:
+        holy_day_statement = 'Yes'
+    else:
+        holy_day_statement = 'No'
+    print('{:20s}{:>20s}'.format('Weekly Sabbath:', ws_statement))
+    print('{:20s}{:>20s}'.format('Feast Day:', feast_day_statement))
+    print('{:20s}{:>20s}'.format('Holy Day of rest:', holy_day_statement))
+    print('')
+    if loc.b_time.sabbath.high_feast_day is True:
+        print('{:20s}{:>20s}'.format('Feast name:',
+                                     loc.b_time.sabbath.feast_name))
+        print('')
+    if loc.aviv_barley is None:
+        barley_statement = 'Not yet time for the barley'
+    elif loc.aviv_barley is True:
+        barley_statement = 'The barley IS Aviv'
+    else:
+        barley_statement = 'The barley is NOT Aviv'
+    print('{:12s}{:>28s}'.format('Barley:', barley_statement))
+    print('')
+    print('Gregorian '.ljust(40, '.'))
+    print('{:20s}{:>20s}'.format(
+        'Short (ISO) Date:',
+        loc.b_location.g_time.date().strftime('%Y-%m-%d')))
+    print('')
+    print('{:20s}{:>20s}'.format('Year:',
+                                 loc.b_location.g_time.strftime('%Y')))
+    print('{:20s}{:>20s}'.format('Month:',
+                                 loc.b_location.g_time.strftime('%B')))
+    print('{:20s}{:>20s}'.format('Day of month:',
+                                 loc.b_location.g_time.strftime('%d')))
+    print('')
+    print('{:20s}{:>20s}'.format(
+        'Weekday:', GREG_WEEKDAYS[loc.b_location.g_time.weekday()]))
+    print('')
+    print('{:20s}{:>20s}'.format('Time:',
+                                 loc.b_location.g_time.strftime('%H:%M:%S')))
+    print('')
+    print('Solar info '.ljust(40, '.'))
+    if loc.b_location.sun_info['has_set'] is True:
+        print('{:20s}{:>20s}'.format('Daylight:', 'No'))
+        print('{:20s}{:>20s}'.format('Sun has set:', 'Yes'))
+        sunset_time = loc.b_location.sun_info['sunset'].strftime('%H:%M:%S')
+        print('{:20s}{:>20s}'.format('Time of sunset:', sunset_time))
+    elif loc.b_location.sun_info['has_risen'] is False:
+        print('{:20s}{:>20s}'.format('Daylight:', 'No'))
+        print('{:20s}{:>20s}'.format('Sun has risen:', 'No'))
+        sunrise_time = loc.b_location.sun_info['sunrise'].strftime('%H:%M:%S')
+        print('{:20s}{:>20s}'.format('Time of sunrise:', sunrise_time))
+    else:
+        print('{:20s}{:>20s}'.format('Daylight:', 'Yes'))
+        sunrise_time = loc.b_location.sun_info['sunrise'].strftime('%H:%M:%S')
+        sunset_time = loc.b_location.sun_info['sunset'].strftime('%H:%M:%S')
+        print('{:20s}{:>20s}'.format('Time of sunrise:', sunrise_time))
+        print('{:20s}{:>20s}'.format('Time of sunset:', sunset_time))
+
+
+def _verbose_info(loc):
     print('The chosen location is "{}".'.format(loc.b_location.location.name))
-    print('The gregorian date in {} is now {}'.format(
+    print('The gregorian date in {} is {}'.format(
         loc.b_location.location.name, loc.b_location.g_time.date()))
     print('and the gregorian weekday is now {}.'.format(
         GREG_WEEKDAYS[loc.b_location.g_time.weekday()]))
@@ -143,6 +227,7 @@ def _info(loc):
             print('The barley in the land of Israel is NOT yet aviv.')
             print('There will be a 13th month if it is not aviv before '
                   'the end of the month.')
+
 
 def _debug():
     if _DEBUG is True:
@@ -548,6 +633,7 @@ class BibTime:
             raise Exception('Error: Not a valid string.')
         self.b_location = b_location
         self._check_db_status()
+        self.aviv_barley = None
         self.b_time = self._set_b_time()
 
     def update_time(self):
@@ -752,8 +838,6 @@ class BibTime:
 
         if b_month >= 11:
             self.aviv_barley = AVIV_BARLEY
-        else:
-            self.aviv_barley = None
 
         # Find out if it's a High Feast Day or a Sabbath.
         feast_test = test_is_feast(b_month, b_day)

@@ -7,7 +7,7 @@ Tries to find out what day it is according to biblical time keeping.
 Right now it does a few things when called upon:
 * It gives you a lot of current data on your chosen location.
 ### Screenshot:
-![aviv-calendar screenshot](https://www.avivcalendar.com/img/screenshot_2.png =250x)
+<img src="https://www.avivcalendar.com/img/screenshot_2.png" alt="aviv-calendar screenshot" style="width: 200px;"/>
 ## Dependencies:
 Depends on *astral*. Install with `pip install astral`.
 ## Definitions:

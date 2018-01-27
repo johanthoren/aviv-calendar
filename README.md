@@ -1,13 +1,13 @@
 # aviv-calendar
 ## Goal: 
 Tries to find out what day it is according to biblical time keeping.
+## Usage:
+`./core.py --location <city> [--country <country>] [--geocoder <google|astral>]`
 ## Status:
 Right now it does a few things when called upon:
-* It gives you the current biblical date of your chosen location.
-* It also give you the current day of the week as well as telling you if it's a weekly Sabbath or not.
-* In the source code there is a few more things, but not that is being triggered by the running of the program. Not yet.
+* It gives you a lot of current data on your chosen location.
 ### Screenshot:
-![aviv-calendar screenshot](https://www.avivcalendar.com/img/screenshot_1.png)
+![aviv-calendar screenshot](https://www.avivcalendar.com/img/screenshot_2.png)
 ## Dependencies:
 Depends on *astral*. Install with `pip install astral`.
 ## Definitions:

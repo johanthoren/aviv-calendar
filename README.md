@@ -5,7 +5,7 @@ Tries to find out what day it is according to biblical time keeping.
 `./core.py --location <city> [--country <country>] [--geocoder <google|astral>]`
 ## Example:
 ```
-➜./core.py --location Skepplanda --country Sweden --geocoder google
+./core.py --location Skepplanda --country Sweden --geocoder google
 Location ...............................
 City:                         Skepplanda
 Country:                          Sweden

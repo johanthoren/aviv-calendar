@@ -303,14 +303,18 @@ def get_latest_data():
     # Download the file from `https://www.avivcalendar.com/latest_data`
     # and save it locally under `latest_data.py`. This is updated as soon
     # as news of the new moon or the Aviv barley breaks.
-    # TODO: This needs error handling.
     url = 'https://www.avivcalendar.com/latest-data'
     latest_file = os.path.join(sys.path[0], 'latest_data.py')
-    with urllib.request.urlopen(url) as response, open(latest_file,
-                                                       'wb') as out_file:
-        data = response.read()
-        out_file.write(data)
-        out_file.close()
+    try:
+        with urllib.request.urlopen(url) as response, open(latest_file,
+                                                           'wb') as out_file:
+            data = response.read()
+            out_file.write(data)
+            out_file.close()
+    except urllib.error.URLError:
+        raise Exception(
+            'Unable to connect to {}\nPlease check your internet connection.'.
+            format(url))
 
 
 # Working with a DB_FILE since we will be joining dictionaries from both git
@@ -516,6 +520,15 @@ class BibLocation:
                 location = self.geo[city_name]
             except AstralError:
                 print('Please wait...')
+                url = 'https://www.avivcalendar.com/latest-data'
+                connection_msg = (
+                    'Unable to connect to {}\n'
+                    'Please check your internet connection.'.format(url))
+                try:
+                    if urllib.request.urlopen(url).code != 200:
+                        raise Exception(connection_msg)
+                except urllib.error.URLError:
+                    raise Exception(connection_msg)
                 time.sleep(2)
                 try:
                     location = self.geo[city_name]

@@ -43,6 +43,7 @@ def test_known_reference_days():
     known_reference_days = {
         # date id, g_year, g_month, g_day, 'Weekday', 'G Weekday',
         # Sabbath, Feast day.
+        (2012, 12, 16): ((6012, 10, 3), (2012, 12, 14), '2nd', 6, False, True),
         (2013, 3, 13): ((6013, 1, 1), (2013, 3, 13), '5th', 2, False, True),
         (2017, 2, 17): ((6016, 11, 20), (2017, 1, 29), '7th', 4, True, False),
         (2017, 12, 30): ((6017, 10, 11), (2017, 12, 20), '1st', 5, False,

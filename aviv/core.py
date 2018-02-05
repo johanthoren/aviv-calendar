@@ -294,8 +294,24 @@ FIXED_FEAST_DAYS = {
     (9, 30): ('6th day of Hanukkah', False),
     (12, 14): ('Purim', False)
 }
-# TODO: Feast days that are relative to weekday, or that span over
-# months (like Hanukkah).
+
+HANUKKAH_DAYS_REALLY_SHORT_9 = {
+    (10, 1): ('5th day of Hanukkah', False),
+    (10, 2): ('6th day of Hanukkah', False),
+    (10, 3): ('7th day of Hanukkah', False),
+    (10, 4): ('8th day of Hanukkah', False)
+}
+
+HANUKKAH_DAYS_SHORT_9 = {
+    (10, 1): ('6th day of Hanukkah', False),
+    (10, 2): ('7th day of Hanukkah', False),
+    (10, 3): ('8th day of Hanukkah', False)
+}
+
+HANUKKAH_DAYS_LONG_9 = {
+    (10, 1): ('7th day of Hanukkah', False),
+    (10, 2): ('8th day of Hanukkah', False)
+}
 
 # List of high feast days. Boolean True if they are considered
 # "High days of convocation" where no work shall be done.
@@ -480,21 +496,57 @@ def test_day(day, length):
 
 
 # TODO: Work in progress.
-def test_is_feast(month, day):
+def test_is_feast(month, day, p_length):
     """Tests if a day is a High Feast Day.
 
     Needs 2 integers as arguments: Month, Day.
-    Example: 1, 15"""
-    potential_feast = (month, day)
-    try:
-        if FIXED_HIGH_FEAST_DAYS[potential_feast]:
-            is_hfd = True
-            is_hfs = FIXED_HIGH_FEAST_DAYS[potential_feast][1]
-            feast_name = FIXED_HIGH_FEAST_DAYS[potential_feast][0]
-    except KeyError:
-        is_hfd = False
-        is_hfs = False
-        feast_name = None
+    Example: 1, 15
+    Optional length of previous month as integer.
+    Example: 10, 1, 29"""
+    pf = (month, day)
+    if p_length is not None:
+        logging.debug('p_length is %s', p_length)
+        if month == 10 and p_length <= 28:
+            try:
+                if HANUKKAH_DAYS_REALLY_SHORT_9[pf]:
+                    is_hfd = True
+                    is_hfs = HANUKKAH_DAYS_REALLY_SHORT_9[pf][1]
+                    feast_name = HANUKKAH_DAYS_REALLY_SHORT_9[pf][0]
+                    return (is_hfd, is_hfs, feast_name)
+            except KeyError:
+                is_hfd, is_hfs, feast_name = False, False, None
+        elif month == 10 and p_length == 29:
+            try:
+                if HANUKKAH_DAYS_SHORT_9[pf]:
+                    is_hfd = True
+                    is_hfs = HANUKKAH_DAYS_SHORT_9[pf][1]
+                    feast_name = HANUKKAH_DAYS_SHORT_9[pf][0]
+                    return (is_hfd, is_hfs, feast_name)
+            except KeyError:
+                is_hfd, is_hfs, feast_name = False, False, None
+        elif month == 10 and p_length >= 30:
+            try:
+                if HANUKKAH_DAYS_LONG_9[pf]:
+                    is_hfd = True
+                    is_hfs = HANUKKAH_DAYS_LONG_9[pf][1]
+                    feast_name = HANUKKAH_DAYS_LONG_9[pf][0]
+                    return (is_hfd, is_hfs, feast_name)
+            except KeyError:
+                is_hfd, is_hfs, feast_name = False, False, None
+    elif p_length is None:
+        try:
+            if FIXED_HIGH_FEAST_DAYS[pf]:
+                is_hfd = True
+                is_hfs = FIXED_HIGH_FEAST_DAYS[pf][1]
+                feast_name = FIXED_HIGH_FEAST_DAYS[pf][0]
+        except KeyError:
+            try:
+                if FIXED_FEAST_DAYS[pf]:
+                    is_hfd = True
+                    is_hfs = FIXED_FEAST_DAYS[pf][1]
+                    feast_name = FIXED_FEAST_DAYS[pf][0]
+            except KeyError:
+                is_hfd, is_hfs, feast_name = False, False, None
     return (is_hfd, is_hfs, feast_name)
 
 
@@ -880,8 +932,21 @@ class BibTime:
         if b_month >= 11:
             self.aviv_barley = AVIV_BARLEY
 
-        # Find out if it's a High Feast Day or a Sabbath.
-        feast_test = test_is_feast(b_month, b_day)
+        def _get_prev_month_length(b_year, b_month, month_start_time):
+            key = int(str(b_year) + '{0:0=2d}'.format(b_month))
+            p_month = datetime_from_key(key)
+            p_month = datetime.datetime(
+                p_month[0].year, p_month[0].month, p_month[0].day).replace(
+                    tzinfo=self.b_location.location.tzinfo, microsecond=0)
+            delta = month_start_time - p_month
+            logging.debug('delta is %s', delta)
+            return delta.days
+
+        if b_month == 10:
+            p_length = _get_prev_month_length(b_year, 9, month_start_time)
+            feast_test = test_is_feast(b_month, b_day, p_length)
+        else:
+            feast_test = test_is_feast(b_month, b_day, None)
 
         is_hfd = feast_test[0]
         is_hfs = feast_test[1]

@@ -7,20 +7,21 @@ Tries to find out what day it is according to biblical time keeping.
 When using year, month, day or hour unused options will default to 2018, 1, 1 and 12 respectively. If you want to know the CURRENT data, don't specify any of these.
 ## Example:
 ```
-./core.py --location Skepplanda --country Sweden --geocoder google
+python3 core.py --location Skepplanda --country Sweden --geocoder google
+
 Location ...............................
 City:                         Skepplanda
 Country:                          Sweden
 
 Biblical ...............................
-Short (ISO) Date:             6017-11-10
+Short (ISO) Date:             6017-11-19
 
 Year:                               6017
 Month:                              11th
 Month (traditional name):          Shvat
-Day of month:                         10
+Day of month:                       19th
 
-Weekday:                             1st
+Weekday:                             3rd
 
 Weekly Sabbath:                       No
 Feast Day:                            No
@@ -29,20 +30,20 @@ Holy Day of rest:                     No
 Barley:           The barley is NOT Aviv
 
 Gregorian ..............................
-Short (ISO) Date:             2018-01-27
+Short (ISO) Date:             2018-02-05
 
 Year:                               2018
-Month:                           January
-Day of month:                         27
+Month:                          February
+Day of month:                         05
 
-Weekday:                        Saturday
+Weekday:                          Monday
 
-Time:                           21:06:59
+Time:                           21:12:36
 
 Solar info .............................
 Daylight:                             No
 Sun has set:                         Yes
-Time of sunset:                 16:24:01
+Time of sunset:                 16:45:21
 ```
 <!-- ### Screenshot: -->
 <!-- ![aviv-calendar screenshot](https://www.avivcalendar.com/img/screenshot_2.png) -->

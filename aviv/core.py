@@ -81,6 +81,22 @@ def main(argv):
         type=str,
         nargs='?',
         help='specify the geocoder to use for calculating the location')
+    parser.add_argument(
+        '--year', metavar='Y', type=int, nargs='?', help='specify the year')
+    parser.add_argument(
+        '--month', metavar='M', type=int, nargs='?', help='specify the month')
+    parser.add_argument(
+        '--day',
+        metavar='D',
+        type=int,
+        nargs='?',
+        help='specify the day of month')
+    parser.add_argument(
+        '--hour',
+        metavar='H',
+        type=int,
+        nargs='?',
+        help='specify the hour of the day')
 
     args = parser.parse_args()
     global _DEBUG
@@ -95,7 +111,8 @@ def main(argv):
                   format(args.country))
         elif args.geocoder == 'google':
             args.location = str(args.location + ', ' + args.country)
-    main_city = BibTime(args.location, args.geocoder)
+    main_city = BibTime(args.location, args.geocoder, args.year, args.month,
+                        args.day, args.hour)
     _info(main_city)
 
 
@@ -116,7 +133,7 @@ def _info(loc):
     print('{:20s}{:>20s}'.format('Month:', loc.b_time.month_name))
     print('{:25s}{:>15s}'.format('Month (traditional name):',
                                  loc.b_time.month_trad_name))
-    print('{:20s}{:>20d}'.format('Day of month:', loc.b_time.day))
+    print('{:20s}{:>20s}'.format('Day of month:', loc.b_time.day_name))
     print('')
     print('{:20s}{:>20s}'.format('Weekday:', loc.b_time.weekday))
     print('')
@@ -494,10 +511,10 @@ class BibLocation:
     def __init__(self,
                  city_name,
                  geocoder='astral',
-                 year=1,
-                 month=1,
-                 day=1,
-                 hour=1):
+                 year=None,
+                 month=None,
+                 day=None,
+                 hour=None):
         try:
             r"""Creates an object using the Astral or Google Geocoder.
 
@@ -549,10 +566,14 @@ class BibLocation:
         self.location = location
 
         # If no date input it given, defaults to the current date and time.
-        if year == month == day == hour == 1:
+        if year == month == day == hour == None:
             logging.debug('No date input given.')
             self.g_time = self._set_g_time_now()
         else:
+            year = 2018 if year is None else year
+            month = 1 if month is None else month
+            day = 1 if day is None else day
+            hour = 12 if hour is None else hour
             self.g_time = self._set_g_time(year, month, day, hour)
 
         # The following attributes are set by `sun_status` function.

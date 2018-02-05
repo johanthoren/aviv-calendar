@@ -285,8 +285,15 @@ BIB_DAY_OF_MONTH = ('1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th',
 
 # List of feast days that are NOT biblically commanded to keep but still
 # of interest.
-FIXED_FEAST_DAYS = {(9, 25), ('1st day of Hanukkah', False), (12, 14),
-                    ('Purim', False)}
+FIXED_FEAST_DAYS = {
+    (9, 25): ('1st day of Hanukkah', False),
+    (9, 26): ('2nd day of Hanukkah', False),
+    (9, 27): ('3rd day of Hanukkah', False),
+    (9, 28): ('4th day of Hanukkah', False),
+    (9, 29): ('5th day of Hanukkah', False),
+    (9, 30): ('6th day of Hanukkah', False),
+    (12, 14): ('Purim', False)
+}
 # TODO: Feast days that are relative to weekday, or that span over
 # months (like Hanukkah).
 

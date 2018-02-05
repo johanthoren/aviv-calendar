@@ -2,7 +2,8 @@
 ## Goal: 
 Tries to find out what day it is according to biblical time keeping.
 ## Usage:
-`./core.py --location <city> [--country <country>] [--geocoder <google|astral>]`
+`./core.py --location <city> [--country <country>] [--geocoder <google|astral>] [--year <YYYY> --month <MM> --day <DD> --hour <HH>]`
+When using year, month, day or hour unused options will default to 2018, 1, 1 and 12 respectively. If you want to know the CURRENT data, don't specify any of these.
 ## Example:
 ```
 ./core.py --location Skepplanda --country Sweden --geocoder google

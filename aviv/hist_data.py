@@ -208,6 +208,8 @@ MOONS = {
     601412: (6014, 12, 2015, 2, 20, True),   # renewedmoon.com
     # Missing months.
     # 6015
+    601507: (6015, 7, 2015, 9, 15, False),   # old prints of a rood awakening cal
+    601508: (6015, 8, 2015, 10, 14, False),  # old prints of a rood awakening cal
     601509: (6015, 9, 2015, 11, 13, True),   # renewedmoon.com
     601510: (6015, 10, 2015, 12, 13, True),  # renewedmoon.com
     601511: (6015, 11, 2016, 1, 11, True),   # renewedmoon.com
@@ -217,7 +219,7 @@ MOONS = {
     # 6016
     601606: (6016, 6, 2016, 9, 2, True),     # renewedmoon twitter
     601607: (6016, 7, 2016, 10, 2, True),    # karaite korner newsletter
-    601608: (6016, 8, 2016, 11, 1, False),     # stellarium
+    601608: (6016, 8, 2016, 11, 1, False),   # stellarium
     601609: (6016, 9, 2016, 11, 30, True),   # renewedmoon.com
     601610: (6016, 10, 2016, 12, 30, True),  # renewedmoon.com
     601611: (6016, 11, 2017, 1, 29, True),   # renewedmoon.com

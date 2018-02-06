@@ -52,6 +52,9 @@ _DEBUG = False
 
 
 def main():
+    """Find out the biblical calendar data for a
+    given location.
+    """
     parser = argparse.ArgumentParser(
         description='Find out the biblical time for a given location.')
     parser.add_argument(
@@ -99,9 +102,14 @@ def main():
         help='specify the hour of the day')
 
     args = parser.parse_args()
+
+    # Check for the --debug flag and set the corresponding debug settings.
     global _DEBUG
     _DEBUG = args.debug
     _debug()
+
+    # Since the --geocoder 'astral' does not work with the --country option,
+    # check if --country has been used and ignore it with a message to the user.
     if args.country:
         if args.geocoder == 'astral':
             print(
@@ -111,22 +119,32 @@ def main():
                   format(args.country))
         elif args.geocoder == 'google':
             args.location = str(args.location + ', ' + args.country)
+
+    # Put everything together and create the main object that _info will be
+    # based on.
     main_city = BibTime(args.location, args.geocoder, args.year, args.month,
                         args.day, args.hour)
     _info(main_city)
 
 
 def _info(loc):
+    # To shorten all the references to loc.b_location.location.name, which is so
+    # long it tends to mess up rows just a bit too much.
     city_re = re.compile(r'\w+$')
     match_obj = city_re.search(loc.b_location.location.name)
     city_name = match_obj.group()
-    bib_date_str = str(loc.b_time.year) + '-' + str(
-        loc.b_time.month) + '-' + str(loc.b_time.day)
+
+    # Print information about the location.
     print('Location '.ljust(40, '.'))
     print('{:20s}{:>20s}'.format('City:', city_name))
     print('{:20s}{:>20s}'.format('Country:', loc.b_location.location.region))
     print('')
+
+    # Print information about the biblical calendar data.
     print('Biblical '.ljust(40, '.'))
+    # Create a string in the format 'YYYY-MM-DD' using the biblical calendar data.
+    bib_date_str = str(loc.b_time.year) + '-' + str(
+        loc.b_time.month) + '-' + str(loc.b_time.day)
     print('{:20s}{:>20s}'.format('Short (ISO) Date:', bib_date_str))
     print('')
     print('{:20s}{:>20d}'.format('Year:', loc.b_time.year))
@@ -171,6 +189,8 @@ def _info(loc):
         barley_statement = 'The barley is NOT Aviv'
     print('{:12s}{:>28s}'.format('Barley:', barley_statement))
     print('')
+
+    # Print information about the gregorian calendar data.
     print('Gregorian '.ljust(40, '.'))
     print('{:20s}{:>20s}'.format(
         'Short (ISO) Date:',
@@ -189,6 +209,8 @@ def _info(loc):
     print('{:20s}{:>20s}'.format('Time:',
                                  loc.b_location.g_time.strftime('%H:%M:%S')))
     print('')
+
+    # Print information about the sun, such as daylight, sunset and sunrise etc.
     print('Solar info '.ljust(40, '.'))
     if loc.b_location.sun_info['has_set'] is True:
         print('{:20s}{:>20s}'.format('Daylight:', 'No'))
@@ -206,53 +228,6 @@ def _info(loc):
         sunset_time = loc.b_location.sun_info['sunset'].strftime('%H:%M:%S')
         print('{:20s}{:>20s}'.format('Time of sunrise:', sunrise_time))
         print('{:20s}{:>20s}'.format('Time of sunset:', sunset_time))
-
-
-def _verbose_info(loc):
-    print('The chosen location is "{}".'.format(loc.b_location.location.name))
-    print('The gregorian date in {} is {}'.format(
-        loc.b_location.location.name, loc.b_location.g_time.date()))
-    print('and the gregorian weekday is now {}.'.format(
-        GREG_WEEKDAYS[loc.b_location.g_time.weekday()]))
-    print('The current biblical date in {} is now:'.format(
-        loc.b_location.location.name))
-    print('The {} day of the {} month in the year {}.'.format(
-        loc.b_time.day_name, loc.b_time.month_name, loc.b_time.year))
-    print(
-        'The gregorian time is now {}'.format(
-            loc.b_location.g_time.strftime('%H:%M')),
-        end=' ')
-    if loc.b_location.sun_info['has_set'] is True:
-        print('and the sun has set.')
-        sunset_time = loc.b_location.sun_info['sunset'].strftime('%H:%M')
-        print('The sun set at {} and it is now the {} day of the week.'.format(
-            sunset_time, loc.b_time.weekday))
-    elif loc.b_location.sun_info['has_risen'] is False:
-        sunrise_time = loc.b_location.sun_info['sunrise'].strftime('%H:%M')
-        print('and the sun has not yet risen.')
-        print('The sun will rise at {} and it is now the {} day of the week.'.
-              format(sunrise_time, loc.b_time.weekday))
-    else:
-        print('and the sun is up.')
-        sunset_time = loc.b_location.sun_info['sunset'].strftime('%H:%M')
-        print('The sun will set at {} and it is now the {} day of the week.'.
-              format(sunset_time, loc.b_time.weekday))
-    if loc.b_time.sabbath.sabbath is True:
-        if loc.b_time.sabbath.holy_day_of_rest is True:
-            print('It is now a Holy Day of rest where no work shall be done.')
-            print('Shalom!')
-        elif loc.b_time.sabbath.weekly_sabbath is True:
-            print('It is now the weekly Sabbath. Shalom!')
-    if loc.b_time.sabbath.high_feast_day is True:
-        print('It is now the {}'.format(loc.b_time.sabbath.feast_name))
-    if loc.b_time.month == 12:
-        if loc.b_time.aviv_barley is True:
-            print('The barley in the land of Israel is aviv!')
-            print('The next new moon will begin the new year.')
-        else:
-            print('The barley in the land of Israel is NOT yet aviv.')
-            print('There will be a 13th month if it is not aviv before '
-                  'the end of the month.')
 
 
 def _debug():

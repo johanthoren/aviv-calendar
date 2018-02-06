@@ -103,6 +103,9 @@ ENV/
 # MacOS
 .DS_Store
 
+latest_data.*
+current_data*
+aviv.prof
 /aviv/latest_data.*
 /aviv/current_data.*
 /aviv/aviv.prof

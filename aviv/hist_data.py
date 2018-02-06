@@ -49,54 +49,54 @@
 MOONS = {
     # 5999
     # Missing months.
-    599905: (5999, 5, 1999, 8, 12, True), #kkn #5
-    599906: (5999, 6, 1999, 9, 11, True), #kkn #10
-    599907: (5999, 7, 1999, 10, 10, True), #kkn #14
-    599908: (5999, 8, 1999, 11, 9, True), #kkn #15
-    599909: (5999, 9, 1999, 12, 9, True), #kkn #17
-    599910: (5999, 10, 2000, 1, 8, True), #kkn #21
-    599911: (5999, 11, 2000, 2, 7, True), #kkn #25
-    599912: (5999, 12, 2000, 3, 7, True),  #kkn #29
+    599905: (5999, 5, 1999, 8, 12, True), #karaite korner newsletter #5
+    599906: (5999, 6, 1999, 9, 11, True), #karaite korner newsletter #10
+    599907: (5999, 7, 1999, 10, 10, True), #karaite korner newsletter #14
+    599908: (5999, 8, 1999, 11, 9, True), #karaite korner newsletter #15
+    599909: (5999, 9, 1999, 12, 9, True), #karaite korner newsletter #17
+    599910: (5999, 10, 2000, 1, 8, True), #karaite korner newsletter #21
+    599911: (5999, 11, 2000, 2, 7, True), #karaite korner newsletter #25
+    599912: (5999, 12, 2000, 3, 7, True),  #karaite korner newsletter #29
     # 6000
-    600001: (6000, 1, 2000, 4, 6, True),  #kkn #33
-    600002: (6000, 2, 2000, 5, 5, True),  #kkn #35
-    600003: (6000, 3, 2000, 6, 3, True),  #kkn #39
-    600004: (6000, 4, 2000, 7, 3, True),  #kkn #44
-    600005: (6000, 5, 2000, 8, 1, True),  #kkn #48
-    600006: (6000, 6, 2000, 8, 30, True),  #kkn #50
-    600007: (6000, 7, 2000, 9, 28, True),  #kkn #53
-    600008: (6000, 8, 2000, 10, 28, True),  #kkn #56
-    600009: (6000, 9, 2000, 11, 27, True),  #kkn #58
-    600010: (6000, 10, 2000, 12, 27, True),  #kkn #60
-    600011: (6000, 11, 2001, 1, 25, True),  #kkn #62
-    600012: (6000, 12, 2001, 2, 24, True),  #kkn #64
+    600001: (6000, 1, 2000, 4, 6, True),  #karaite korner newsletter #33
+    600002: (6000, 2, 2000, 5, 5, True),  #karaite korner newsletter #35
+    600003: (6000, 3, 2000, 6, 3, True),  #karaite korner newsletter #39
+    600004: (6000, 4, 2000, 7, 3, True),  #karaite korner newsletter #44
+    600005: (6000, 5, 2000, 8, 1, True),  #karaite korner newsletter #48
+    600006: (6000, 6, 2000, 8, 30, True),  #karaite korner newsletter #50
+    600007: (6000, 7, 2000, 9, 28, True),  #karaite korner newsletter #53
+    600008: (6000, 8, 2000, 10, 28, True),  #karaite korner newsletter #56
+    600009: (6000, 9, 2000, 11, 27, True),  #karaite korner newsletter #58
+    600010: (6000, 10, 2000, 12, 27, True),  #karaite korner newsletter #60
+    600011: (6000, 11, 2001, 1, 25, True),  #karaite korner newsletter #62
+    600012: (6000, 12, 2001, 2, 24, True),  #karaite korner newsletter #64
     # 6001
-    600101: (6001, 1, 2001, 3, 26, True),  #kkn #69
-    600102: (6001, 2, 2001, 4, 24, True),  #kkn #74
-    600103: (6001, 3, 2001, 5, 24, True),  #kkn #75
-    600104: (6001, 4, 2001, 6, 22, True),  #kkn #76
-    600105: (6001, 5, 2001, 7, 21, True),  #kkn #77
-    600106: (6001, 6, 2001, 8, 20, True),  #kkn #79
-    600107: (6001, 7, 2001, 9, 18, True),  #kkn #82
-    600108: (6001, 8, 2001, 10, 18, True),  #kkn #84
-    600109: (6001, 9, 2001, 11, 16, True),  #kkn #86
-    600110: (6001, 10, 2001, 12, 16, True),  #kkn #88
-    600111: (6001, 11, 2002, 1, 15, True),  #kkn #91
-    600112: (6001, 12, 2002, 2, 13, True),  #kkn #92
+    600101: (6001, 1, 2001, 3, 26, True),  #karaite korner newsletter #69
+    600102: (6001, 2, 2001, 4, 24, True),  #karaite korner newsletter #74
+    600103: (6001, 3, 2001, 5, 24, True),  #karaite korner newsletter #75
+    600104: (6001, 4, 2001, 6, 22, True),  #karaite korner newsletter #76
+    600105: (6001, 5, 2001, 7, 21, True),  #karaite korner newsletter #77
+    600106: (6001, 6, 2001, 8, 20, True),  #karaite korner newsletter #79
+    600107: (6001, 7, 2001, 9, 18, True),  #karaite korner newsletter #82
+    600108: (6001, 8, 2001, 10, 18, True),  #karaite korner newsletter #84
+    600109: (6001, 9, 2001, 11, 16, True),  #karaite korner newsletter #86
+    600110: (6001, 10, 2001, 12, 16, True),  #karaite korner newsletter #88
+    600111: (6001, 11, 2002, 1, 15, True),  #karaite korner newsletter #91
+    600112: (6001, 12, 2002, 2, 13, True),  #karaite korner newsletter #92
     # 6002
-    600201: (6002, 1, 2002, 3, 15, True),  #kkn #99
-    600202: (6002, 2, 2002, 4, 14, True),  #kkn #103
-    600203: (6002, 3, 2002, 5, 14, True),  #kkn #106
-    600204: (6002, 4, 2002, 6, 12, True),  #kkn #107
-    600205: (6002, 5, 2002, 7, 11, True),  #kkn #108
-    600206: (6002, 6, 2002, 8, 9, True),  #kkn #110
-    600207: (6002, 7, 2002, 9, 8, True),  #kkn #113
-    600208: (6002, 8, 2002, 10, 7, True),  #kkn #115
-    600209: (6002, 9, 2002, 11, 6, True),  #kkn #117
-    600210: (6002, 10, 2002, 12, 5, True),  #kkn #119
-    600211: (6002, 11, 2003, 1, 4, True),  #kkn #120
-    600212: (6002, 12, 2003, 2, 3, True),  #kkn #122
-    600213: (6002, 13, 2003, 3, 4, True),  #kkn #125
+    600201: (6002, 1, 2002, 3, 15, True),  #karaite korner newsletter #99
+    600202: (6002, 2, 2002, 4, 14, True),  #karaite korner newsletter #103
+    600203: (6002, 3, 2002, 5, 14, True),  #karaite korner newsletter #106
+    600204: (6002, 4, 2002, 6, 12, True),  #karaite korner newsletter #107
+    600205: (6002, 5, 2002, 7, 11, True),  #karaite korner newsletter #108
+    600206: (6002, 6, 2002, 8, 9, True),  #karaite korner newsletter #110
+    600207: (6002, 7, 2002, 9, 8, True),  #karaite korner newsletter #113
+    600208: (6002, 8, 2002, 10, 7, True),  #karaite korner newsletter #115
+    600209: (6002, 9, 2002, 11, 6, True),  #karaite korner newsletter #117
+    600210: (6002, 10, 2002, 12, 5, True),  #karaite korner newsletter #119
+    600211: (6002, 11, 2003, 1, 4, True),  #karaite korner newsletter #120
+    600212: (6002, 12, 2003, 2, 3, True),  #karaite korner newsletter #122
+    600213: (6002, 13, 2003, 3, 4, True),  #karaite korner newsletter #125
     # 6003
     600301: (6003, 1, 2003, 4, 3, True),  # karaite korner newsletter #127
     600302: (6003, 2, 2003, 5, 2, True),  # karaite korner newsletter #130

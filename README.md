@@ -2,48 +2,45 @@
 ## Goal: 
 Tries to find out what day it is according to biblical time keeping.
 ## Usage:
-`python3 core.py --location <city> [--country <country>] [--geocoder <google|astral>] [--year <YYYY> --month <MM> --day <DD> --hour <HH>]`
+`python3 aviv.py --location <city> [--country <country>] [--geocoder <google|astral>] [--year <YYYY> --month <MM> --day <DD> --hour <HH>]`
 ### Comments:
 When using year, month, day or hour unused options will default to 2018, 1, 1 and 12 respectively. If you want to know the CURRENT data, don't specify any of these.
 ## Example:
 ```
-python3 core.py --location Skepplanda --country Sweden --geocoder google
-
+python3 aviv.py --location Skepplanda --geocoder google
 Location ...............................
 City:                         Skepplanda
 Country:                          Sweden
 
 Biblical ...............................
-Short (ISO) Date:             6017-11-19
+Short (ISO) Date:             6017-11-20
 
 Year:                               6017
 Month:                              11th
 Month (traditional name):          Shvat
-Day of month:                       19th
+Day of month:                       20th
 
-Weekday:                             3rd
+Weekday:                             4th
 
 Weekly Sabbath:                       No
 Feast Day:                            No
 Holy Day of rest:                     No
 
-Barley:           The barley is NOT Aviv
-
 Gregorian ..............................
-Short (ISO) Date:             2018-02-05
+Short (ISO) Date:             2018-02-06
 
 Year:                               2018
 Month:                          February
-Day of month:                         05
+Day of month:                         06
 
-Weekday:                          Monday
+Weekday:                         Tuesday
 
-Time:                           21:12:36
+Time:                           18:59:01
 
 Solar info .............................
 Daylight:                             No
 Sun has set:                         Yes
-Time of sunset:                 16:45:21
+Time of sunset:                 16:47:31
 ```
 <!-- ### Screenshot: -->
 <!-- ![aviv-calendar screenshot](https://www.avivcalendar.com/img/screenshot_2.png) -->

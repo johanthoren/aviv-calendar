@@ -32,7 +32,7 @@ import datetime
 import logging
 import shelve
 # from astral import AstralError
-import core
+from . import core
 
 logging.basicConfig(
     level=logging.CRITICAL,

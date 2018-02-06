@@ -1,3 +1,0 @@
-LAST_MOON = {601711: (6017, 11, 2018, 1, 18, True)}
-NEXT_MOON = {601712: (6017, 12, 2018, 2, 17, False)}
-AVIV_BARLEY = False

@@ -248,7 +248,7 @@ MOONS = {
     601401: (6014, 1, 2014, 3, 31, True),     # renewedmoon.com
     601402: (6014, 2, 2014, 4, 30, True),     # renewedmoon.com
     601403: (6014, 3, 2014, 5, 30, True),     # renewedmoon.com
-    601404: (6014, 4, 2013, 6, 29, True),     # whenisthenewmoon.com
+    601404: (6014, 4, 2014, 6, 29, True),     # whenisthenewmoon.com
     601405: (6014, 5, 2014, 7, 28, True),     # whenisthenewmoon.com
     601406: (6014, 6, 2014, 8, 27, True),     # renewedmoon.com
     601407: (6014, 7, 2014, 9, 26, True),     # renewedmoon.com

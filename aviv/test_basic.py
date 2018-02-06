@@ -30,6 +30,7 @@
 
 import datetime
 import logging
+import shelve
 # from astral import AstralError
 import core
 
@@ -84,6 +85,30 @@ def test_known_reference_days():
         assert result_g_weekday == ref_g_weekday
         assert result_sabbath == ref_sabbath
         assert result_feast_day == ref_feast_day
+
+
+def test_length_of_months():
+    """Tests the length of months in the database. Should be 28-30 days."""
+    db = shelve.open(core.DB_FILE)
+    moons = db['MOONS']
+    start_date_list = []
+    accepted_length = (28, 29, 30)
+    for key, value in moons.items():
+        start_date = datetime.datetime(value[2], value[3], value[4])
+        start_date_list.append(start_date)
+    sorted_list = sorted(start_date_list)
+    i = 0
+    try:
+        for start_date in sorted_list:
+            end_date = sorted_list[i + 1]
+            logging.debug('%s - %s', start_date, end_date)
+            length = end_date - start_date
+            logging.debug('length is %s', length)
+            assert length.days in accepted_length
+            i += 1
+    except IndexError:
+        logging.debug('reached the end of the list')
+
 
 
 if __name__ == '__main__':

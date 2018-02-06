@@ -155,18 +155,13 @@ def _info(loc):
     print('')
     print('{:20s}{:>20s}'.format('Weekday:', loc.b_time.weekday))
     print('')
-    ws_statement = 'Yes' if loc.b_time.sabbath.weekly_sabbath is True else 'No'
-    if loc.b_time.sabbath.high_feast_day is True:
-        feast_day_statement = 'Yes'
-    else:
-        feast_day_statement = 'No'
-    if loc.b_time.sabbath.holy_day_of_rest is True:
-        holy_day_statement = 'Yes'
-    else:
-        holy_day_statement = 'No'
-    print('{:20s}{:>20s}'.format('Weekly Sabbath:', ws_statement))
-    print('{:20s}{:>20s}'.format('Feast Day:', feast_day_statement))
-    print('{:20s}{:>20s}'.format('Holy Day of rest:', holy_day_statement))
+
+    ws_print = 'Yes' if loc.b_time.sabbath.weekly_sabbath is True else 'No'
+    feast_d_print = 'Yes' if loc.b_time.sabbath.high_feast_day is True else 'No'
+    holy_d_print = 'Yes' if loc.b_time.sabbath.holy_day_of_rest is True else 'No'
+    print('{:20s}{:>20s}'.format('Weekly Sabbath:', ws_print))
+    print('{:20s}{:>20s}'.format('Feast Day:', feast_d_print))
+    print('{:20s}{:>20s}'.format('Holy Day of rest:', holy_d_print))
     print('')
     if loc.b_time.sabbath.high_feast_day is True:
         if len(loc.b_time.sabbath.feast_name) >= 28:

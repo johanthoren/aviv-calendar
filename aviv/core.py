@@ -962,7 +962,6 @@ class BibTime:
         is_hfd = feast_test[0]
         is_hfs = feast_test[1]
 
-        feast_day = is_hfd
         feast_name = feast_test[2]
 
         b_weekday = _calc_b_weekday()

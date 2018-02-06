@@ -51,7 +51,7 @@ import hist_data
 _DEBUG = False
 
 
-def main(argv):
+def main():
     parser = argparse.ArgumentParser(
         description='Find out the biblical time for a given location.')
     parser.add_argument(
@@ -1003,4 +1003,4 @@ class BibTime:
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    main()

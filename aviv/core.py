@@ -151,9 +151,18 @@ def _info(loc):
     print('{:20s}{:>20s}'.format('Holy Day of rest:', holy_day_statement))
     print('')
     if loc.b_time.sabbath.high_feast_day is True:
-        print('{:20s}{:>20s}'.format('Feast name:',
-                                     loc.b_time.sabbath.feast_name))
-        print('')
+        if len(loc.b_time.sabbath.feast_name) >= 28:
+            name_re_1 = re.compile(r"^([^/]*)/*")
+            name_mo_1 = name_re_1.search(loc.b_time.sabbath.feast_name)
+            name_part_1 = name_mo_1.group()
+            name_part_2 = loc.b_time.sabbath.feast_name[len(name_part_1):]
+            print('{:12s}{:>28s}'.format('Feast name:', name_part_1))
+            print('{:>40s}'.format(name_part_2))
+            print('')
+        else:
+            print('{:20s}{:>20s}'.format('Feast name:',
+                                         loc.b_time.sabbath.feast_name))
+            print('')
     if loc.aviv_barley is None:
         barley_statement = 'Not yet time for the barley'
     elif loc.aviv_barley is True:
@@ -363,7 +372,9 @@ def get_latest_data():
 DB_FILE = os.path.join(sys.path[0], 'current_data')
 DB_ACTUAL_FILE = os.path.join(sys.path[0], 'current_data.DB')
 DB_EXISTS = os.path.exists(DB_ACTUAL_FILE)
-DB_MOD_TIME = datetime.datetime.fromtimestamp(os.path.getmtime(DB_ACTUAL_FILE))
+if DB_EXISTS:
+    DB_MOD_TIME = datetime.datetime.fromtimestamp(
+        os.path.getmtime(DB_ACTUAL_FILE))
 
 
 # Combine the data from hist_data (which is distributed with the source code),

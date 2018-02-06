@@ -92,6 +92,7 @@ BIB_DAY_OF_MONTH = ('1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th',
 # List of feast days that are NOT biblically commanded to keep but still
 # of interest.
 FIXED_FEAST_DAYS = {
+    (1, 1): ('1st day of the Aviv Year', False),
     (9, 25): ('1st day of Hanukkah', False),
     (9, 26): ('2nd day of Hanukkah', False),
     (9, 27): ('3rd day of Hanukkah', False),
@@ -122,20 +123,19 @@ HANUKKAH_LONG_9 = {
 # List of high feast days. Boolean True if they are considered
 # "High days of convocation" where no work shall be done.
 FIXED_HIGH_FEAST_DAYS = {
-    (1, 1): ('1st day of the Aviv Year', False),
     (1, 10): ('1st day of preparation', False),
     (1, 11): ('2nd day of preparation', False),
     (1, 12): ('3rd day of preparation', False),
     (1, 13): ('4th day of preparation', False),
     (1, 14): ('Passover', False),
-    (1, 15): ('1st day of "Feast of Unleavened Bread"', True),
-    (1, 16): ('2nd day of "Feast of Unleavened Bread"', False),
-    (1, 17): ('3rd day of "Feast of Unleavened Bread"', False),
-    (1, 18): ('4th day of "Feast of Unleavened Bread"', False),
-    (1, 19): ('5th day of "Feast of Unleavened Bread"', False),
-    (1, 20): ('6th day of "Feast of Unleavened Bread"', False),
-    (1, 21): ('Last day of "Feast of Unleavened Bread"', True),
-    (7, 1): ('Yom Teruah / "Feast of Trumpets or Feast of Shouting"', True),
+    (1, 15): ('1st day of Unleavened Bread', True),
+    (1, 16): ('2nd day of Unleavened Bread', False),
+    (1, 17): ('3rd day of Unleavened Bread', False),
+    (1, 18): ('4th day of Unleavened Bread', False),
+    (1, 19): ('5th day of Unleavened Bread', False),
+    (1, 20): ('6th day of Unleavened Bread', False),
+    (1, 21): ('Last day of Unleavened Bread', True),
+    (7, 1): ('Yom Teruah / "Feast of Trumpets"', True),
     (7, 10): ('Yom Kippur / "Day of Atonement"', True),
     (7, 15): ('1st day of Sukkot / "Feast of Tabernacles"', True),
     (7, 16): ('2nd day of Sukkot / "Feast of Tabernacles"', False),
@@ -253,14 +253,14 @@ def datetime_from_key(k):
 
 
 def test_year(year):
-    """Tests if a year is within the scope of the program. Namely 4001-8001."""
+    """Tests if a year is within the scope of the program. Namely 6000-6018."""
     year = int(year)
     try:
-        if year <= 4000:
-            print('Error: Year value lower than 4001. Not searchable.')
+        if year <= 5999:
+            print('Error: Year value lower than 6000. Not searchable.')
             raise IndexError
-        elif year >= 8001:
-            print('Error: Year value higher than 8000. Not searchable.')
+        elif year >= 6019:
+            print('Error: Year value higher than 6018. Not searchable.')
             raise IndexError
         return year
     except ValueError:

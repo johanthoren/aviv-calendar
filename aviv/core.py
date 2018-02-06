@@ -128,101 +128,119 @@ def main():
 
 
 def _info(loc):
+    """Prints information about the given location and it's calendar data."""
+
     # To shorten all the references to loc.b_location.location.name, which is so
     # long it tends to mess up rows just a bit too much.
     city_re = re.compile(r'\w+$')
     match_obj = city_re.search(loc.b_location.location.name)
     city_name = match_obj.group()
 
-    # Print information about the location.
-    print('Location '.ljust(40, '.'))
-    print('{:20s}{:>20s}'.format('City:', city_name))
-    print('{:20s}{:>20s}'.format('Country:', loc.b_location.location.region))
-    print('')
+    def _location_info():
+        # Print information about the location.
+        print('Location '.ljust(40, '.'))
+        print('{:20s}{:>20s}'.format('City:', city_name))
+        print('{:20s}{:>20s}'.format('Country:',
+                                     loc.b_location.location.region))
+        print('')
 
-    # Print information about the biblical calendar data.
-    print('Biblical '.ljust(40, '.'))
-    # Create a string in the format 'YYYY-MM-DD' using the biblical calendar data.
-    bib_date_str = str(loc.b_time.year) + '-' + str(
-        loc.b_time.month) + '-' + str(loc.b_time.day)
-    print('{:20s}{:>20s}'.format('Short (ISO) Date:', bib_date_str))
-    print('')
-    print('{:20s}{:>20d}'.format('Year:', loc.b_time.year))
-    print('{:20s}{:>20s}'.format('Month:', loc.b_time.month_name))
-    print('{:25s}{:>15s}'.format('Month (traditional name):',
-                                 loc.b_time.month_trad_name))
-    print('{:20s}{:>20s}'.format('Day of month:', loc.b_time.day_name))
-    print('')
-    print('{:20s}{:>20s}'.format('Weekday:', loc.b_time.weekday))
-    print('')
+    def _bib_info():
+        # Print information about the biblical calendar data.
+        print('Biblical '.ljust(40, '.'))
+        # Create a string in the format 'YYYY-MM-DD' using the biblical
+        # calendar data.
+        bib_date_str = str(loc.b_time.year) + '-' + '{0:02d}'.format(
+            loc.b_time.month) + '-' + str(loc.b_time.day)
+        print('{:20s}{:>20s}'.format('Short (ISO) Date:', bib_date_str))
+        print('')
+        print('{:20s}{:>20d}'.format('Year:', loc.b_time.year))
+        print('{:20s}{:>20s}'.format('Month:', loc.b_time.month_name))
+        print('{:25s}{:>15s}'.format('Month (traditional name):',
+                                     loc.b_time.month_trad_name))
+        print('{:20s}{:>20s}'.format('Day of month:', loc.b_time.day_name))
+        print('')
+        print('{:20s}{:>20s}'.format('Weekday:', loc.b_time.weekday))
+        print('')
 
-    ws_print = 'Yes' if loc.b_time.sabbath.weekly_sabbath is True else 'No'
-    feast_d_print = 'Yes' if loc.b_time.sabbath.high_feast_day is True else 'No'
-    holy_d_print = 'Yes' if loc.b_time.sabbath.holy_day_of_rest is True else 'No'
-    print('{:20s}{:>20s}'.format('Weekly Sabbath:', ws_print))
-    print('{:20s}{:>20s}'.format('Feast Day:', feast_d_print))
-    print('{:20s}{:>20s}'.format('Holy Day of rest:', holy_d_print))
-    print('')
-    if loc.b_time.sabbath.high_feast_day is True:
-        if len(loc.b_time.sabbath.feast_name) >= 28:
-            name_re_1 = re.compile(r"^([^/]*)/*")
-            name_mo_1 = name_re_1.search(loc.b_time.sabbath.feast_name)
-            name_part_1 = name_mo_1.group()
-            name_part_2 = loc.b_time.sabbath.feast_name[len(name_part_1):]
-            print('{:12s}{:>28s}'.format('Feast name:', name_part_1))
-            print('{:>40s}'.format(name_part_2))
+        ws_print = 'Yes' if loc.b_time.sabbath.weekly_sabbath is True else 'No'
+        fd_print = 'Yes' if loc.b_time.sabbath.high_feast_day is True else 'No'
+        hd_print = 'Yes' if loc.b_time.sabbath.holy_day_of_rest is True else 'No'
+        print('{:20s}{:>20s}'.format('Weekly Sabbath:', ws_print))
+        print('{:20s}{:>20s}'.format('Feast Day:', fd_print))
+        print('{:20s}{:>20s}'.format('Holy Day of rest:', hd_print))
+        print('')
+        if loc.b_time.sabbath.high_feast_day is True:
+            if len(loc.b_time.sabbath.feast_name) >= 28:
+                name_re_1 = re.compile(r"^([^/]*)/*")
+                name_mo_1 = name_re_1.search(loc.b_time.sabbath.feast_name)
+                name_part_1 = name_mo_1.group()
+                name_part_2 = loc.b_time.sabbath.feast_name[len(name_part_1):]
+                print('{:12s}{:>28s}'.format('Feast name:', name_part_1))
+                print('{:>40s}'.format(name_part_2))
+                print('')
+            else:
+                print('{:20s}{:>20s}'.format('Feast name:',
+                                             loc.b_time.sabbath.feast_name))
+                print('')
+            if loc.aviv_barley is None:
+                barley_statement = 'Not yet time for the barley'
+            elif loc.aviv_barley is True:
+                barley_statement = 'The barley IS Aviv'
+            else:
+                barley_statement = 'The barley is NOT Aviv'
+            print('{:12s}{:>28s}'.format('Barley:', barley_statement))
             print('')
+
+    def _greg_info():
+        # Print information about the gregorian calendar data.
+        print('Gregorian '.ljust(40, '.'))
+        print('{:20s}{:>20s}'.format(
+            'Short (ISO) Date:',
+            loc.b_location.g_time.date().strftime('%Y-%m-%d')))
+        print('')
+        print('{:20s}{:>20s}'.format('Year:',
+                                     loc.b_location.g_time.strftime('%Y')))
+        print('{:20s}{:>20s}'.format('Month:',
+                                     loc.b_location.g_time.strftime('%B')))
+        print('{:20s}{:>20s}'.format('Day of month:',
+                                     loc.b_location.g_time.strftime('%d')))
+        print('')
+        print('{:20s}{:>20s}'.format(
+            'Weekday:', GREG_WEEKDAYS[loc.b_location.g_time.weekday()]))
+        print('')
+        print('{:20s}{:>20s}'.format(
+            'Time:', loc.b_location.g_time.strftime('%H:%M:%S')))
+        print('')
+
+    def _solar_info():
+        # Print information about the sun, such as daylight, sunset and
+        # sunrise etc.
+        print('Solar info '.ljust(40, '.'))
+        if loc.b_location.sun_info['has_set'] is True:
+            print('{:20s}{:>20s}'.format('Daylight:', 'No'))
+            print('{:20s}{:>20s}'.format('Sun has set:', 'Yes'))
+            sunset_time = loc.b_location.sun_info['sunset'].strftime(
+                '%H:%M:%S')
+            print('{:20s}{:>20s}'.format('Time of sunset:', sunset_time))
+        elif loc.b_location.sun_info['has_risen'] is False:
+            print('{:20s}{:>20s}'.format('Daylight:', 'No'))
+            print('{:20s}{:>20s}'.format('Sun has risen:', 'No'))
+            sunrise_time = loc.b_location.sun_info['sunrise'].strftime(
+                '%H:%M:%S')
+            print('{:20s}{:>20s}'.format('Time of sunrise:', sunrise_time))
         else:
-            print('{:20s}{:>20s}'.format('Feast name:',
-                                         loc.b_time.sabbath.feast_name))
-            print('')
-    if loc.aviv_barley is None:
-        barley_statement = 'Not yet time for the barley'
-    elif loc.aviv_barley is True:
-        barley_statement = 'The barley IS Aviv'
-    else:
-        barley_statement = 'The barley is NOT Aviv'
-    print('{:12s}{:>28s}'.format('Barley:', barley_statement))
-    print('')
+            print('{:20s}{:>20s}'.format('Daylight:', 'Yes'))
+            sunrise_time = loc.b_location.sun_info['sunrise'].strftime(
+                '%H:%M:%S')
+            sunset_time = loc.b_location.sun_info['sunset'].strftime(
+                '%H:%M:%S')
+            print('{:20s}{:>20s}'.format('Time of sunrise:', sunrise_time))
+            print('{:20s}{:>20s}'.format('Time of sunset:', sunset_time))
 
-    # Print information about the gregorian calendar data.
-    print('Gregorian '.ljust(40, '.'))
-    print('{:20s}{:>20s}'.format(
-        'Short (ISO) Date:',
-        loc.b_location.g_time.date().strftime('%Y-%m-%d')))
-    print('')
-    print('{:20s}{:>20s}'.format('Year:',
-                                 loc.b_location.g_time.strftime('%Y')))
-    print('{:20s}{:>20s}'.format('Month:',
-                                 loc.b_location.g_time.strftime('%B')))
-    print('{:20s}{:>20s}'.format('Day of month:',
-                                 loc.b_location.g_time.strftime('%d')))
-    print('')
-    print('{:20s}{:>20s}'.format(
-        'Weekday:', GREG_WEEKDAYS[loc.b_location.g_time.weekday()]))
-    print('')
-    print('{:20s}{:>20s}'.format('Time:',
-                                 loc.b_location.g_time.strftime('%H:%M:%S')))
-    print('')
-
-    # Print information about the sun, such as daylight, sunset and sunrise etc.
-    print('Solar info '.ljust(40, '.'))
-    if loc.b_location.sun_info['has_set'] is True:
-        print('{:20s}{:>20s}'.format('Daylight:', 'No'))
-        print('{:20s}{:>20s}'.format('Sun has set:', 'Yes'))
-        sunset_time = loc.b_location.sun_info['sunset'].strftime('%H:%M:%S')
-        print('{:20s}{:>20s}'.format('Time of sunset:', sunset_time))
-    elif loc.b_location.sun_info['has_risen'] is False:
-        print('{:20s}{:>20s}'.format('Daylight:', 'No'))
-        print('{:20s}{:>20s}'.format('Sun has risen:', 'No'))
-        sunrise_time = loc.b_location.sun_info['sunrise'].strftime('%H:%M:%S')
-        print('{:20s}{:>20s}'.format('Time of sunrise:', sunrise_time))
-    else:
-        print('{:20s}{:>20s}'.format('Daylight:', 'Yes'))
-        sunrise_time = loc.b_location.sun_info['sunrise'].strftime('%H:%M:%S')
-        sunset_time = loc.b_location.sun_info['sunset'].strftime('%H:%M:%S')
-        print('{:20s}{:>20s}'.format('Time of sunrise:', sunrise_time))
-        print('{:20s}{:>20s}'.format('Time of sunset:', sunset_time))
+    _location_info()
+    _bib_info()
+    _greg_info()
+    _solar_info()
 
 
 def _debug():

@@ -122,7 +122,11 @@ HANUKKAH_LONG_9 = {
 # List of high feast days. Boolean True if they are considered
 # "High days of convocation" where no work shall be done.
 FIXED_HIGH_FEAST_DAYS = {
-    (1, 1): ('1st day of the Aviv Year.', False),
+    (1, 1): ('1st day of the Aviv Year', False),
+    (1, 10): ('1st day of preparation', False),
+    (1, 11): ('2nd day of preparation', False),
+    (1, 12): ('3rd day of preparation', False),
+    (1, 13): ('4th day of preparation', False),
     (1, 14): ('Passover', False),
     (1, 15): ('1st day of "Feast of Unleavened Bread"', True),
     (1, 16): ('2nd day of "Feast of Unleavened Bread"', False),
@@ -150,7 +154,7 @@ def get_latest_data():
     # and save it locally under `latest_data.py`. This is updated as soon
     # as news of the new moon or the Aviv barley breaks.
     url = 'https://www.avivcalendar.com/latest-data'
-    latest_file = os.path.join(sys.path[0], 'latest_data.py')
+    latest_file = os.path.join(sys.path[0], 'aviv', 'latest_data.py')
     try:
         with urllib.request.urlopen(url) as response, open(latest_file,
                                                            'wb') as out_file:
@@ -166,8 +170,8 @@ def get_latest_data():
 # Working with a DB_FILE since we will be joining dictionaries from both git
 # synced sources, as well as the latest_data.py that is retrieved from
 # online.
-DB_FILE = os.path.join(sys.path[0], 'current_data')
-DB_ACTUAL_FILE = os.path.join(sys.path[0], 'current_data.DB')
+DB_FILE = os.path.join(sys.path[0], 'aviv', 'current_data')
+DB_ACTUAL_FILE = os.path.join(sys.path[0], 'aviv', 'current_data.DB')
 DB_EXISTS = os.path.exists(DB_ACTUAL_FILE)
 if DB_EXISTS:
     DB_MOD_TIME = datetime.datetime.fromtimestamp(
@@ -182,7 +186,7 @@ def combine_data():
     # I didn't want this import to be at the top of the file, since the
     # latest_data.py file will not exist on first run.
     # TODO: Is that the correct way to do it?
-    import latest_data
+    from . import latest_data
     database = shelve.open(DB_FILE)
 
     # Potentially needed clearing of DB befor each run. Or is that overkill?
@@ -360,7 +364,7 @@ def test_is_feast(month, day, p_length):
 
 def last_moon_check():
     """Imports latest data and sets the last_moon variables."""
-    import latest_data
+    from . import latest_data
     last_moon = latest_data.LAST_MOON
     last_moon_key = list(last_moon.keys())[0]
     return (last_moon, last_moon_key)

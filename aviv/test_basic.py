@@ -93,7 +93,8 @@ def test_length_of_months():
     moons = db['MOONS']
     start_date_list = []
     accepted_length = (28, 29, 30)
-    for key, value in moons.items():
+    for value in moons.values():
+        assert value is not None
         start_date = datetime.datetime(value[2], value[3], value[4])
         start_date_list.append(start_date)
     sorted_list = sorted(start_date_list)
@@ -110,6 +111,6 @@ def test_length_of_months():
         logging.debug('reached the end of the list')
 
 
-
 if __name__ == '__main__':
     test_known_reference_days()
+    test_length_of_months()

@@ -825,27 +825,39 @@ class BibTime:
                 known_moon = datetime.date(MOONS[key][2], MOONS[key][3],
                                            MOONS[key][4])
                 i += 1
+                logging.debug('unknown_moon is %s', unknown_moon)
                 if unknown_moon == known_moon:
                     logging.debug('stage 1')
+                    logging.debug('known_moon is %s', known_moon)
+                    logging.debug('unknown_moon is %s', unknown_moon)
                     logging.debug('known_moon equals unknown_moon')
                     logging.debug('returning key %s', key)
                     return key
                 elif unknown_moon < known_moon:
                     logging.debug('stage 2')
+                    logging.debug('known_moon is %s', known_moon)
+                    logging.debug('unknown_moon is %s', unknown_moon)
                     logging.debug('known_moon is later than unknown_moon')
                     continue
                 elif unknown_moon > known_moon:
                     logging.debug('stage 3')
+                    logging.debug('known_moon is %s', known_moon)
+                    logging.debug('unknown_moon is %s', unknown_moon)
                     delta = unknown_moon - known_moon
                     logging.debug('delta is %s', delta)
-                    if delta > datetime.timedelta(days=30):
-                        logging.debug('stage 4')
-                        logging.debug('delta (%s) is greater than 30', delta)
-                        continue
-                    elif delta <= datetime.timedelta(days=30):
+                    if delta <= datetime.timedelta(days=29):
                         logging.debug('stage 5')
                         logging.debug('saving potential key %s', key)
-                        potential_keys.append(key)
+                        potential_keys.insert(0, key)
+                        continue
+                    elif delta == datetime.timedelta(days=30):
+                        logging.debug('stage 6')
+                        logging.debug('saving potential key %s', key)
+                        potential_keys.insert(0, key)
+                        continue
+                    elif delta > datetime.timedelta(days=30):
+                        logging.debug('stage 7')
+                        logging.debug('delta (%s) is greater than 30', delta)
                         continue
                     continue
                 logging.debug('potential key = %s', potential_keys[0])

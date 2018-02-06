@@ -292,20 +292,20 @@ FIXED_FEAST_DAYS = {
     (12, 14): ('Purim', False)
 }
 
-HANUKKAH_DAYS_REALLY_SHORT_9 = {
+HANUKKAH_REALLY_SHORT_9 = {
     (10, 1): ('5th day of Hanukkah', False),
     (10, 2): ('6th day of Hanukkah', False),
     (10, 3): ('7th day of Hanukkah', False),
     (10, 4): ('8th day of Hanukkah', False)
 }
 
-HANUKKAH_DAYS_SHORT_9 = {
+HANUKKAH_SHORT_9 = {
     (10, 1): ('6th day of Hanukkah', False),
     (10, 2): ('7th day of Hanukkah', False),
     (10, 3): ('8th day of Hanukkah', False)
 }
 
-HANUKKAH_DAYS_LONG_9 = {
+HANUKKAH_LONG_9 = {
     (10, 1): ('7th day of Hanukkah', False),
     (10, 2): ('8th day of Hanukkah', False)
 }
@@ -507,28 +507,28 @@ def test_is_feast(month, day, p_length):
         logging.debug('p_length is %s', p_length)
         if month == 10 and p_length <= 28:
             try:
-                if HANUKKAH_DAYS_REALLY_SHORT_9[pf]:
+                if HANUKKAH_REALLY_SHORT_9[pf]:
                     is_hfd = True
-                    is_hfs = HANUKKAH_DAYS_REALLY_SHORT_9[pf][1]
-                    feast_name = HANUKKAH_DAYS_REALLY_SHORT_9[pf][0]
+                    is_hfs = HANUKKAH_REALLY_SHORT_9[pf][1]
+                    feast_name = HANUKKAH_REALLY_SHORT_9[pf][0]
                     return (is_hfd, is_hfs, feast_name)
             except KeyError:
                 is_hfd, is_hfs, feast_name = False, False, None
         elif month == 10 and p_length == 29:
             try:
-                if HANUKKAH_DAYS_SHORT_9[pf]:
+                if HANUKKAH_SHORT_9[pf]:
                     is_hfd = True
-                    is_hfs = HANUKKAH_DAYS_SHORT_9[pf][1]
-                    feast_name = HANUKKAH_DAYS_SHORT_9[pf][0]
+                    is_hfs = HANUKKAH_SHORT_9[pf][1]
+                    feast_name = HANUKKAH_SHORT_9[pf][0]
                     return (is_hfd, is_hfs, feast_name)
             except KeyError:
                 is_hfd, is_hfs, feast_name = False, False, None
         elif month == 10 and p_length >= 30:
             try:
-                if HANUKKAH_DAYS_LONG_9[pf]:
+                if HANUKKAH_LONG_9[pf]:
                     is_hfd = True
-                    is_hfs = HANUKKAH_DAYS_LONG_9[pf][1]
-                    feast_name = HANUKKAH_DAYS_LONG_9[pf][0]
+                    is_hfs = HANUKKAH_LONG_9[pf][1]
+                    feast_name = HANUKKAH_LONG_9[pf][0]
                     return (is_hfd, is_hfs, feast_name)
             except KeyError:
                 is_hfd, is_hfs, feast_name = False, False, None

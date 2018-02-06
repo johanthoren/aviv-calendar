@@ -150,7 +150,7 @@ def _info(loc):
         # Create a string in the format 'YYYY-MM-DD' using the biblical
         # calendar data.
         bib_date_str = str(loc.b_time.year) + '-' + '{0:02d}'.format(
-            loc.b_time.month) + '-' + str(loc.b_time.day)
+            loc.b_time.month) + '-' + '{0:02d}'.format(loc.b_time.day)
         print('{:20s}{:>20s}'.format('Short (ISO) Date:', bib_date_str))
         print('')
         print('{:20s}{:>20d}'.format('Year:', loc.b_time.year))

@@ -266,7 +266,11 @@ MOONS = {
     601512: (6015, 12, 2016, 2, 9, True),     # renewedmoon.com
     601513: (6015, 13, 2016, 3, 10, True),    # renewedmoon.com
     # 6016
-    # Missing months.
+    601601: (6016, 1, 2016, 4, 9, True),      # whenisthenewmoon.com
+    601602: (6016, 2, 2016, 5, 7, True),      # whenisthenewmoon.com
+    601603: (6016, 3, 2016, 6, 6, True),      # whenisthenewmoon.com
+    601604: (6016, 4, 2016, 7, 5, True),      # whenisthenewmoon.com
+    601605: (6016, 5, 2016, 8, 4, True),      # whenisthenewmoon.com
     601606: (6016, 6, 2016, 9, 2, True),      # renewedmoon twitter
     601607: (6016, 7, 2016, 10, 2, True),     # karaite korner newsletter
     601608: (6016, 8, 2016, 11, 1, False),    # stellarium

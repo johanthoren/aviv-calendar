@@ -308,7 +308,7 @@ def test_day(day, length):
 
 
 # TODO: Work in progress.
-def test_is_feast(month, day, p_length):
+def test_is_hanukkah(month, day, p_length):
     """Tests if a day is a High Feast Day.
 
     Needs 2 integers as arguments: Month, Day.
@@ -316,49 +316,59 @@ def test_is_feast(month, day, p_length):
     Optional length of previous month as integer.
     Example: 10, 1, 29"""
     pf = (month, day)
-    if p_length is not None:
-        logging.debug('p_length is %s', p_length)
-        if month == 10 and p_length <= 28:
-            try:
-                if HANUKKAH_REALLY_SHORT_9[pf]:
-                    is_hfd = True
-                    is_hfs = HANUKKAH_REALLY_SHORT_9[pf][1]
-                    feast_name = HANUKKAH_REALLY_SHORT_9[pf][0]
-                    return (is_hfd, is_hfs, feast_name)
-            except KeyError:
-                is_hfd, is_hfs, feast_name = False, False, None
-        elif month == 10 and p_length == 29:
-            try:
-                if HANUKKAH_SHORT_9[pf]:
-                    is_hfd = True
-                    is_hfs = HANUKKAH_SHORT_9[pf][1]
-                    feast_name = HANUKKAH_SHORT_9[pf][0]
-                    return (is_hfd, is_hfs, feast_name)
-            except KeyError:
-                is_hfd, is_hfs, feast_name = False, False, None
-        elif month == 10 and p_length >= 30:
-            try:
-                if HANUKKAH_LONG_9[pf]:
-                    is_hfd = True
-                    is_hfs = HANUKKAH_LONG_9[pf][1]
-                    feast_name = HANUKKAH_LONG_9[pf][0]
-                    return (is_hfd, is_hfs, feast_name)
-            except KeyError:
-                is_hfd, is_hfs, feast_name = False, False, None
-    elif p_length is None:
+    if month == 10 and p_length <= 28:
         try:
-            if FIXED_HIGH_FEAST_DAYS[pf]:
+            if HANUKKAH_REALLY_SHORT_9[pf]:
                 is_hfd = True
-                is_hfs = FIXED_HIGH_FEAST_DAYS[pf][1]
-                feast_name = FIXED_HIGH_FEAST_DAYS[pf][0]
+                is_hfs = HANUKKAH_REALLY_SHORT_9[pf][1]
+                feast_name = HANUKKAH_REALLY_SHORT_9[pf][0]
+                return (is_hfd, is_hfs, feast_name)
         except KeyError:
-            try:
-                if FIXED_FEAST_DAYS[pf]:
-                    is_hfd = True
-                    is_hfs = FIXED_FEAST_DAYS[pf][1]
-                    feast_name = FIXED_FEAST_DAYS[pf][0]
-            except KeyError:
-                is_hfd, is_hfs, feast_name = False, False, None
+            is_hfd, is_hfs, feast_name = False, False, None
+    elif month == 10 and p_length == 29:
+        try:
+            if HANUKKAH_SHORT_9[pf]:
+                is_hfd = True
+                is_hfs = HANUKKAH_SHORT_9[pf][1]
+                feast_name = HANUKKAH_SHORT_9[pf][0]
+                return (is_hfd, is_hfs, feast_name)
+        except KeyError:
+            is_hfd, is_hfs, feast_name = False, False, None
+    elif month == 10 and p_length >= 30:
+        try:
+            if HANUKKAH_LONG_9[pf]:
+                is_hfd = True
+                is_hfs = HANUKKAH_LONG_9[pf][1]
+                feast_name = HANUKKAH_LONG_9[pf][0]
+                return (is_hfd, is_hfs, feast_name)
+        except KeyError:
+            is_hfd, is_hfs, feast_name = False, False, None
+    elif month == 9:
+        try:
+            if FIXED_FEAST_DAYS[pf]:
+                is_hfd = True
+                is_hfs = FIXED_FEAST_DAYS[pf][1]
+                feast_name = FIXED_FEAST_DAYS[pf][0]
+        except KeyError:
+            is_hfd, is_hfs, feast_name = False, False, None
+    return (is_hfd, is_hfs, feast_name)
+
+
+def test_is_feast(month, day):
+    pf = (month, day)
+    try:
+        if FIXED_HIGH_FEAST_DAYS[pf]:
+            is_hfd = True
+            is_hfs = FIXED_HIGH_FEAST_DAYS[pf][1]
+            feast_name = FIXED_HIGH_FEAST_DAYS[pf][0]
+    except KeyError:
+        try:
+            if FIXED_FEAST_DAYS[pf]:
+                is_hfd = True
+                is_hfs = FIXED_FEAST_DAYS[pf][1]
+                feast_name = FIXED_FEAST_DAYS[pf][0]
+        except KeyError:
+            is_hfd, is_hfs, feast_name = False, False, None
     return (is_hfd, is_hfs, feast_name)
 
 
@@ -766,11 +776,17 @@ class BibTime:
             logging.debug('delta is %s', delta)
             return delta.days
 
-        if b_month == 10:
-            p_length = _get_prev_month_length(b_year, 9, month_start_time)
-            feast_test = test_is_feast(b_month, b_day, p_length)
-        else:
-            feast_test = test_is_feast(b_month, b_day, None)
+        def _feast_test():
+            if b_month == 9:
+                feast = test_is_hanukkah(b_month, b_day, None)
+            elif b_month == 10:
+                p_length = _get_prev_month_length(b_year, 9, month_start_time)
+                feast = test_is_hanukkah(b_month, b_day, p_length)
+            else:
+                feast = test_is_feast(b_month, b_day)
+            return feast
+
+        feast_test = _feast_test()
 
         is_hfd = feast_test[0]
         is_hfs = feast_test[1]

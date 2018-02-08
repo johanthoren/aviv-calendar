@@ -44,7 +44,7 @@ from astral import Astral
 # of service.
 from astral import GoogleGeocoder
 from astral import AstralError
-import hist_data
+from aviv import hist_data
 
 
 def usage():
@@ -187,7 +187,7 @@ def combine_data():
     # I didn't want this import to be at the top of the file, since the
     # latest_data.py file will not exist on first run.
     # TODO: Is that the correct way to do it?
-    import latest_data
+    from aviv import latest_data
     database = shelve.open(DB_FILE)
 
     # Potentially needed clearing of DB befor each run. Or is that overkill?
@@ -381,7 +381,7 @@ def test_is_feast(month, day):
 
 def last_moon_check():
     """Imports latest data and sets the last_moon variables."""
-    import latest_data
+    from aviv import latest_data
     last_moon = latest_data.LAST_MOON
     last_moon_key = list(last_moon.keys())[0]
     return (last_moon, last_moon_key)

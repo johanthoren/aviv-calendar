@@ -379,6 +379,35 @@ def test_is_feast(month, day):
     return (is_hfd, is_hfs, feast_name)
 
 
+def find_firstfruits(year, month, day):
+    """Tries to find out what day is
+    the Feast of Firstfruits.
+    """
+    # Create a key to pinpoint the first day of the first month of the year.
+    # This is the baseline to find the firstfruits.
+    key = int(str(year) + '01')
+    first_month = datetime_from_key(key)
+    i = 0
+    # Iterate over the days following unleavened bread until you find the
+    # 1st day of the week.
+    while i < 7:
+        potential_day = first_month[0] + datetime.timedelta(days=15 + i)
+        x_year = potential_day.year
+        x_month = potential_day.month
+        x_day = potential_day.day
+        potential_day_object = BibTime('Jerusalem', 'astral', x_year, x_month,
+                                       x_day, 22)
+        if potential_day_object.b_time.weekday == '1st':
+            firstfruits = (potential_day_object.b_time.year,
+                           potential_day_object.b_time.month,
+                           potential_day_object.b_time.day)
+            break
+        i += 1
+
+    firstfruits_today = True if (year, month, day) == firstfruits else False
+    return (firstfruits, firstfruits_today)
+
+
 def last_moon_check():
     """Imports latest data and sets the last_moon variables."""
     from aviv import latest_data
@@ -691,13 +720,17 @@ class BibTime:
                         continue
                     continue
                 logging.debug('potential key = %s', potential_keys[0])
-            if potential_keys[0]:
-                logging.debug('returning previously tested potential key %s',
-                              potential_keys[0])
-                return potential_keys[0]
-            logging.debug('entering last fallback "else"')
-            key = None
-            return key
+            try:
+                if potential_keys[0]:
+                    logging.debug(
+                        'returning previously tested potential key %s',
+                        potential_keys[0])
+                    return potential_keys[0]
+            except IndexError:
+                logging.debug('no potential key found')
+                # key = None
+                # return key
+                raise Exception('No potential month found')
 
         def _get_moon_from_date():
             # If current is True, then try to find out the gregorian date of
@@ -829,19 +862,7 @@ class BibTime:
                 self.day_name = b_day_name
                 self.weekday = b_weekday
                 self.month_start_time = month_start_time
-
-            # def find_firstfruits(self):
-            #     """Tries to find out what day is
-            #     the Feast of Firstfruits.
-            #     """
-
-            #     month = self.month
-            #     day = self.day
-            #     weekday = self.weekday
-
-            #     if 1 >= month <= 3:
-            #         if month == 1 and 15 > day < 23:
-            #             if
+                self.first_fruits_feast = None
 
         b_time = BibDay(b_year, b_month, b_month_name, b_month_trad_name,
                         b_day, b_day_name, b_weekday, month_start_time)

@@ -363,19 +363,26 @@ def test_is_feast(month, day):
     Optional length of previous month as integer.
     Example: 10, 1, 29"""
     pf = (month, day)
+    logging.debug('entering `test_is_feast`, pf is %s', pf)
     try:
         if FIXED_HIGH_FEAST_DAYS[pf]:
+            logging.debug('found a matching high feast day!')
             is_hfd = True
             is_hfs = FIXED_HIGH_FEAST_DAYS[pf][1]
             feast_name = FIXED_HIGH_FEAST_DAYS[pf][0]
     except KeyError:
         try:
             if FIXED_FEAST_DAYS[pf]:
+                logging.debug('found a matching feast day!')
                 is_hfd = True
                 is_hfs = FIXED_FEAST_DAYS[pf][1]
                 feast_name = FIXED_FEAST_DAYS[pf][0]
         except KeyError:
             is_hfd, is_hfs, feast_name = False, False, None
+    logging.debug('returning the following:')
+    logging.debug('is_hfd: %s', is_hfd)
+    logging.debug('is_hfs: %s', is_hfs)
+    logging.debug('feast_name: %s', feast_name)
     return (is_hfd, is_hfs, feast_name)
 
 
@@ -388,22 +395,24 @@ def find_firstfruits(year, month, day):
     key = int(str(year) + '01')
     first_month = datetime_from_key(key)
     i = 0
+
     # Iterate over the days following unleavened bread until you find the
     # 1st day of the week.
     while i < 7:
-        potential_day = first_month[0] + datetime.timedelta(days=15 + i)
+        potential_day = first_month[0] + datetime.timedelta(days=16 + i)
         x_year = potential_day.year
         x_month = potential_day.month
         x_day = potential_day.day
-        potential_day_object = BibTime('Jerusalem', 'astral', x_year, x_month,
-                                       x_day, 22)
-        if potential_day_object.b_time.weekday == '1st':
-            firstfruits = (potential_day_object.b_time.year,
-                           potential_day_object.b_time.month,
-                           potential_day_object.b_time.day)
+        potential_day_object = BibLocation('Jerusalem', 'astral', x_year,
+                                           x_month, x_day, 22)
+        logging.debug('weekday is %s', potential_day_object.g_time.weekday())
+        if potential_day_object.g_time.weekday() == 6:
+            firstfruits = (year, 1, 16 + i)
+            logging.debug('`firstfruits` is: %s', firstfruits)
             break
         i += 1
 
+    logging.debug('test date is: %s', (year, month, day))
     firstfruits_today = True if (year, month, day) == firstfruits else False
     return (firstfruits, firstfruits_today)
 
@@ -690,8 +699,16 @@ class BibTime:
                     logging.debug('known_moon is %s', known_moon)
                     logging.debug('unknown_moon is %s', unknown_moon)
                     logging.debug('known_moon equals unknown_moon')
-                    logging.debug('returning key %s', key)
-                    return key
+                    # Since the dates in the reference list MOONS is based
+                    # on what gregorian date the biblical day STARTS, it's
+                    # necessary to check if the sun has set. Otherwhise
+                    # the month hasn't yet actually begun and the previous
+                    # month is still the correct one.
+                    if self.b_location.sun_info['has_set'] is True:
+                        logging.debug('returning key %s', key)
+                        return key
+                    else:
+                        continue
                 elif unknown_moon < known_moon:
                     logging.debug('stage 2')
                     logging.debug('known_moon is %s', known_moon)
@@ -793,6 +810,7 @@ class BibTime:
         month_start_time = _set_month_start_time(x_month_year, x_month_month,
                                                  x_month_day)
         b_day = _set_day_of_month(month_start_time)
+        logging.debug('b_day (day of month) is %s', b_day)
 
         if b_day > 30:
             raise Exception('Error: Day of Month greater than 30.')
@@ -817,21 +835,49 @@ class BibTime:
             return delta.days
 
         def _feast_test():
-            if b_month == 9:
-                feast = test_is_hanukkah(b_month, b_day, None)
+            logging.debug('Entering _feast_test')
+            if b_month == 1 and 15 < b_day < 23:
+                logging.debug('It is the %s month between day 15 and 23',
+                              b_month)
+                test_data = find_firstfruits(b_year, b_month, b_day)
+                hfd, hfs = test_data[1], False
+                if test_data[1] is True:
+                    name = 'Bikkurim / "The feast of Firstfruits"'
+                else:
+                    name = None
+            elif b_month == 9:
+                logging.debug('month %s == 9, testing for hanukkah', b_month)
+                test_data = test_is_hanukkah(b_month, b_day, None)
+                hfd = test_data[0]
+                hfs = test_data[1]
+                name = test_data[2]
             elif b_month == 10:
+                logging.debug(
+                    'month %s == 10, testing for later days of hanukkah',
+                    b_month)
                 p_length = _get_prev_month_length(b_year, 9, month_start_time)
-                feast = test_is_hanukkah(b_month, b_day, p_length)
+                test_data = test_is_hanukkah(b_month, b_day, p_length)
+                hfd = test_data[0]
+                hfs = test_data[1]
+                name = test_data[2]
             else:
-                feast = test_is_feast(b_month, b_day)
-            return feast
+                logging.debug('month is %s, day is %s, testing for feasts',
+                              b_month, b_day)
+                test_data = test_is_feast(b_month, b_day)
+                hfd = test_data[0]
+                hfs = test_data[1]
+                name = test_data[2]
+            feast_data = (hfd, hfs, name)
+            return feast_data
 
-        feast_test = _feast_test()
+        feast_data = _feast_test()
 
-        is_hfd = feast_test[0]
-        is_hfs = feast_test[1]
+        is_hfd = feast_data[0]
+        logging.debug('is_hfd is: %s', is_hfd)
+        is_hfs = feast_data[1]
+        logging.debug('is_hfs is: %s', is_hfs)
 
-        feast_name = feast_test[2]
+        feast_name = feast_data[2]
 
         b_weekday = _calc_b_weekday()
         is_ws = True if b_weekday == '7th' else False
@@ -840,9 +886,11 @@ class BibTime:
             b_sabbath = is_hfs
         else:
             b_sabbath = is_ws
+        logging.debug('b_sabbath is: %s', b_sabbath)
 
         class BibSabbath:
             def __init__(self, b_sabbath, is_hfd, is_hfs, is_ws, feast_name):
+                logging.debug('creating BibSabbath object')
                 self.sabbath = b_sabbath
                 self.high_feast_day = is_hfd
                 self.holy_day_of_rest = is_hfs
@@ -854,6 +902,7 @@ class BibTime:
             def __init__(self, b_year, b_month, b_month_name,
                          b_month_trad_name, b_day, b_day_name, b_weekday,
                          month_start_time):
+                logging.debug('creating BibDay object')
                 self.year = b_year
                 self.month = b_month
                 self.month_name = b_month_name
@@ -862,7 +911,6 @@ class BibTime:
                 self.day_name = b_day_name
                 self.weekday = b_weekday
                 self.month_start_time = month_start_time
-                self.first_fruits_feast = None
 
         b_time = BibDay(b_year, b_month, b_month_name, b_month_trad_name,
                         b_day, b_day_name, b_weekday, month_start_time)

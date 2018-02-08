@@ -44,12 +44,13 @@ from astral import Astral
 # of service.
 from astral import GoogleGeocoder
 from astral import AstralError
-from . import hist_data
+import hist_data
 
 
 def usage():
     """Prints a message describing the usage and pointing to aviv.py."""
-    print('To use this program, please use the ´aviv.py´ in the parent folder.')
+    print(
+        'To use this program, please use the ´aviv.py´ in the parent folder.')
 
 
 def debug(d):
@@ -154,7 +155,7 @@ def get_latest_data():
     # and save it locally under `latest_data.py`. This is updated as soon
     # as news of the new moon or the Aviv barley breaks.
     url = 'https://www.avivcalendar.com/latest-data'
-    latest_file = os.path.join(sys.path[0], 'aviv', 'latest_data.py')
+    latest_file = os.path.join(sys.path[0], 'latest_data.py')
     try:
         with urllib.request.urlopen(url) as response, open(latest_file,
                                                            'wb') as out_file:
@@ -170,8 +171,8 @@ def get_latest_data():
 # Working with a DB_FILE since we will be joining dictionaries from both git
 # synced sources, as well as the latest_data.py that is retrieved from
 # online.
-DB_FILE = os.path.join(sys.path[0], 'aviv', 'current_data')
-DB_ACTUAL_FILE = os.path.join(sys.path[0], 'aviv', 'current_data.DB')
+DB_FILE = os.path.join(sys.path[0], 'current_data')
+DB_ACTUAL_FILE = os.path.join(sys.path[0], 'current_data.DB')
 DB_EXISTS = os.path.exists(DB_ACTUAL_FILE)
 if DB_EXISTS:
     DB_MOD_TIME = datetime.datetime.fromtimestamp(
@@ -186,7 +187,7 @@ def combine_data():
     # I didn't want this import to be at the top of the file, since the
     # latest_data.py file will not exist on first run.
     # TODO: Is that the correct way to do it?
-    from . import latest_data
+    import latest_data
     database = shelve.open(DB_FILE)
 
     # Potentially needed clearing of DB befor each run. Or is that overkill?
@@ -355,6 +356,12 @@ def test_is_hanukkah(month, day, p_length):
 
 
 def test_is_feast(month, day):
+    """Tests if a day is a High Feast Day.
+
+    Needs 2 integers as arguments: Month, Day.
+    Example: 1, 15
+    Optional length of previous month as integer.
+    Example: 10, 1, 29"""
     pf = (month, day)
     try:
         if FIXED_HIGH_FEAST_DAYS[pf]:
@@ -374,7 +381,7 @@ def test_is_feast(month, day):
 
 def last_moon_check():
     """Imports latest data and sets the last_moon variables."""
-    from . import latest_data
+    import latest_data
     last_moon = latest_data.LAST_MOON
     last_moon_key = list(last_moon.keys())[0]
     return (last_moon, last_moon_key)
@@ -822,6 +829,19 @@ class BibTime:
                 self.day_name = b_day_name
                 self.weekday = b_weekday
                 self.month_start_time = month_start_time
+
+            # def find_firstfruits(self):
+            #     """Tries to find out what day is
+            #     the Feast of Firstfruits.
+            #     """
+
+            #     month = self.month
+            #     day = self.day
+            #     weekday = self.weekday
+
+            #     if 1 >= month <= 3:
+            #         if month == 1 and 15 > day < 23:
+            #             if
 
         b_time = BibDay(b_year, b_month, b_month_name, b_month_trad_name,
                         b_day, b_day_name, b_weekday, month_start_time)

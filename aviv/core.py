@@ -49,8 +49,7 @@ from aviv import hist_data
 
 def usage():
     """Prints a message describing the usage and pointing to main.py."""
-    print(
-        'To use this program, please use <python main.py>.')
+    print('To use this program, please use <python main.py>.')
 
 
 def debug(d):
@@ -408,7 +407,7 @@ def find_firstfruits(year, month, day):
         logging.debug('weekday is %s', potential_day_object.g_time.weekday())
         if potential_day_object.g_time.weekday() == 6:
             firstfruits = (year, 1, 16 + i)
-            logging.debug('`firstfruits` is: %s', firstfruits)
+            logging.debug('"firstfruits" is: %s', firstfruits)
             break
         i += 1
 
@@ -458,7 +457,6 @@ class BibLocation:
 
             self.geo.solar_depression = 'civil'
             logging.debug('city_name is %s', city_name)
-            logging.debug('trying to find the coordinates for %s', city_name)
             try:
                 location = self.geo[city_name]
             except AstralError:
@@ -487,8 +485,7 @@ class BibLocation:
                             "Or the location really can't be found.".format(
                                 self.geo))
         except KeyError:
-            raise Exception(
-                'That city is not found. Please try another.')
+            raise Exception('That city is not found. Please try another.')
         self.location = location
 
         # If no date input it given, defaults to the current date and time.
@@ -818,7 +815,7 @@ class BibTime:
         logging.debug('b_day (day of month) is %s', b_day)
 
         if b_day > 30:
-            raise Exception('Error: Day of Month greater than 30.')
+            raise Exception('Day of Month greater than 30.')
 
         b_day_name = BIB_DAY_OF_MONTH[b_day - 1]
         b_month_name = BIB_DAY_OF_MONTH[b_month - 1]
@@ -839,17 +836,42 @@ class BibTime:
             logging.debug('delta is %s', delta)
             return delta.days
 
+        def _count_the_omer(firstfruits, date):
+            omer_delta = firstfruits - date
+            logging.debug('The omer_delta is %s', omer_delta)
+            omer_count = omer_delta.days + 1
+            logging.debug('The omer_count is %s', omer_count)
+            return omer_count
+
         def _feast_test():
             logging.debug('Entering _feast_test')
+            omer_count = None
             if b_month == 1 and 15 < b_day < 23:
-                logging.debug('It is the %s month between day 15 and 23',
+                logging.debug('It is the %s month between day 16 and 22',
                               b_month)
                 test_data = find_firstfruits(b_year, b_month, b_day)
                 hfd, hfs = test_data[1], False
                 if test_data[1] is True:
                     name = 'Bikkurim / "The feast of Firstfruits"'
+                    omer_count = 0
                 else:
                     name = None
+                    omer_count = _count_the_omer(
+                        datetime.date(b_year, b_month, b_day),
+                        datetime.date(test_data[0][0], test_data[0][1],
+                                      test_data[0][2]))
+            elif b_month == 1 and b_day >= 23 or b_month == 2 or b_month == 3:
+                logging.debug('It is the %s month and day %s', b_month, b_day)
+                test_data = find_firstfruits(b_year, 1, 16)
+                omer_count = _count_the_omer(
+                    datetime.date(b_year, b_month, b_day),
+                    datetime.date(test_data[0][0], test_data[0][1],
+                                  test_data[0][2]))
+                if omer_count == 50:
+                    hfd, hfs = True, True
+                    name = 'Shavuot / "The feast of Weeks"'
+                else:
+                    hfd, hfs, name = False, False, None
             elif b_month == 9:
                 logging.debug('month %s == 9, testing for hanukkah', b_month)
                 test_data = test_is_hanukkah(b_month, b_day, None)
@@ -872,7 +894,7 @@ class BibTime:
                 hfd = test_data[0]
                 hfs = test_data[1]
                 name = test_data[2]
-            feast_data = (hfd, hfs, name)
+            feast_data = (hfd, hfs, name, omer_count)
             return feast_data
 
         feast_data = _feast_test()
@@ -883,6 +905,7 @@ class BibTime:
         logging.debug('is_hfs is: %s', is_hfs)
 
         feast_name = feast_data[2]
+        omer_count = feast_data[3]
 
         b_weekday = _calc_b_weekday()
         is_ws = True if b_weekday == '7th' else False
@@ -894,7 +917,8 @@ class BibTime:
         logging.debug('b_sabbath is: %s', b_sabbath)
 
         class BibSabbath:
-            def __init__(self, b_sabbath, is_hfd, is_hfs, is_ws, feast_name):
+            def __init__(self, b_sabbath, is_hfd, is_hfs, is_ws, feast_name,
+                         omer_count):
                 logging.debug('creating BibSabbath object')
                 self.sabbath = b_sabbath
                 self.high_feast_day = is_hfd
@@ -902,6 +926,10 @@ class BibTime:
                 self.weekly_sabbath = is_ws
                 if self.high_feast_day is True:
                     self.feast_name = feast_name
+                if omer_count is None:
+                    self.omer_count = None
+                else:
+                    self.omer_count = omer_count if 1 <= omer_count <= 50 else None
 
         class BibDay:
             def __init__(self, b_year, b_month, b_month_name,
@@ -920,7 +948,7 @@ class BibTime:
         b_time = BibDay(b_year, b_month, b_month_name, b_month_trad_name,
                         b_day, b_day_name, b_weekday, month_start_time)
         b_time.sabbath = BibSabbath(b_sabbath, is_hfd, is_hfs, is_ws,
-                                    feast_name)
+                                    feast_name, omer_count)
         return b_time
 
 

@@ -70,10 +70,6 @@ TRAD_MONTH_NAMES = ('Nisan', 'Iyyar', 'Sivan', 'Tammuz', 'Av', 'Elul',
                     'Tishri', 'Marheshvan', 'Kislev', 'Tevet', 'Shvat', 'Adar',
                     'Adar (2)')
 
-# Define the biblical months. 1st month could be named Aviv. Maybe later.
-BIB_MONTHS = ('1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th',
-              '10th', '11th', '12th', '13th')
-
 # Define the gregorian weekdays. Wrapping for ease of index reference.
 GREG_WEEKDAYS = ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
                  'Saturday', 'Sunday', 'Monday')
@@ -82,12 +78,14 @@ GREG_WEEKDAYS = ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
 # their number.
 BIB_WEEKDAYS = ('2nd', '3rd', '4th', '5th', '6th', '7th', '1st', '2nd')
 
-# Define the biblical days of the months.
-BIB_DAY_OF_MONTH = ('1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th',
-                    '9th', '10th', '11th', '12th', '13th', '14th', '15th',
-                    '16th', '17th', '18th', '19th', '20th', '21st', '22nd',
-                    '23rd', '24th', '25th', '26th', '27th', '28th', '29th',
-                    '30th')
+# Define the biblical days of the months, the name of the months and the
+# counting of the omer.
+COUNT = ('1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th',
+         '11th', '12th', '13th', '14th', '15th', '16th', '17th', '18th',
+         '19th', '20th', '21st', '22nd', '23rd', '24th', '25th', '26th',
+         '27th', '28th', '29th', '30th', '31st', '32nd', '33rd', '34th',
+         '35th', '36th', '37th', '38th', '39th', '40th', '41st', '42nd',
+         '43rd', '44th', '45th', '46th', '47th', '48th', '49th', '50th')
 
 # List of feast days that are NOT biblically commanded to keep but still
 # of interest.
@@ -817,8 +815,8 @@ class BibTime:
         if b_day > 30:
             raise Exception('Day of Month greater than 30.')
 
-        b_day_name = BIB_DAY_OF_MONTH[b_day - 1]
-        b_month_name = BIB_DAY_OF_MONTH[b_month - 1]
+        b_day_name = COUNT[b_day - 1]
+        b_month_name = COUNT[b_month - 1]
         b_month_trad_name = TRAD_MONTH_NAMES[b_month - 1]
 
         b_day = _set_day_of_month(month_start_time)
@@ -839,7 +837,7 @@ class BibTime:
         def _count_the_omer(firstfruits, date):
             omer_delta = firstfruits - date
             logging.debug('The omer_delta is %s', omer_delta)
-            omer_count = omer_delta.days + 1
+            omer_count = omer_delta.days
             logging.debug('The omer_count is %s', omer_count)
             return omer_count
 
@@ -867,7 +865,7 @@ class BibTime:
                     datetime.date(b_year, b_month, b_day),
                     datetime.date(test_data[0][0], test_data[0][1],
                                   test_data[0][2]))
-                if omer_count == 50:
+                if omer_count == 49:
                     hfd, hfs = True, True
                     name = 'Shavuot / "The feast of Weeks"'
                 else:
@@ -906,6 +904,7 @@ class BibTime:
 
         feast_name = feast_data[2]
         omer_count = feast_data[3]
+        logging.debug('omer_count is %s', omer_count)
 
         b_weekday = _calc_b_weekday()
         is_ws = True if b_weekday == '7th' else False
@@ -928,8 +927,10 @@ class BibTime:
                     self.feast_name = feast_name
                 if omer_count is None:
                     self.omer_count = None
+                elif 0 <= omer_count <= 49:
+                    self.omer_count = COUNT[omer_count]
                 else:
-                    self.omer_count = omer_count if 1 <= omer_count <= 50 else None
+                    self.omer_count = None
 
         class BibDay:
             def __init__(self, b_year, b_month, b_month_name,

@@ -165,16 +165,20 @@ def _info(loc):
                 print('{:>40s}'.format(name_part_2))
                 print('')
             else:
-                print('{:20s}{:>20s}'.format('Feast name:',
-                                             loc.b_time.sabbath.feast_name))
+                print('{:12}{:>28s}'.format('Feast name:',
+                                            loc.b_time.sabbath.feast_name))
                 print('')
-            if loc.aviv_barley is None:
-                barley_statement = 'Not yet time for the barley'
-            elif loc.aviv_barley is True:
+        if loc.aviv_barley is not None:
+            if loc.aviv_barley is True:
                 barley_statement = 'The barley IS Aviv'
-            else:
+            elif loc.aviv_barley is False:
                 barley_statement = 'The barley is NOT Aviv'
             print('{:12s}{:>28s}'.format('Barley:', barley_statement))
+            print('')
+
+        if loc.b_time.sabbath.omer_count is not None:
+            print('{:35s}{:>5s}'.format('Day of the Omer count:',
+                                        loc.b_time.sabbath.omer_count))
             print('')
 
     def _greg_info():

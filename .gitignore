@@ -112,3 +112,4 @@ aviv.prof
 /aviv/flyckeck*
 publish.py
 setup.py.bak
+.pytest_cache/

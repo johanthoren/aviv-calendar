@@ -48,9 +48,9 @@ from aviv import hist_data
 
 
 def usage():
-    """Prints a message describing the usage and pointing to aviv.py."""
+    """Prints a message describing the usage and pointing to main.py."""
     print(
-        'To use this program, please use the ´aviv.py´ in the parent folder.')
+        'To use this program, please use <python main.py>.')
 
 
 def debug(d):
@@ -454,7 +454,7 @@ class BibLocation:
             elif geocoder == 'google':
                 self.geo = GoogleGeocoder()
             else:
-                raise Exception('Error: Unknown geocoder: {}'.format(geocoder))
+                raise Exception('Unknown geocoder: {}'.format(geocoder))
 
             self.geo.solar_depression = 'civil'
             logging.debug('city_name is %s', city_name)
@@ -488,7 +488,7 @@ class BibLocation:
                                 self.geo))
         except KeyError:
             raise Exception(
-                'Error: That city is not found. Please try another.')
+                'That city is not found. Please try another.')
         self.location = location
 
         # If no date input it given, defaults to the current date and time.

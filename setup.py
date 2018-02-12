@@ -1,18 +1,9 @@
-from codecs import open
-from os import path
 from setuptools import setup, find_packages
-
-HERE = path.abspath(path.dirname(__file__))
-
-# Get the long description from the README file
-with open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
-    LONG_D = f.read()
 
 setup(
     name='aviv',
     version='0.1.4',
     description='Biblical calendar tool',
-    long_description=LONG_D,
     author='Johan Thorén',
     author_email='johan@avivcalendar.com',
     license='GPLv2',

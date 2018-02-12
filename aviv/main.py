@@ -114,9 +114,9 @@ def _info(loc):
 
     # To shorten all the references to loc.b_location.location.name, which is so
     # long it tends to mess up rows just a bit too much.
-    city_re = re.compile(r'\w+$')
-    match_obj = city_re.search(loc.b_location.location.name)
-    city_name = match_obj.group()
+    city_re = re.compile(r'[^\s\d]+')
+    match_obj = city_re.findall(loc.b_location.location.name)
+    city_name = ' '.join(match_obj)
 
     def _location_info():
         # Print information about the location.
@@ -124,6 +124,10 @@ def _info(loc):
         print('{:20s}{:>20s}'.format('City:', city_name))
         print('{:20s}{:>20s}'.format('Country:',
                                      loc.b_location.location.region))
+        print('{:20s}{:>20f}'.format('Latitude:',
+                                     loc.b_location.location.latitude))
+        print('{:20s}{:>20f}'.format('Longitude:',
+                                     loc.b_location.location.longitude))
         print('')
 
     def _bib_info():

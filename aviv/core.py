@@ -585,8 +585,13 @@ class BibTime:
     Example: s = BibTime('Skepplanda, Sweden', 'google', 2018, 2, 1)
     """
 
-    def __init__(self, city, geocoder='astral', year=1, month=1, day=1,
-                 hour=1):
+    def __init__(self,
+                 city,
+                 geocoder='astral',
+                 year=None,
+                 month=None,
+                 day=None,
+                 hour=None):
         try:
             b_location = BibLocation(city, geocoder, year, month, day, hour)
         except ValueError:

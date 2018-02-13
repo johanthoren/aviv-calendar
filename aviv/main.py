@@ -43,7 +43,6 @@ def main():
         description='Find out the biblical time for a given location.')
     parser.add_argument(
         '--debug',
-        metavar='D',
         type=bool,
         default=False,
         nargs='?',

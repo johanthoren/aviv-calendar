@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='aviv',
-    version='0.1.4',
+    version='0.1.4a',
     description='Biblical calendar tool',
     author='Johan Thorén',
     author_email='johan@avivcalendar.com',

@@ -32,7 +32,7 @@ import datetime
 import logging
 import shelve
 # from astral import AstralError
-from aviv import core
+from aviv import Aviv
 
 logging.basicConfig(
     level=logging.CRITICAL,
@@ -60,7 +60,7 @@ def test_known_reference_days():
         logging.debug('key is %s', key)
 
         # Adding the hour 22 to test after sundown.
-        d = core.BibTime('Jerusalem', 'astral', key[0], key[1], key[2], 22)
+        d = Aviv.BibTime('Jerusalem', 'astral', key[0], key[1], key[2], 22)
         logging.debug('d is %s', d)
 
         result_b_year = d.b_time.year
@@ -94,7 +94,7 @@ def test_known_reference_days():
 
 def test_length_of_months():
     """Tests the length of months in the database. Should be 28-30 days."""
-    db = shelve.open(core.DB_FILE)
+    db = shelve.open(Aviv.DB_FILE)
     moons = db['MOONS']
     start_date_list = []
     accepted_length = (28, 29, 30)

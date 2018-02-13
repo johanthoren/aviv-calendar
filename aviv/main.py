@@ -32,7 +32,7 @@
 # -- END OF INTRO -- #
 import argparse
 import re
-import core
+import Aviv
 
 
 def main():
@@ -88,7 +88,7 @@ def main():
     args = parser.parse_args()
 
     # Check for the --debug flag and set the corresponding debug settings.
-    core.debug(args.debug)
+    Aviv.debug(args.debug)
 
     # Since the --geocoder 'astral' does not work with the --country option,
     # check if --country has been used and ignore it with a message to the user.
@@ -104,7 +104,7 @@ def main():
 
     # Put everything together and create the main object that _info will be
     # based on.
-    main_city = core.BibTime(args.location, args.geocoder, args.year,
+    main_city = Aviv.BibTime(args.location, args.geocoder, args.year,
                              args.month, args.day, args.hour)
     _info(main_city)
 
@@ -196,7 +196,7 @@ def _info(loc):
                                      loc.b_location.g_time.strftime('%d')))
         print('')
         print('{:20s}{:>20s}'.format(
-            'Weekday:', core.GREG_WEEKDAYS[loc.b_location.g_time.weekday()]))
+            'Weekday:', Aviv.GREG_WEEKDAYS[loc.b_location.g_time.weekday()]))
         print('')
         print('{:20s}{:>20s}'.format(
             'Time:', loc.b_location.g_time.strftime('%H:%M:%S')))

@@ -1,13 +1,15 @@
 # aviv-calendar
 ## Goal: 
 Tries to find out what day it is according to biblical time keeping.
-## Usage:
-`python3 aviv.py --location <city> [--country <country>] [--geocoder <google|astral>] [--year <YYYY> --month <MM> --day <DD> --hour <HH>]`
-### Comments:
-When using year, month, day or hour unused options will default to 2018, 1, 1 and 12 respectively. If you want to know the CURRENT data, don't specify any of these.
+## Installation:
+The software is now available as a pip package. Install with: `pip install aviv`. This will install all dependencies needed.
+## Direct Usage:
+`python main.py --location <city> [--country <country>] [--geocoder <google|astral>] [--year <YYYY> --month <MM> --day <DD> --hour <HH>]`
+### Comments on direct usage:
+When using year, month, day or hour unused options will default to 2018, 1, 1 and 12 respectively. If you want to know the CURRENT data, don't specify any of these. main.py defaults to showing the CURRENT data for JERUSALEM, ISRAEL.
 ## Example:
 ```
-python3 aviv.py --location Skepplanda --geocoder google
+python main.py --location Skepplanda --geocoder google
 Location ...............................
 City:                         Skepplanda
 Country:                          Sweden
@@ -44,8 +46,6 @@ Time of sunset:                 16:47:31
 ```
 <!-- ### Screenshot: -->
 <!-- ![aviv-calendar screenshot](https://www.avivcalendar.com/img/screenshot_2.png) -->
-## Dependencies:
-Depends on *astral*. Install with `pip install astral`.
 ## Definitions:
 The aviv-calendar project is based on the following ideas:
 * The day starts at sundown.
@@ -58,6 +58,8 @@ Since this calendar is not a purely mathematical calendar, such as the Gregorian
 
 It also needs a trusted database of reported sightings from Israel. See aviv/hist_data.py for this.
 ## Contributing:
+This project is in massive need of testing. Don't be shy to post a bug issue or to create a pull-request. Dates that are giving the wrong information needs to be bug-reported so that I can correct any errors in the calculations.
+
 It's worth noting that this is my 'learning-by-doing-project' to learn python. In other words, please contribute and don't feel shy about pointing out obvious errors or style related issues. Please create an issue or a pull-request.
 ## Donations:
 If you want to contribute financially it's much appreciated, and needed.

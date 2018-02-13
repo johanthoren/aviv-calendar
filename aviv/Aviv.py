@@ -935,7 +935,7 @@ class BibTime:
         class BibDay:
             def __init__(self, b_year, b_month, b_month_name,
                          b_month_trad_name, b_day, b_day_name, b_weekday,
-                         month_start_time):
+                         month_start_time, is_known):
                 logging.debug('creating BibDay object')
                 self.year = b_year
                 self.month = b_month
@@ -945,9 +945,11 @@ class BibTime:
                 self.day_name = b_day_name
                 self.weekday = b_weekday
                 self.month_start_time = month_start_time
+                self.is_known = is_known
 
         b_time = BibDay(b_year, b_month, b_month_name, b_month_trad_name,
-                        b_day, b_day_name, b_weekday, month_start_time)
+                        b_day, b_day_name, b_weekday, month_start_time,
+                        is_known)
         b_time.sabbath = BibSabbath(b_sabbath, is_hfd, is_hfs, is_ws,
                                     feast_name, omer_count)
         return b_time

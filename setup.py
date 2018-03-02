@@ -2,14 +2,14 @@ from setuptools import setup, find_packages
 
 setup(
     name='aviv',
-    version='0.1.5',
+    version='0.1.6',
     description='Biblical calendar tool',
     author='Johan Thorén',
     author_email='johan@avivcalendar.com',
     license='GPLv2',
     url='https://www.avivcalendar.com',
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
-    install_requires=['astral'],
+    install_requires=['astral', 'requests'],
     python_requires='>=3.5',
     classifiers=[
         # How mature is this project? Common values are

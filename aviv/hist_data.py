@@ -296,5 +296,7 @@ MOONS = {
     601709: (6017, 9, 2017, 11, 20, True),    # renewedmoon.com
     601710: (6017, 10, 2017, 12, 20, True),   # a rood awakening / michael rood
     601711: (6017, 11, 2018, 1, 18, True),    # goo.gl/dftVJ9
-    601712: (6017, 12, 2018, 2, 17, True)     # 30 day rule
+    601712: (6017, 12, 2018, 2, 17, True),    # 30 day rule
+    # 6018
+    601801: (6018, 1, 2018, 3, 18, True)      # renewedmoon.com
 }

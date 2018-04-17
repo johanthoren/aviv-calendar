@@ -298,5 +298,6 @@ MOONS = {
     601711: (6017, 11, 2018, 1, 18, True),    # goo.gl/dftVJ9
     601712: (6017, 12, 2018, 2, 17, True),    # 30 day rule
     # 6018
-    601801: (6018, 1, 2018, 3, 18, True)      # renewedmoon.com
+    601801: (6018, 1, 2018, 3, 18, True),     # renewedmoon.com
+    601802: (6018, 2, 2018, 4, 17, True)      # Devorah's date tree.
 }

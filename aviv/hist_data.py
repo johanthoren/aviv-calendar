@@ -301,5 +301,6 @@ MOONS = {
     601801: (6018, 1, 2018, 3, 18, True),     # renewedmoon.com
     601802: (6018, 2, 2018, 4, 17, True),     # Devorah's date tree.
     601803: (6018, 3, 2018, 5, 16, True),     # Devorah's date tree.
-    601804: (6018, 4, 2018, 6, 15, True)      # 30 day rule
+    601804: (6018, 4, 2018, 6, 15, True),     # 30 day rule
+    601805: (6018, 5, 2018, 7, 14, True)      # Devorah's date tree.
 }

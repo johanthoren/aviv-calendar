@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='aviv',
-    version='0.1.10',
+    version='0.1.12',
     description='Biblical calendar tool',
     author='Johan Thorén',
     author_email='johan@avivcalendar.com',
@@ -10,7 +10,7 @@ setup(
     url='https://www.avivcalendar.com',
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
     install_requires=['astral', 'requests'],
-    python_requires='>=3.5',
+    python_requires='>=3.7',
     classifiers=[
         # How mature is this project? Common values are
         #   3 - Alpha
@@ -26,7 +26,6 @@ setup(
         'License :: OSI Approved :: GNU General Public License v2 (GPLv2)',
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
 )

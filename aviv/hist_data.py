@@ -303,5 +303,6 @@ MOONS = {
     601803: (6018, 3, 2018, 5, 16, True),     # Devorah's date tree.
     601804: (6018, 4, 2018, 6, 15, True),     # 30 day rule
     601805: (6018, 5, 2018, 7, 14, True),     # Devorah's date tree.
-    601805: (6018, 6, 2018, 8, 12, True)      # Devorah's date tree.
+    601806: (6018, 6, 2018, 8, 12, True),     # Devorah's date tree.
+    601807: (6018, 7, 2018, 9, 11, True)      # 30 day rule
 }

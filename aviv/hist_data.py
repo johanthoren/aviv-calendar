@@ -309,5 +309,15 @@ MOONS = {
     601809: (6018, 9, 2018, 11, 9, True),     # 30 day rule
     601810: (6018, 10, 2018, 12, 8, True),    # Devorah's date tree.
     601811: (6018, 11, 2019, 1, 7, True),     # Devorah's date tree.
-    601812: (6018, 12, 2019, 2, 6, True)      # Devorah's date tree.
+    601812: (6018, 12, 2019, 2, 6, True),     # Devorah's date tree.
+
+    # Regarding the barley controversy of 2019:
+    # 6 teams or individuals reported that the barley was aviv.
+    # 3 teams or individuals reported that the barley was NOT aviv.
+    # It's a hard call for many and I urge anyone to consider this
+    # under careful prayer.
+
+    # 6019
+    601901: (6019, 1, 2019, 3, 8, True),       # 30 day rule
+    601902: (6019, 2, 2019, 4, 7, True)        # 30 day rule
 }

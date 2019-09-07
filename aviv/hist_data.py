@@ -319,5 +319,10 @@ MOONS = {
 
     # 6019
     601901: (6019, 1, 2019, 3, 8, True),       # 30 day rule
-    601902: (6019, 2, 2019, 4, 7, True)        # 30 day rule
+    601902: (6019, 2, 2019, 4, 7, True),       # 30 day rule
+    601903: (6019, 3, 2019, 5, 7, True),       # 30 day rule
+    601904: (6019, 4, 2019, 6, 5, True),       # Devorah's date tree
+    601905: (6019, 5, 2019, 7, 4, True),       # Devorah's date tree
+    601906: (6019, 6, 2019, 8, 2, True),       # Devorah's date tree
+    601907: (6019, 7, 2019, 8, 31, True)       # Devorah's date tree
 }

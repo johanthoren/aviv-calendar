@@ -1,3 +1,6 @@
+# BROKEN - NO LONGER WORKING
+No longer maintained. Archived for reference only.
+
 # aviv-calendar
 ## Goal: 
 Tries to find out what day it is according to biblical time keeping.
